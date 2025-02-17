@@ -1,0 +1,15 @@
+{
+    "content": {
+        "labels": {
+            "categories": "カテゴリー", 
+            "continueReading": "続きを読む", 
+            "languages": "言語", 
+            "loadMore": "さらに読み込む", 
+            "notification": "結果が見つかりませんでした。もう一度お試しください。", 
+            "recent": "最近の記事", 
+            "reset": "フィルターをリセット", 
+            "search": "検索", 
+            "searchPlaceholder": "検索..."
+        }
+    }
+}

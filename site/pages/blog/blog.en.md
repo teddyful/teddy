@@ -1,0 +1,4 @@
+---
+name: Blog
+enabled: true
+---

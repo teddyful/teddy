@@ -1,0 +1,53 @@
+<!-- Footer -->
+<footer class="section-sm pb-0 border-top border-default">
+    <div class="container">
+        <div class="row justify-content-between">
+          
+            <!-- Logo and Description -->
+            <div class="col-md-3 mb-4">
+                <a class="mb-4 d-block" href="${pages.urls.home}">
+                    <img class="img-fluid" width="150px" src="{{{ urls.assets }}}/images/logo/logo.png" alt="{{ metadata.title }}">
+                </a>
+                <p>{{ metadata.description }}</p>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="col-lg-2 col-md-3 mb-4">
+                <h5 class="mb-4">{{ menus.footer.quickLinks.title }}</h5>
+                <ul class="list-unstyled footer-list">
+                    {{ #menus.footer.quickLinks.links }}
+                        <li><a href="{{{ url }}}">{{ name }}</a></li>
+                    {{ /menus.footer.quickLinks.links }}
+                </ul>
+            </div>
+
+            <!-- Social Links -->
+            <div class="col-lg-2 col-md-3 mb-4">
+                <h5 class="mb-4">{{ menus.footer.socialLinks.title }}</h5>
+                <ul class="list-unstyled footer-list">
+                    {{ #menus.footer.socialLinks.links }}
+                        <li><a href="{{{ url }}}">{{ name }}</a></li>
+                    {{ /menus.footer.socialLinks.links }}
+                </ul>
+            </div>
+
+            <!-- Languages -->
+            <div class="col-md-3 mb-4">
+                <h5 class="mb-4">{{ content.labels.languages }}</h5>
+                <ul class="list-unstyled footer-list">
+                    {{ #menus.languages }}
+                        <li><a href="{{{ url }}}">{{ name }}</a></li>
+                    {{ /menus.languages }}
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Copyright -->
+        <div class="scroll-top"></div>
+        <div class="text-center">
+            <p class="content">&copy;&nbsp;<script>document.write(new Date().getFullYear());</script>&nbsp;{{{ menus.footer.copyright }}}</p>
+        </div>
+        
+    </div>
+</footer>

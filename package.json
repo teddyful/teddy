@@ -1,0 +1,31 @@
+{
+    "name": "teddy",
+    "version": "0.0.1",
+    "description": "Simple and opinionated open-source content management system (CMS) and static site generator (SSG).",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1", 
+        "gulp": "gulp"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/teddyful/teddy.git"
+    },
+    "author": "Jillur Quddus",
+    "license": "GPL-3.0",
+    "bugs": {
+        "url": "https://github.com/teddyful/teddy/issues"
+    },
+    "homepage": "https://github.com/teddyful/teddy#readme",
+    "devDependencies": {
+        "ajv": "8.17.1", 
+        "del": "8.0.0", 
+        "flexsearch": "0.7.43", 
+        "gulp": "4.0.2", 
+        "gulp-mustache": "5.0.0",
+        "minify": "12.0.1", 
+        "showdown": "2.1.0", 
+        "try-to-catch": "3.0.1"
+    }
+}

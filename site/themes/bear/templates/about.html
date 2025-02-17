@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="${page.metadata.language}">
+
+    <head>
+            
+        <!-- Metadata -->
+        {{> partials/head/head-metadata.html }}
+
+        <!-- Favicon -->
+        {{> partials/head/head-favicon.html }}
+
+        <!-- Fonts -->
+        {{> partials/head/head-fonts.html }}
+
+        <!-- CSS -->
+        {{> partials/head/head-css.html }}
+
+    </head>
+
+    <body>
+
+        <!-- Menu -->
+        {{> partials/body/body-menu.html }}
+
+        <!-- Page Content -->
+        <section class="pt-5 pb-5">
+            <div class="container">
+                <div class="row">
+                    
+                    <!-- Name and Social Links -->
+                    <div class="col-12">
+                        <div class="title-bordered mb-5 d-flex align-items-center">
+                            <h4>Teddy</h4>
+                            <ul class="list-inline social-icons ms-auto me-3 d-none d-sm-block">
+                                <li class="list-inline-item">
+                                    <a href="{{{ urls.external.facebook }}}" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                                </li>
+                                <li class="list-inline-item">
+                                    <a href="{{{ urls.external.twitter }}}" target="_blank"><i class="fab fa-twitter"></i></a>
+                                </li>
+                                <li class="list-inline-item">
+                                    <a href="{{{ urls.external.instagram }}}" target="_blank"><i class="fab fa-instagram"></i></a>
+                                </li>
+                                <li class="list-inline-item">
+                                    <a href="{{{ urls.external.github }}}" target="_blank"><i class="fab fa-github-alt"></i></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Profile Image -->
+                    <div class="col-lg-3 col-md-4 mb-4 mb-md-0 text-md-left">
+                        <img loading="lazy" class="rounded-lg img-fluid" src="{{{ urls.assets }}}/images/contributors/author.jpg" alt="Teddy">
+                    </div>
+
+                    <!-- Page Content -->
+                    <div class="col-lg-9 col-md-8 content text-md-left">
+                        ${page.content}
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        {{> partials/body/body-footer.html }}
+
+        <!-- Javascript -->
+        {{> partials/body/body-js.html }}
+
+    </body>
+
+</html>

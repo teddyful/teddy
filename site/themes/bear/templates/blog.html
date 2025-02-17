@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="${page.metadata.language}">
+
+    <head>
+            
+        <!-- Metadata -->
+        {{> partials/head/head-metadata.html }}
+
+        <!-- Favicon -->
+        {{> partials/head/head-favicon.html }}
+
+        <!-- Fonts -->
+        {{> partials/head/head-fonts.html }}
+
+        <!-- CSS -->
+        {{> partials/head/head-css.html }}
+
+    </head>
+
+    <body id="collection">
+
+        <!-- Menu -->
+        {{> partials/body/body-menu.html }}
+
+        <!-- Blog -->
+        <section class="pt-5 pb-5">
+            <div class="container">
+                <div class="row">
+
+                    <!-- Blog Listing -->
+                    <div class="col-lg-9 mb-5 mb-lg-0">
+                        <div id="blog-listing-notification">
+                            <p>{{ content.labels.notification }}</p>
+                        </div>
+                        <div id="blog-listing">
+                            {{ #collection.metadata.pages.head }}
+                                <article class="blog-post row mb-5">
+                                    <div class="col-12">
+                                        <div class="post-slider">
+                                            <img loading="lazy" src="${pages.urls.blog}/{{{ relUrl }}}/{{{ cover }}}" class="img-fluid blog-post-img" alt="{{ name }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-12 mx-auto">
+                                        <h3><a class="post-title blog-post-title" href="${pages.urls.blog}/{{{ relUrl }}}">{{ name }}</a></h3>
+                                        <ul class="list-inline post-meta mb-4">
+                                            <li class="list-inline-item"><i class="fas fa-user me-2"></i><a href="{{{ authorUrl }}}" class="blog-post-author">{{ author }}</a></li>
+                                            <li class="list-inline-item"><i class="fas fa-calendar me-2"></i><span class="blog-post-date">{{ displayDate }}</span></li>
+                                            <li class="list-inline-item"><i class="fas fa-earth-americas me-2"></i><span class="blog-post-categories">{{ #categoryLanguages }}{{ name }}&nbsp;{{ /categoryLanguages }}</span></li>
+                                        </ul>
+                                        <p class="blog-post-description">{{ description }}</p>
+                                        <a href="${pages.urls.blog}/{{{ relUrl }}}" class="btn btn-outline-primary blog-post-read-more">{{ content.labels.continueReading }}</a>
+                                    </div>
+                                </article>
+                            {{ /collection.metadata.pages.head }}
+                        </div>
+                        <div id="blog-listing-load-more" class="text-center">
+                            <button id="blog-load-more" type="button" class="btn btn-primary">{{ content.labels.loadMore }}</button>
+                        </div>
+                    </div>
+
+                    <!-- Blog Filters -->
+                    <aside id="blog-filters" class="col-lg-3">
+
+                        <!-- Search -->
+                        <div class="widget">
+                            <h5 class="widget-title"><span>{{ content.labels.search }}</span></h5>
+                            <form id="blog-search-form" class="widget-search">
+                                <input id="blog-search-query" name="blog-search-query" type="search" placeholder="{{ content.labels.searchPlaceholder }}">
+                                <button id="blog-search-submit-button" type="submit"><i class="fas fa-magnifying-glass"></i></button>
+                            </form>
+                        </div>
+
+                         <!-- Categories -->
+                        <div class="widget">
+                            <h5 class="widget-title"><span>{{ content.labels.categories }}</span></h5>
+                            <ul class="list-unstyled widget-list">
+                                {{ #collection.metadata.categories }}
+                                    <li><a href="#" class="d-flex blog-category" data-category-id="{{ id }}">{{ name }}<small class="ms-auto">({{ count }})</small></a></li>
+                                {{ /collection.metadata.categories }}
+                            </ul>
+                            <button id="blog-filters-reset" type="button" class="btn btn-primary btn-sm">{{ content.labels.reset }}</button>
+                        </div>
+
+                        <!-- Recent Articles -->
+                        <div class="widget">
+                            <h5 class="widget-title"><span>{{ content.labels.recent }}</span></h5>
+                            {{ #collection.metadata.pages.head }}
+                                <ul class="list-unstyled widget-list">
+                                    <li class="media widget-post align-items-center">
+                                        <div class="media-img me-2">
+                                            <a href="${pages.urls.blog}/{{{ relUrl }}}">
+                                                <img loading="lazy" src="${pages.urls.blog}/{{{ relUrl }}}/{{{ cover }}}" alt="{{ name }}">
+                                            </a>
+                                        </div>
+                                        <div class="media-body">
+                                            <h5 class="h6 mb-0 media-body-name"><a href="${pages.urls.blog}/{{{ relUrl }}}">{{ name }}</a></h5>
+                                            <small>{{ displayDate }}</small>
+                                        </div>
+                                    </li>
+                                </ul>
+                            {{ /collection.metadata.pages.head }}
+                        </div>
+
+                    </aside>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        {{> partials/body/body-footer.html }}
+
+        <!-- Javascript -->
+        {{> partials/body/body-js.html }}
+
+        <!-- Theme-specific JavaScript -->
+        {{ #theme.assets.minify.js }}
+            <script src="{{{ urls.assets }}}/js/blog.min.js"></script>
+        {{ /theme.assets.minify.js }}
+        {{ ^theme.assets.minify.js }}
+            <script src="{{{ urls.assets }}}/js/blog.js"></script>
+        {{ /theme.assets.minify.js }}
+
+    </body>
+
+</html>

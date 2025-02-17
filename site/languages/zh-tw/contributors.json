@@ -1,0 +1,9 @@
+{
+    "contributors": {
+        "default": "teddy", 
+        "teddy": {
+            "name": "Teddy", 
+            "url": "${pages.urls.about}"
+        }
+    }
+}

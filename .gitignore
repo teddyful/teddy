@@ -50,6 +50,7 @@ web_modules/
 
 # Optional npm cache directory
 .npm
+npm
 
 # Optional eslint cache
 .eslintcache
@@ -128,3 +129,7 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Teddy output directories
+build
+public

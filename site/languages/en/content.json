@@ -1,0 +1,15 @@
+{
+    "content": {
+        "labels": {
+            "categories": "Categories", 
+            "continueReading": "Continue Reading", 
+            "languages": "Languages", 
+            "loadMore": "Load More", 
+            "notification": "No results found. Please try again.", 
+            "recent": "Recent Articles", 
+            "reset": "Reset Filters", 
+            "search": "Search", 
+            "searchPlaceholder": "Type and hit enter..."
+        }
+    }
+}

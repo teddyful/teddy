@@ -1,0 +1,26 @@
+{
+    "system": {
+        "build": {
+            "siteDirs": {
+                "languages": "./site/languages", 
+                "pages": "./site/pages", 
+                "themes": "./site/themes", 
+                "web": "./site/web"
+            }, 
+            "siteDistDir": "./public"
+        }, 
+        "assets": {
+            "dir": "./system/assets", 
+            "js": {
+                "teddy": [ 
+                    "vendors/teddy/config.js", 
+                    "vendors/teddy/lang.js", 
+                    "vendors/teddy/search.js"
+                ], 
+                "vendors": [
+                    "vendors/flexsearch/0.7.43/flexsearch.bundle.min.js"
+                ]
+            }
+        }
+    }
+}

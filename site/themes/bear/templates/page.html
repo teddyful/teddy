@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="${page.metadata.language}">
+
+    <head>
+            
+        <!-- Metadata -->
+        {{> partials/head/head-metadata.html }}
+
+        <!-- Favicon -->
+        {{> partials/head/head-favicon.html }}
+
+        <!-- Fonts -->
+        {{> partials/head/head-fonts.html }}
+
+        <!-- CSS -->
+        {{> partials/head/head-css.html }}
+
+    </head>
+
+    <body>
+
+        <!-- Menu -->
+        {{> partials/body/body-menu.html }}
+
+        <!-- Page Content -->
+        <section class="pt-5 pb-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        ${page.content}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        {{> partials/body/body-footer.html }}
+
+        <!-- Javascript -->
+        {{> partials/body/body-js.html }}
+
+    </body>
+
+</html>

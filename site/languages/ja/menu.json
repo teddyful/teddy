@@ -1,0 +1,73 @@
+{
+    "menus": {
+        "main": [
+            {
+                "name": "ホーム", 
+                "url": "${pages.urls.home}"
+            }, 
+            {
+                "name": "情報", 
+                "url": "${pages.urls.about}"
+            }, 
+            {
+                "name": "ブログ", 
+                "url": "${pages.urls.blog}"
+            }
+        ], 
+        "footer": {
+            "quickLinks": {
+                "title": "リンク", 
+                "links": [
+                    {
+                        "name": "ホーム", 
+                        "url": "${pages.urls.home}"
+                    }, 
+                    {
+                        "name": "情報", 
+                        "url": "${pages.urls.about}"
+                    }, 
+                    {
+                        "name": "ブログ", 
+                        "url": "${pages.urls.blog}"
+                    }
+                ]
+            }, 
+            "socialLinks": {
+                "title": "ソーシャルメディア", 
+                "links": [
+                    {
+                        "name": "フェイスブック", 
+                        "url": "{{{ urls.external.facebook }}}"
+                    }, 
+                    {
+                        "name": "ギットハブ", 
+                        "url": "{{{ urls.external.github }}}"
+                    }, 
+                    {
+                        "name": "インスタグラム", 
+                        "url": "{{{ urls.external.instagram }}}"
+                    }, 
+                    {
+                        "name": "ツイッター", 
+                        "url": "{{{ urls.external.twitter }}}"
+                    }
+                ]
+            }, 
+            "copyright": "無料テーマ <a href=\"{{{ urls.external.themefisher }}}\" target=\"_blank\">Themefisher</a>"
+        }, 
+        "languages": [
+            {
+                "name": "English", 
+                "url": "/en"
+            }, 
+            {
+                "name": "Japanese 日本語", 
+                "url": "/ja"
+            }, 
+            {
+                "name": "Chinese 中文", 
+                "url": "/zh-tw"
+            }
+        ]
+    }
+}

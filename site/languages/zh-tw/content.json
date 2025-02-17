@@ -1,0 +1,15 @@
+{
+    "content": {
+        "labels": {
+            "categories": "類別", 
+            "continueReading": "繼續閱讀", 
+            "languages": "語言", 
+            "loadMore": "加載更多", 
+            "notification": "未找到結果。請重試。", 
+            "recent": "最近的文章", 
+            "reset": "重置過濾器", 
+            "search": "搜尋", 
+            "searchPlaceholder": "搜尋..."
+        }
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "theme": {
+        "name": "bear", 
+        "version": "0.0.1", 
+        "author": "Jillur Quddus", 
+        "repo": "https://github.com/teddyful/teddy-bear", 
+        "license": "https://github.com/teddyful/teddy-bear/blob/main/LICENSE", 
+        "assets": {
+            "custom": {
+                "css": [
+                    "style.css"
+                ], 
+                "images": {
+                    "favicon": {
+                        "deployToRoot": true, 
+                        "ico": "favicon/favicon.ico"
+                    }, 
+                    "og": {
+                        "default": "og/og-default.jpg", 
+                        "useCover": true
+                    }
+                }, 
+                "js": [
+                    "blog.js"
+                ]
+            }
+        }
+    }
+}

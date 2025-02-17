@@ -1,0 +1,54 @@
+<IfModule mod_rewrite.c>
+
+RewriteEngine On
+
+# Remove .html extension
+# If the file does not exist e.g. /app, then go to the file with the 
+# equivalent .html extension e.g. /app.html
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([^\.]+)$ $1.html [NC,L]
+
+## Begin - Exploits
+# If you experience problems on your site block out the operations listed below
+# This attempts to block the most common type of exploit attempts
+#
+# Block out any script trying to base64_encode data within the URL.
+RewriteCond %{QUERY_STRING} base64_encode[^(]*\([^)]*\) [OR]
+# Block out any script that includes a <script> tag in URL.
+RewriteCond %{QUERY_STRING} (<|%3C)([^s]*s)+cript.*(>|%3E) [NC,OR]
+# Block out any script trying to set a PHP GLOBALS variable via URL.
+RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+# Block out any script trying to modify a _REQUEST variable via URL.
+RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
+# Return 403 Forbidden header and show the content of the root homepage
+RewriteRule .* index.html [F]
+#
+## End - Exploits
+
+## Begin - Security
+# Block all direct access to .md files:
+RewriteRule \.md$ error [F]
+# Block all direct access to files and folders beginning with a dot
+RewriteRule (^|/)\.(?!well-known) - [F]
+# Block access to specific files in the root folder
+RewriteRule ^(LICENSE\.txt|\.htaccess)$ error [F]
+## End - Security
+
+</IfModule>
+
+# Begin - Prevent Browsing and Set Default Resources
+Options -Indexes
+DirectoryIndex index.html
+# End - Prevent Browsing and Set Default Resources
+
+# Block requests containing malicious scripts
+# Protect against clickjacking by blocking any frames requested 
+# from external locations
+<IfModule mod_headers.c>
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# Redirect errors
+ErrorDocument 404 https://mydomain.com

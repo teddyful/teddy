@@ -1,0 +1,12 @@
+{
+    "taxonomy": {
+        "categories": {
+            "africa": "アフリカ", 
+            "asia": "アジア", 
+            "australia": "オーストラリア", 
+            "europe": "ヨーロッパ", 
+            "north-america": "北アメリカ", 
+            "south-america": "南アメリカ"
+        }
+    }
+}

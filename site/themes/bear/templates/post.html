@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="${page.metadata.language}">
+
+    <head>
+            
+        <!-- Metadata -->
+        {{> partials/head/head-metadata.html }}
+
+        <!-- Favicon -->
+        {{> partials/head/head-favicon.html }}
+
+        <!-- Fonts -->
+        {{> partials/head/head-fonts.html }}
+
+        <!-- CSS -->
+        {{> partials/head/head-css.html }}
+
+    </head>
+
+    <body>
+
+        <!-- Menu -->
+        {{> partials/body/body-menu.html }}
+
+        <!-- Blog Post -->
+        <section class="pt-5 pb-5">
+            <div class="container">
+                <article class="row mb-4">
+
+                    <!-- Metadata -->
+                    <div class="col-lg-10 mx-auto mb-4">
+                        <h1 class="h2 mb-3 text-center">${page.metadata.name}</h1>
+                        <ul class="list-inline post-meta mb-3 text-center">
+                            <li class="list-inline-item"><i class="fas fa-user me-2"></i><a href="${page.metadata.author.url}">${page.metadata.author.name}</a></li>
+                            <li class="list-inline-item"><i class="fas fa-calendar me-2"></i>${page.metadata.date}</li>
+                            <li class="list-inline-item"><i class="fas fa-earth-americas me-2"></i>${page.metadata.categories}</li>
+                        </ul>
+                    </div>
+
+                    <!-- Cover Image -->
+                    <div class="col-12 mb-3">
+                        <div class="post-slider">
+                            <img src="${page.metadata.cover}" class="img-fluid" alt="${page.metadata.name}">
+                        </div>
+                    </div>
+
+                    <!-- Post Content -->
+                    <div class="col-lg-10 mx-auto">
+                        <div class="content">
+                            ${page.content}
+                        </div>
+                    </div>
+
+                </article>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        {{> partials/body/body-footer.html }}
+
+        <!-- Javascript -->
+        {{> partials/body/body-js.html }}
+
+    </body>
+
+</html>
