@@ -1,7 +1,7 @@
 {
     "name": "teddy",
     "version": "0.0.1",
-    "description": "Simple and opinionated open-source content management system (CMS) and static site generator (SSG).",
+    "description": "Opinionated open-source content management system (CMS) and static site generator (SSG) that focuses on simplicity and easy content management.",
     "private": true,
     "type": "module",
     "scripts": {
