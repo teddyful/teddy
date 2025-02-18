@@ -13,6 +13,7 @@ const DEFAULT_ENV = 'local';
 const FLAGS = new Map([
     ['customCssOnly', '--custom-css-only'], 
     ['customJsOnly', '--custom-js-only'], 
+    ['distUseBuildId', '--dist-use-build-id'], 
     ['ignoreAssets', '--ignore-assets'], 
     ['ignoreCollection', '--ignore-collection'], 
     ['ignoreCss', '--ignore-css'], 
@@ -24,7 +25,6 @@ const FLAGS = new Map([
     ['ignoreSitemap', '--ignore-sitemap'], 
     ['ignoreWebConfig', '--ignore-web-config'], 
     ['skipPostBuildCleanup', '--skip-post-build-cleanup'], 
-    ['staticDistDirs', '--static-dist-dirs'], 
     ['verbose', '--verbose']
 ]);
 

@@ -35,8 +35,8 @@ class ConfigBuilder {
         }
 
         // Build directory structure.
-        const distDirVersion = this.options.flags.staticDistDirs ? 
-            this.config.site.version : this.config.build.id;
+        const distDirVersion = this.options.flags.distUseBuildId ? 
+            this.config.build.id : this.config.site.version;
         const distDirBase = 
             `${this.config.system.build.siteDistDir}/${this.config.build.env}`;
         this.config.build.distDirs = {
