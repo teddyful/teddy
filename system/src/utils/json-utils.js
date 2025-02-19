@@ -5,6 +5,13 @@
  * @since  0.0.1
  */
 
+// Determine whether a given nested key exists in a given JSON object.
+function exists(json, key, ...rest) {
+    if (json === undefined) return false;
+    if (rest.length == 0 && json.hasOwnProperty(key)) return true;
+    return exists(json[key], ...rest);
+}
+
 // Get a value from a given JSON object given a list of nested & ordered keys.
 function getValue(json, nestedKeys) {
     let value = json;
@@ -28,4 +35,4 @@ function sort(arr, key, order) {
     }
 }
 
-export { getValue, sort };
+export { exists, getValue, sort };

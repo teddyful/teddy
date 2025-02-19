@@ -8,6 +8,8 @@
 class Options {
 
     constructor() {
+        this.siteName = null;
+        this.themeName = null;
         this.env = 'local';
         this.flags = {};
     }
@@ -18,6 +20,22 @@ class Options {
 
     setEnv(env) {
         this.env = env;
+    }
+
+    getSiteName() {
+        return this.siteName;
+    }
+
+    setSiteName(siteName) {
+        this.siteName = siteName;
+    }
+
+    getThemeName() {
+        return this.themeName;
+    }
+
+    setThemeName(themeName) {
+        this.themeName = themeName;
     }
 
     getFlags() {

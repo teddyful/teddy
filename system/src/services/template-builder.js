@@ -21,7 +21,7 @@ class TemplateBuilder {
                 
                 // Identify the path to the templates directory.
                 const templatesDirAbsPath = 
-                    this.config.system.build.siteDirs.themes + 
+                    this.config.system.themes + 
                         '/' + `${this.config.site.theme.name}/templates`;
 
                 // Identify the path to the language data for this language.

@@ -10,16 +10,6 @@
                 "css": [
                     "style.css"
                 ], 
-                "images": {
-                    "favicon": {
-                        "deployToRoot": true, 
-                        "ico": "favicon/favicon.ico"
-                    }, 
-                    "og": {
-                        "default": "og/og-default.jpg", 
-                        "useCover": true
-                    }
-                }, 
                 "js": [
                     "blog.js"
                 ]

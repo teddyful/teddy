@@ -1,14 +1,7 @@
 {
     "system": {
-        "build": {
-            "siteDirs": {
-                "languages": "./site/languages", 
-                "pages": "./site/pages", 
-                "themes": "./site/themes", 
-                "web": "./site/web"
-            }, 
-            "siteDistDir": "./public"
-        }, 
+        "sites": "./sites", 
+        "themes": "./themes", 
         "assets": {
             "dir": "./system/assets", 
             "js": {

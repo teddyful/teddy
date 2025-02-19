@@ -12,7 +12,6 @@ const themeConfigSchema = {
         theme: {
             type: 'object', 
             required: [
-                'assets', 
                 'author', 
                 'name', 
                 'version'
@@ -20,11 +19,9 @@ const themeConfigSchema = {
             properties: {
                 assets: {
                     type: 'object', 
-                    required: ['custom'], 
                     properties: {
                         custom: {
                             type: 'object', 
-                            required: ['css', 'images', 'js'], 
                             properties: {
                                 css: { type: 'array' }, 
                                 images: { 

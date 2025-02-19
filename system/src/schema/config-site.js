@@ -16,7 +16,7 @@ const siteConfigSchema = {
                 'collection', 
                 'html', 
                 'languages', 
-                'theme', 
+                'name', 
                 'version', 
                 'web'
             ], 
@@ -25,6 +25,32 @@ const siteConfigSchema = {
                     type: 'object', 
                     required: ['minify'], 
                     properties: {
+                        custom: {
+                            type: 'object', 
+                            properties: {
+                                css: { type: 'array' }, 
+                                images: { 
+                                    type: 'object', 
+                                    properties: {
+                                        favicon: {
+                                            type: 'object', 
+                                            properties: {
+                                                deployToRoot: { type: 'boolean' }, 
+                                                ico: { type: 'string' }
+                                            }
+                                        }, 
+                                        og: {
+                                            type: 'object', 
+                                            properties: {
+                                                default: { type: 'string' }, 
+                                                userCover: { type: 'boolean' }
+                                            }
+                                        }
+                                    } 
+                                }, 
+                                js: { type: 'array' }
+                            }
+                        }, 
                         minify: {
                             type: 'object', 
                             required: ['css', 'html', 'js'], 
@@ -148,13 +174,7 @@ const siteConfigSchema = {
                         enabled: { type: 'array' }
                     }
                 }, 
-                theme: {
-                    type: 'object', 
-                    required: ['name'], 
-                    properties: {
-                        name: { type: 'string' }
-                    }
-                }, 
+                name: { type: 'string' }, 
                 version: { type: 'string' }, 
                 web: {
                     type: 'object', 

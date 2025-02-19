@@ -16,6 +16,7 @@ import { minify } from 'minify';
 import { createDirectory, copyFile, getFiles, 
     hasFileExtension, hasFileExtensions, writeStringToFile } from 
         '../utils/io-utils.js';
+import { exists } from '../utils/json-utils.js';
 import { getVarPlaceholders, getNestedKeysFromVarPlaceholder } from 
     '../utils/regex-utils.js';
 
@@ -225,7 +226,11 @@ class PageBuilder {
         let pageHero = '';
         if ( 'hero' in pageMetadata ) {
             pageHero = pageMetadata.hero;
-        } else if ( 'hero' in this.config.site.theme.assets.custom.images ) {
+        } else if ( exists(this.config, 'site', 'assets', 'custom', 'images', 
+            'hero', 'default') ) {
+            pageHero = this.config.site.assets.custom.images.hero.default;
+        } else if ( exists(this.config, 'site', 'theme', 'assets', 'custom', 
+            'images', 'hero', 'default') ) {
             pageHero = this.config.site.theme.assets.custom.images.hero.default;
         }
 
@@ -292,19 +297,34 @@ class PageBuilder {
         let siteImagesBaseUrl = this.config.site.web.baseUrl + 
             this.config.site.urls.assets + '/images/';
         let pageImageRelPath = '';
-        if ( 'og' in this.config.site.theme.assets.custom.images && 
-                'default' in this.config.site.theme.assets.custom.images.og ) {
-            pageImageRelPath = 
-                this.config.site.theme.assets.custom.images.og.default;
+        if ( exists(this.config, 'site', 'assets', 'custom', 'images', 'og') ) {
+            if ( 'default' in this.config.site.assets.custom.images.og ) {
+                pageImageRelPath = 
+                    this.config.site.assets.custom.images.og.default;
+            }
+            if ( 'cover' in pageMetadata && 
+                'useCover' in this.config.site.assets.custom.images.og && 
+                this.config.site.assets.custom.images.og.useCover ) {
+                siteImagesBaseUrl = pageUrl;
+                pageImageRelPath = pageMetadata.cover;
+            }
+        }
+        else if ( exists(this.config, 'site', 'theme', 'assets', 
+            'custom', 'images', 'og') ) {
+            if ('default' in this.config.site.theme.assets.custom.images.og ) {
+                pageImageRelPath = 
+                    this.config.site.theme.assets.custom.images.og.default;
+            }
+            if ( 'cover' in pageMetadata && 
+                'useCover' in this.config.site.theme.assets.custom.images.og && 
+                this.config.site.theme.assets.custom.images.og.useCover ) {
+                siteImagesBaseUrl = pageUrl;
+                pageImageRelPath = pageMetadata.cover;
+            }
         }
         if ( 'og' in pageMetadata ) {
-            pageImageRelPath = pageMetadata.og;
-        } else if ( 'cover' in pageMetadata && 
-            'og' in this.config.site.theme.assets.custom.images && 
-            'useCover' in this.config.site.theme.assets.custom.images.og && 
-            this.config.site.theme.assets.custom.images.og.useCover ) {
             siteImagesBaseUrl = pageUrl;
-            pageImageRelPath = pageMetadata.cover;
+            pageImageRelPath = pageMetadata.og;
         }
         const pageImage = siteImagesBaseUrl + pageImageRelPath;
 

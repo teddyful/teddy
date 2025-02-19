@@ -98,30 +98,6 @@ class BuildDeployer {
         }
     }
 
-    async deploySystemJsAssets() {
-        if ( !this.config.build.flags.ignoreAssets && 
-                !this.config.build.flags.ignoreJs && 
-                !this.config.build.flags.customJsOnly ) {
-            const assetsDirAbsPath = 
-                `${this.config.system.assets.dir}/js`;
-            const targetDirAbsPath = 
-                `${this.config.build.distDirs.assets}/js`;
-            await BuildDeployer.deployAssets(
-                assetsDirAbsPath, targetDirAbsPath);
-        }
-    }
-
-    static async deployAssets(assetsDirAbsPath, targetDirAbsPath) {
-        if ( pathExists(assetsDirAbsPath) ) {
-            createDirectory(targetDirAbsPath);
-            await new Promise((resolve, reject) => {
-                gulp.src([`${assetsDirAbsPath}/**`])
-                    .pipe(gulp.dest(targetDirAbsPath))
-                    .on('end', resolve);
-            });
-        }
-    }
-
 }
 
 export default BuildDeployer;

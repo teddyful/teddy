@@ -1,15 +1,32 @@
 {
     "site": {
+        "name": "travelbook", 
         "version": "0.0.1", 
-        "theme": {
-            "name": "bear"
-        }, 
         "languages": {
             "enabled": [
                 "en", 
                 "ja", 
                 "zh-tw"
             ]
+        }, 
+        "assets": {
+            "custom": {
+                "images": {
+                    "favicon": {
+                        "deployToRoot": true, 
+                        "ico": "favicon/favicon.ico"
+                    }, 
+                    "og": {
+                        "default": "og/og-default.jpg", 
+                        "useCover": true
+                    }
+                }
+            }, 
+            "minify": {
+                "css": false,
+                "html": false, 
+                "js": false
+            }
         }, 
         "collection": {
             "enabled": true, 
@@ -59,13 +76,6 @@
             }, 
             "search": {
                 "minQueryLength": 2
-            }
-        }, 
-        "assets": {
-            "minify": {
-                "css": false,
-                "html": false, 
-                "js": false
             }
         }, 
         "html": {

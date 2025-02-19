@@ -9,7 +9,6 @@ import gulp from 'gulp';
 import util from 'util';
 
 import systemConfig from './config/system.json' with { type: 'json' };
-import siteConfig from './config/site.json' with { type: 'json' };
 import AssetBuilder from './system/src/services/asset-builder.js';
 import BuildCleaner from './system/src/services/build-cleaner.js';
 import BuildDeployer from './system/src/services/build-deployer.js';
@@ -20,27 +19,30 @@ import ConfigBuilder from './system/src/services/config-builder.js';
 import OptionsBuilder from './system/src/services/options-builder.js';
 import PageBuilder from './system/src/services/page-builder.js';
 import TemplateBuilder from './system/src/services/template-builder.js';
-import ThemeBuilder from './system/src/services/theme-builder.js';
 
 /* -----------------------------------------------------------------------------
- * 1. CONFIGURATION VALIDATOR
- * ---------------------------------------------------------------------------*/
-
-// Configuration validator.
-const buildValidator = new BuildValidator(systemConfig, siteConfig);
-buildValidator.validate();
-
-/* -----------------------------------------------------------------------------
- * 2. CONFIGURATION BUILDER
+ * 1. OPTIONS BUILDER
  * ---------------------------------------------------------------------------*/
 
 // Options builder.
-const userOptions = process.argv.slice(2);
-let optionsBuilder = new OptionsBuilder(userOptions);
+const args = process.argv.slice(2);
+let optionsBuilder = new OptionsBuilder(args);
 const options = optionsBuilder.build();
 
+/* -----------------------------------------------------------------------------
+ * 2. CONFIGURATION VALIDATOR
+ * ---------------------------------------------------------------------------*/
+
+// Configuration validator.
+const buildValidator = new BuildValidator(systemConfig, options);
+buildValidator.validate();
+
+/* -----------------------------------------------------------------------------
+ * 3. CONFIGURATION BUILDER
+ * ---------------------------------------------------------------------------*/
+
 // Configuration builder.
-let configBuilder = new ConfigBuilder(systemConfig, siteConfig, options);
+let configBuilder = new ConfigBuilder(systemConfig, options);
 let config = configBuilder.build();
 
 // Collection builder.
@@ -57,7 +59,7 @@ if ( config.build.flags.verbose )
     );
 
 /* -----------------------------------------------------------------------------
- * 3. BUILD SERVICES
+ * 4. BUILD SERVICES
  * ---------------------------------------------------------------------------*/
 
 // Instantiate build services.
@@ -67,10 +69,9 @@ const buildDeployer = new BuildDeployer(config);
 const buildSetup = new BuildSetup(config);
 const pageBuilder = new PageBuilder(config);
 const templateBuilder = new TemplateBuilder(config);
-const themeBuilder = new ThemeBuilder(config);
 
 /* -----------------------------------------------------------------------------
- * 4. TASKS
+ * 5. TASKS
  * ---------------------------------------------------------------------------*/
 
 /* -----------------------------------------------------------------------------
@@ -185,19 +186,25 @@ gulp.task('build-pages', async function(done) {
 });
 
 /* -----------------------------------------------------------------------------
- * THEME ASSETS
+ * SITE ASSETS
  * ---------------------------------------------------------------------------*/
 
-// Build theme assets.
-gulp.task('build-theme-assets', async function(done) {
-    await themeBuilder.deployThemeCssAssets();
-    await themeBuilder.deployThemeJsAssets();
-    await themeBuilder.deployThemeImageAssets();
-    await themeBuilder.deployThemeFontAssets();
-    await themeBuilder.deployThemeFavicon();
-    await themeBuilder.buildCustomCssAssets();
-    await themeBuilder.buildCustomJsAssets();
-    await buildDeployer.deploySystemJsAssets();
+// Build site assets.
+gulp.task('build-site-assets', async function(done) {
+    await assetBuilder.deployCssAssets('theme');
+    await assetBuilder.deployCssAssets('site');
+    await assetBuilder.deployJsAssets('theme');
+    await assetBuilder.deployJsAssets('site');
+    await assetBuilder.deployImageAssets('theme');
+    await assetBuilder.deployImageAssets('site');
+    await assetBuilder.deployFontAssets('theme');
+    await assetBuilder.deployFontAssets('site');
+    await assetBuilder.deployFavicon('theme');
+    await assetBuilder.deployFavicon('site');
+    await assetBuilder.buildCustomCssAssets('theme');
+    await assetBuilder.buildCustomCssAssets('site');
+    await assetBuilder.buildCustomJsAssets('theme');
+    await assetBuilder.buildCustomJsAssets('site');
     done();
 });
 
@@ -207,8 +214,10 @@ gulp.task('build-theme-assets', async function(done) {
 
 // Build system assets.
 gulp.task('build-system-assets', async function(done) {
+    await assetBuilder.deploySystemJsAssets();
     const languageIndexKeys = collectionBuilder.getLanguageIndexKeys();
     assetBuilder.generateBuildConfigJs(languageIndexKeys);
+    done();
 });
 
 /* -----------------------------------------------------------------------------
@@ -222,7 +231,7 @@ gulp.task('build-clean-post', function(done) {
 });
 
 /* -----------------------------------------------------------------------------
- * 5. PIPELINES
+ * 6. PIPELINES
  * ---------------------------------------------------------------------------*/
 
 // Default pipeline.
@@ -238,7 +247,7 @@ gulp.task('default', gulp.series(
     'build-collection-index', 
     'build-templates', 
     'build-pages', 
-    'build-theme-assets', 
+    'build-site-assets', 
     'build-system-assets', 
     'build-clean-post'
 ));

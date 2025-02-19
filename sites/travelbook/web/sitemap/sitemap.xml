@@ -6,13 +6,13 @@
 
     <!-- Priority 1.0 -->
     <url>
-        <loc>https://mydomain.com</loc>
+        <loc>https://demo.teddyful.com</loc>
         <lastmod>2025-02-28T12:00:00+00:00</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
-        <loc>https://mydomain.com/blog</loc>
+        <loc>https://demo.teddyful.com/blog</loc>
         <lastmod>2025-02-28T12:00:00+00:00</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
@@ -20,7 +20,7 @@
 
     <!-- Priority 0.8 -->
     <url>
-        <loc>https://mydomain.com/about</loc>
+        <loc>https://demo.teddyful.com/about</loc>
         <lastmod>2025-02-28T12:00:00+00:00</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>

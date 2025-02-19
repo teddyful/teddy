@@ -51,4 +51,4 @@ DirectoryIndex index.html
 </IfModule>
 
 # Redirect errors
-ErrorDocument 404 https://mydomain.com
+ErrorDocument 404 https://demo.teddyful.com

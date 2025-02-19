@@ -12,16 +12,37 @@ import { loadJsonFile } from '../utils/io-utils.js';
 
 class ConfigBuilder {
 
-    constructor(systemConfig, siteConfig, options) {
+    constructor(systemConfig, options) {
         this.systemConfig = systemConfig;
-        this.siteConfig =siteConfig;
         this.options = options;
     }
 
     build() {
 
-        // Base configuration.
+        // Load the site configuration.
+        const siteDirPath = this.systemConfig.system.sites + 
+            '/' + this.options.getSiteName();
+        const siteConfigFilePath = siteDirPath + '/site.json';
+        this.siteConfig = loadJsonFile(siteConfigFilePath);
+
+        // Generate the base configuration.
         this.config = Object.assign({}, this.systemConfig, this.siteConfig);
+
+        // Update the system configuration with site directory structure.
+        this.config.system.build = {
+            siteDirs: {
+                assets: siteDirPath + '/assets', 
+                languages: siteDirPath + '/languages', 
+                pages: siteDirPath + '/pages', 
+                web: siteDirPath + '/web', 
+            }, 
+            siteDistDir: siteDirPath + '/public'
+        }
+
+        // Update the site configuration with the theme name.
+        this.config.site.theme = {
+            name: this.options.getThemeName()
+        }
 
         // Build metadata and user options.
         const buildDate = new Date().toISOString()
@@ -41,7 +62,8 @@ class ConfigBuilder {
             `${this.config.system.build.siteDistDir}/${this.config.build.env}`;
         this.config.build.distDirs = {
             base: distDirBase, 
-            build: `./build/${this.config.build.env}/${distDirVersion}`, 
+            build: siteDirPath + 
+                `/build/${this.config.build.env}/${distDirVersion}`, 
             assets:  `${distDirBase}/assets/${distDirVersion}`
         }
 
@@ -75,7 +97,7 @@ class ConfigBuilder {
 
         // Theme configuration.
         const themeConfigFileAbsPath = 
-            this.config.system.build.siteDirs.themes + '/' 
+            this.config.system.themes + '/' 
                 + `${this.config.site.theme.name}/theme.json`;
         const themeConfig = loadJsonFile(themeConfigFileAbsPath);
         this.config.site.theme = themeConfig.theme;

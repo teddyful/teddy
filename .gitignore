@@ -130,6 +130,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# Teddy output directories
-build
-public
+# Teddy site output directories
+sites/*/build
+sites/*/public

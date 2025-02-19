@@ -11,7 +11,7 @@ const systemConfigSchema = {
     properties: {
         system: {
             type: 'object', 
-            required: ['assets', 'build'], 
+            required: ['assets', 'sites', 'themes'], 
             properties: {
                 assets: {
                     type: 'object', 
@@ -28,23 +28,8 @@ const systemConfigSchema = {
                         }
                     }
                 }, 
-                build: {
-                    type: 'object', 
-                    required: ['siteDirs', 'siteDistDir'], 
-                    properties: {
-                        siteDirs: {
-                            type: 'object', 
-                            required: ['languages', 'pages', 'themes', 'web'], 
-                            properties: {
-                                languages: { type: 'string' }, 
-                                pages: { type: 'string' }, 
-                                themes: { type: 'string' }, 
-                                web: { type: 'string' }, 
-                            }
-                        }, 
-                        siteDistDir: { type: 'string' }
-                    }
-                }
+                sites: { type: 'string' }, 
+                themes: { type: 'string' }
             }
             
         }

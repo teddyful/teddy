@@ -13,20 +13,23 @@ import themeConfigSchema from '../schema/config-theme.js';
 
 import { getFiles, hasFileExtension, loadJsonFile, pathExists } from 
     '../utils/io-utils.js';
+import { exists } from '../utils/json-utils.js';
 import { getValue } from '../utils/json-utils.js';
 
 
 class BuildValidator {
 
-    constructor(systemConfig, siteConfig) {
+    constructor(systemConfig, options) {
         this.systemConfig = systemConfig;
-        this.siteConfig = siteConfig;
+        this.options = options;
+        this.siteConfigFileName = 'site.json';
         this.themeConfigFileName = 'theme.json';
         this.ajv = new Ajv();
     }
 
     validate() {
         this.#validateSystemConfig();
+        this.#validateOptions();
         this.#validateSiteConfig();
         this.#validateThemeConfig();
         this.#validatePages();
@@ -41,14 +44,8 @@ class BuildValidator {
                 JSON.stringify(this.ajv.errors, null, 4));
 
         // Validate that the specified system directories exist.
-        this.#validateResourceExists(this.systemConfig, 
-            ['system', 'build', 'siteDirs', 'languages']);
-        this.#validateResourceExists(this.systemConfig, 
-            ['system', 'build', 'siteDirs', 'pages']);
-        this.#validateResourceExists(this.systemConfig, 
-            ['system', 'build', 'siteDirs', 'themes']);
-        this.#validateResourceExists(this.systemConfig, 
-            ['system', 'build', 'siteDirs', 'web']);
+        this.#validateResourceExists(this.systemConfig, ['system', 'sites']);
+        this.#validateResourceExists(this.systemConfig, ['system', 'themes']);
         this.#validateResourceExists(this.systemConfig, 
             ['system', 'assets', 'dir']);
 
@@ -60,7 +57,41 @@ class BuildValidator {
 
     }
 
+    #validateOptions() {
+
+        // Validate that the specified site directory and config file exist.
+        this.siteDirPath = this.systemConfig.system.sites + 
+            '/' + this.options.getSiteName();
+        this.siteConfigFilePath = this.siteDirPath + 
+            '/' + this.siteConfigFileName;
+        this.#validateDirExists(this.siteDirPath);
+        this.#validateFileExists(this.siteDirPath, this.siteConfigFileName);
+
+        // Validate that the specified theme directory and config file exist.
+        this.themeDirPath = this.systemConfig.system.themes + 
+            '/' + this.options.getThemeName();
+        this.themeConfigFilePath = this.themeDirPath + 
+            '/' + this.themeConfigFileName;
+        this.#validateDirExists(this.themeDirPath);
+        this.#validateFileExists(this.themeDirPath, this.themeConfigFileName);
+
+    }
+
+
     #validateSiteConfig() {
+
+        // Load the site config.
+        this.siteConfig = loadJsonFile(this.siteConfigFilePath);
+
+        // Update the system config with site directory dependencies.
+        this.systemConfig.system.build = {
+            siteDirs: {
+                assets: this.siteDirPath + '/assets', 
+                languages: this.siteDirPath + '/languages', 
+                pages: this.siteDirPath + '/pages', 
+                web: this.siteDirPath + '/web', 
+            }
+        }
 
         // Validate the site configuration against its schema.
         if ( !this.ajv.validate(siteConfigSchema, this.siteConfig) )
@@ -68,9 +99,6 @@ class BuildValidator {
                 JSON.stringify(this.ajv.errors, null, 4));
 
         // Validate that the specified site directories exist.
-        this.#validateResourceExists(this.siteConfig, 
-            ['site', 'theme', 'name'], 
-            this.systemConfig.system.build.siteDirs.themes);
         this.#validateResourceExists(this.siteConfig, 
             ['site', 'languages', 'enabled'], 
             this.systemConfig.system.build.siteDirs.languages);
@@ -81,13 +109,6 @@ class BuildValidator {
         }
 
         // Validate that the specified site files exist.
-        this.themeConfigDirPath = 
-            this.systemConfig.system.build.siteDirs.themes + '/' + 
-                this.siteConfig.site.theme.name;
-        this.themeConfigPath = this.themeConfigDirPath + '/' + 
-            this.themeConfigFileName;
-        this.#validateFileExists(this.themeConfigDirPath, 
-            this.themeConfigFileName);
         for ( const language of this.siteConfig.site.languages.enabled ) {
             this.#validateFileExists(
                 this.systemConfig.system.build.siteDirs.languages + 
@@ -104,18 +125,46 @@ class BuildValidator {
             }
         }
 
+        // Validate that the specified asset files exist.
+        if ( exists(this.siteConfig, 'assets', 'custom') ) {
+            if ( 'css' in this.siteConfig.assets.custom ) {
+                this.#validateResourceExists(this.siteConfig, 
+                    ['assets', 'custom', 'css'], 
+                    this.siteDirPath + '/assets/css');
+            }
+            if ( 'js' in this.siteConfig.assets.custom ) {
+                this.#validateResourceExists(this.siteConfig, 
+                    ['assets', 'custom', 'js'], 
+                    this.siteDirPath + '/assets/js');
+            }
+            if ( 'images' in this.siteConfig.assets.custom ) {
+                if ( 'favicon' in this.siteConfig.assets.custom.images && 
+                    'ico' in this.siteConfig.assets.custom.images.favicon ) {
+                    this.#validateResourceExists(this.siteConfig, 
+                        ['assets', 'custom', 'images', 'favicon', 'ico'], 
+                        this.siteDirPath + '/assets/images');
+                }
+                if ( 'og' in this.siteConfig.assets.custom.images && 
+                    'default' in this.siteConfig.assets.custom.images.og ) {
+                    this.#validateResourceExists(this.siteConfig, 
+                        ['assets', 'custom', 'images', 'og', 'default'], 
+                        this.siteDirPath + '/assets/images');
+                }
+            }
+        }
+
     }
 
     #validateThemeConfig() {
 
         // Validate the theme configuration against its schema.
-        this.themeConfig = loadJsonFile(this.themeConfigPath);
+        this.themeConfig = loadJsonFile(this.themeConfigFilePath);
         if ( !this.ajv.validate(themeConfigSchema, this.themeConfig) )
             throw new Error('Theme configuration schema error: \n' + 
                 JSON.stringify(this.ajv.errors, null, 4));
 
         // Validate that the required directories exist.
-        this.themeTemplatesDirPath = this.themeConfigDirPath + '/templates'
+        this.themeTemplatesDirPath = this.themeDirPath + '/templates'
         this.#validateDirExists(this.themeTemplatesDirPath);
 
         // Validate that at least one theme template exists.
@@ -140,24 +189,32 @@ class BuildValidator {
             }
         }
 
-        // Validate that the specified files exist.
-        this.#validateResourceExists(this.themeConfig, 
-            ['theme', 'assets', 'custom', 'css'], 
-            this.themeConfigDirPath + '/assets/css');
-        this.#validateResourceExists(this.themeConfig, 
-            ['theme', 'assets', 'custom', 'js'], 
-            this.themeConfigDirPath + '/assets/js');
-        if ( 'favicon' in this.themeConfig.theme.assets.custom.images && 
-                'ico' in this.themeConfig.theme.assets.custom.images.favicon ) {
-            this.#validateResourceExists(this.themeConfig, 
-                ['theme', 'assets', 'custom', 'images', 'favicon', 'ico'], 
-                this.themeConfigDirPath + '/assets/images');
-        }
-        if ( 'og' in this.themeConfig.theme.assets.custom.images && 
-                'default' in this.themeConfig.theme.assets.custom.images.og ) {
-            this.#validateResourceExists(this.themeConfig, 
-                ['theme', 'assets', 'custom', 'images', 'og', 'default'], 
-                this.themeConfigDirPath + '/assets/images');
+        // Validate that the specified asset files exist.
+        if ( exists(this.themeConfig, 'theme', 'assets', 'custom') ) {
+            if ( 'css' in this.themeConfig.theme.assets.custom ) {
+                this.#validateResourceExists(this.themeConfig, 
+                    ['theme', 'assets', 'custom', 'css'], 
+                    this.themeDirPath + '/assets/css');
+            }
+            if ( 'js' in this.themeConfig.theme.assets.custom ) {
+                this.#validateResourceExists(this.themeConfig, 
+                    ['theme', 'assets', 'custom', 'js'], 
+                    this.themeDirPath + '/assets/js');
+            }
+            if ( 'images' in this.themeConfig.theme.assets.custom ) {
+                if ( 'favicon' in this.themeConfig.theme.assets.custom.images && 
+                    'ico' in this.themeConfig.theme.assets.custom.images.favicon ) {
+                    this.#validateResourceExists(this.themeConfig, 
+                        ['theme', 'assets', 'custom', 'images', 'favicon', 'ico'], 
+                        this.themeDirPath + '/assets/images');
+                }
+                if ( 'og' in this.themeConfig.theme.assets.custom.images && 
+                    'default' in this.themeConfig.theme.assets.custom.images.og ) {
+                    this.#validateResourceExists(this.themeConfig, 
+                        ['theme', 'assets', 'custom', 'images', 'og', 'default'], 
+                        this.themeDirPath + '/assets/images');
+                }
+            }
         }
 
     }
