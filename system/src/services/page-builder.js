@@ -105,7 +105,8 @@ class PageBuilder {
 
                         // Instantiate the Markdown to HTML converter.
                         let converter = new showdown.Converter({
-                            metadata: true
+                            metadata: true, 
+                            tables: true
                         });
 
                         // Parse the contents of the page markdown file.
