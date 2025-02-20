@@ -126,31 +126,38 @@ class BuildValidator {
         }
 
         // Validate that the specified asset files exist.
-        if ( exists(this.siteConfig, 'assets', 'custom') ) {
-            if ( 'css' in this.siteConfig.assets.custom ) {
+        if ( exists(this.siteConfig, 'site', 'assets', 'custom') ) {
+            if ( 'css' in this.siteConfig.site.assets.custom ) {
                 this.#validateResourceExists(this.siteConfig, 
-                    ['assets', 'custom', 'css'], 
+                    ['site', 'assets', 'custom', 'css'], 
                     this.siteDirPath + '/assets/css');
             }
-            if ( 'js' in this.siteConfig.assets.custom ) {
+            if ( 'js' in this.siteConfig.site.assets.custom ) {
                 this.#validateResourceExists(this.siteConfig, 
-                    ['assets', 'custom', 'js'], 
+                    ['site', 'assets', 'custom', 'js'], 
                     this.siteDirPath + '/assets/js');
             }
-            if ( 'images' in this.siteConfig.assets.custom ) {
-                if ( 'favicon' in this.siteConfig.assets.custom.images && 
-                    'ico' in this.siteConfig.assets.custom.images.favicon ) {
+            if ( 'images' in this.siteConfig.site.assets.custom ) {
+                if ( 'favicon' in this.siteConfig.site.assets.custom.images && 
+                    'ico' in this.siteConfig.site.assets.custom.images.favicon ) {
                     this.#validateResourceExists(this.siteConfig, 
-                        ['assets', 'custom', 'images', 'favicon', 'ico'], 
+                        ['site', 'assets', 'custom', 'images', 'favicon', 'ico'], 
                         this.siteDirPath + '/assets/images');
                 }
-                if ( 'og' in this.siteConfig.assets.custom.images && 
-                    'default' in this.siteConfig.assets.custom.images.og ) {
+                if ( 'og' in this.siteConfig.site.assets.custom.images && 
+                    'default' in this.siteConfig.site.assets.custom.images.og ) {
                     this.#validateResourceExists(this.siteConfig, 
-                        ['assets', 'custom', 'images', 'og', 'default'], 
+                        ['site', 'assets', 'custom', 'images', 'og', 'default'], 
                         this.siteDirPath + '/assets/images');
                 }
             }
+        }
+
+        // Validate that an object for this environment exists in site.web.
+        const env = this.options.getEnv();
+        if ( !(env in this.siteConfig.site.web) ) {
+            throw new Error('No web configuration exists for the environment ' + 
+                `'${env}' in the site configuration 'site.web' namespace.`);
         }
 
     }

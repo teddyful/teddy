@@ -85,13 +85,19 @@
             }
         }, 
         "web": {
-            "domain": "localhost:8080", 
-            "http": {
-                "secure": false
+            "local": {
+                "domain": "localhost:8080", 
+                "http": {
+                    "secure": false
+                }, 
+                "host": "simple-web-server"
             }, 
-            "host": {
-                "apache": false, 
-                "cloudflarePages": true
+            "production": {
+                "domain": "demo.teddyful.com", 
+                "http": {
+                    "secure": true
+                }, 
+                "host": "cloudflare-pages"
             }
         }, 
         "urls": {

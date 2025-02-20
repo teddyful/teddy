@@ -178,22 +178,20 @@ const siteConfigSchema = {
                 version: { type: 'string' }, 
                 web: {
                     type: 'object', 
-                    required: ['domain', 'http', 'host'], 
-                    properties: {
-                        domain: { type: 'string' }, 
-                        http: {
+                    patternProperties: {
+                        "^.*$": {
                             type: 'object', 
-                            required: ['secure'], 
+                            required: ['domain', 'http', 'host'], 
                             properties: {
-                                secure: { type: 'boolean' }
-                            }
-                        }, 
-                        host: {
-                            type: 'object', 
-                            required: ['apache', 'cloudflarePages'], 
-                            properties: {
-                                apache: { type: 'boolean' }, 
-                                cloudflarePages: { type: 'boolean' }
+                                domain: { type: 'string' }, 
+                                http: {
+                                    type: 'object', 
+                                    required: ['secure'], 
+                                    properties: {
+                                        secure: { type: 'boolean' }
+                                    }
+                                }, 
+                                host: { type: 'string' }
                             }
                         }
                     }

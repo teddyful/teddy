@@ -220,7 +220,7 @@ class AssetBuilder {
         const js = `const ASSETS_BASE_URL = '${this.config.site.urls.assets}';
 const COLLECTION_PAGINATION_SIZE = ${this.config.site.collection.pagination.size - 1};
 const DEFAULT_LANGUAGE = '${this.config.site.languages.enabled[0]}';
-const DOMAIN_NAME = '${this.config.site.web.domain}';
+const DOMAIN_NAME = '${this.config.site.web[this.config.build.env].domain}';
 const INDEX_DOCUMENT_STORE_CONFIG = ${JSON.stringify(
     this.config.site.collection.index.documentStore)};
 const LANGUAGE_INDEX_KEYS = ${JSON.stringify(languageIndexKeys)};

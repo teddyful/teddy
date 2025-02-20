@@ -7,7 +7,8 @@
 
 import gulp from 'gulp';
 import path from 'path';
-import { copyFile, createDirectory, pathExists, writeJsonToFile } from 
+import hosts from '../enums/hosts.js';
+import { copyFile, pathExists, writeJsonToFile } from 
     '../utils/io-utils.js';
 
 
@@ -47,31 +48,20 @@ class BuildDeployer {
     }
 
     deployWebConfig() {
-
         if ( !this.config.build.flags.ignoreWebConfig) {
-            let filepath = null;
-
-            // Apache web server.
-            if ( this.config.site.web.host.apache ) {
-                filepath = this.config.system.build.siteDirs.web + 
-                    '/hosts/apache/.htaccess';
+            const env = this.config.build.env;
+            const webConfigBaseDirPath = 
+                this.config.system.build.siteDirs.web + '/hosts/';
+            const webHost = this.config.site.web[env].host;
+            if ( webHost in hosts ) {
+                const filepath = webConfigBaseDirPath + hosts[webHost];
+                if ( filepath && pathExists(filepath) ) {
+                    const filename = path.basename(filepath);
+                    copyFile(filepath, 
+                        `${this.config.build.distDirs.base}/${filename}`);
+                }
             }
-
-            // Cloudflare pages.
-            else if ( this.config.site.web.host.cloudflarePages ) {
-                filepath = this.config.system.build.siteDirs.web + 
-                    '/hosts/cloudflare/pages/_headers';
-            }
-
-            // Copy the web configuration to the base distribution directory.
-            if ( filepath && pathExists(filepath) ) {
-                const filename = path.basename(filepath);
-                copyFile(filepath, 
-                    `${this.config.build.distDirs.base}/${filename}`);
-            }
-
         }
-
     }
 
     deployRobots() {

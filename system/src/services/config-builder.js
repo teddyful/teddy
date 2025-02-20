@@ -91,8 +91,10 @@ class ConfigBuilder {
         this.config.site.urls.assets = `/assets/${distDirVersion}`;
 
         // Site configuration.
-        const http = this.config.site.web.http.secure ? 'https': 'http';
-        const baseUrl = `${http}://${this.config.site.web.domain}`;
+        const http = this.config.site.web[this.options.getEnv()].http.secure ? 
+            'https': 'http';
+        const baseUrl = `${http}://` + 
+            `${this.config.site.web[this.options.getEnv()].domain}`;
         this.config.site.web.baseUrl = baseUrl;
 
         // Theme configuration.
