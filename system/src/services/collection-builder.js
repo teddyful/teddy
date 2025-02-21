@@ -40,6 +40,9 @@ class CollectionBuilder {
                 '/' + this.config.site.collection.pagesDirName;
             const collectionPagesFilePaths = getFiles(collectionDirPath);
 
+            // Initialise an object to store language-specific collection sizes.
+            this.config.site.collection.sizes = {};
+
             // Iterate across all languages.
             for ( const language of this.config.site.languages.enabled ) {
 
@@ -155,6 +158,7 @@ class CollectionBuilder {
                 }
 
                 // Generate the collection metadata for the current language.
+                this.config.site.collection.sizes[language] = pages.length;
                 this.config.site.languages.data[language].collection = {
                     metadata: {
                         size: pages.length, 

@@ -30,7 +30,6 @@ const elements = {
 
 // Initialise the search service.
 const search = new Search();
-let isDocumentStoreQuery = false;
 let searchQuery = null;
 let categoryFilter = null;
 let hits = {};
@@ -68,28 +67,24 @@ async function doSearch() {
 
     // No search query and no category filter.
     if ( searchQuery == null && categoryFilter == null ) {
-        isDocumentStoreQuery = true;
         hits = await search.getDocuments(collectionDisplaySize, 
             COLLECTION_PAGINATION_SIZE);
     }
 
     // Search query with no category filter.
     else if ( searchQuery !== null && categoryFilter == null ) {
-        isDocumentStoreQuery = false;
         hits = await search.query(searchQuery, 
             collectionDisplaySize, COLLECTION_PAGINATION_SIZE);
     }
 
     // Search query with category filter.
     else if ( searchQuery !== null && categoryFilter !== null ) {
-        isDocumentStoreQuery = false;
         hits = await search.queryAndFilterByTags(searchQuery, categoryFilter, 
             collectionDisplaySize, COLLECTION_PAGINATION_SIZE);
     }
 
     // Category filter with no search query.
     else if ( searchQuery == null && categoryFilter !== null ) {
-        isDocumentStoreQuery = false;
         hits = await search.getDocumentsByTags(categoryFilter, 
             collectionDisplaySize, COLLECTION_PAGINATION_SIZE);
     }
@@ -98,27 +93,14 @@ async function doSearch() {
 
 // Render search results.
 function renderSearchResults() {
+
     if ( hits.length > 0 ) {
 
         // Hide the zero results notification.
         elements.blog.notification.style.display = 'none';
 
-        // Deduplicate the hits for non document store queries.
-        let documents = hits;
-        if ( !isDocumentStoreQuery ) {
-            let docs = new Map();
-            for ( const hit of hits ) {
-                for ( result of hit.result ) {
-                    if ( !docs.has(result.doc.id) ) {
-                        docs.set(result.doc.id, result.doc);
-                    }
-                }
-            }
-            documents = [...docs.values()];
-        }
-
         // Iterate over the hits.
-        for ( const doc of documents ) {
+        for ( const doc of hits ) {
 
             // Generate the blog post element and append it to the blog listing.
             let post = elements.blog.firstPost.cloneNode(true);

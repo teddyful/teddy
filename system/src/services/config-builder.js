@@ -98,7 +98,9 @@ class ConfigBuilder {
         this.config.site.web.baseUrl = baseUrl;
 
         // Collection configuration.
-        if ( this.config.site.collection.index.content ) {
+        if ( this.config.site.collection.index.content && 
+            !this.config.site.collection.index.documentStore.document.index
+                .includes('content') ) {
             this.config.site.collection.index.documentStore.document.index
                 .push('content');
         }
