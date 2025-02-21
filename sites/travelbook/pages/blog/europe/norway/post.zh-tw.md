@@ -3,7 +3,7 @@ name: 維京船
 enabled: true
 description: 挪威王国，位于斯堪的纳维亚半岛的西部，东与瑞典接壤，西邻大西洋。海岸线极其蜿蜒曲折，构成了挪威特有的峡湾景色。此外，挪威还与芬兰和俄罗斯接壤。挪威的领土也包括斯瓦尔巴群岛和扬马延岛，此外对南极洲的毛德皇后地和彼得一世岛有主权要求。首都為奥斯陆。2009年至2011年、2013至2018年获得全球人类发展指数第一的排名，挪威为高度发达国家，擁有極高的人均國民生產所得和生活水平。
 categories: europe
-keywords: scandinavia, fjord, viking, Sognefjord
+tags: scandinavia, fjord, viking, Sognefjord
 authorId: teddy
 date: 2024-12-01 12:00:00
 cover: assets/viking-ship.jpg

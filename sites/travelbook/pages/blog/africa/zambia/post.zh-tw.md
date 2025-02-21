@@ -3,7 +3,7 @@ name: 莫西奧圖尼亞
 enabled: true
 description: 赞比亚共和国，是非洲東南部的一個內陸國家。与刚果民主共和国、坦桑尼亚、马拉维、莫桑比克、津巴布韦、博茨瓦纳、纳米比亚和安哥拉相邻。首都是卢萨卡。
 categories: africa
-keywords: Zambezi, Victoria, Mosi-oa-Tunya, Batoka
+tags: Zambezi, Victoria, Mosi-oa-Tunya, Batoka
 authorId: teddy
 date: 2025-03-02 12:00:00
 cover: assets/victoria-falls.jpg

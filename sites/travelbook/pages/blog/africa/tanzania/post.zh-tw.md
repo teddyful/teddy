@@ -3,7 +3,7 @@ name: 塞倫蓋蒂
 enabled: true
 description: 坦桑尼亚联合共和国，通稱坦尚尼亞（斯瓦希里語和英語：Tanzania），是位于赤道以南的东非国家。坦桑尼亚本土地处维多利亚湖和印度洋之间，北邻烏干達和肯亞，西与剛果民主共和國、盧安達和蒲隆地交界，南与馬拉威和莫三比克毗连，西南与尚比亞接壤。1964年4月26日，坦干伊加与尚吉巴合併，成立坦尚尼亞聯合共和國，首都為多多馬。1996年以前的舊首都位於三蘭港，现今仍為该国主要商業城市以及大部分政府機關的所在地[3][4]。三蘭港也為坦桑尼亞的主要港口[5]。
 categories: africa
-keywords: serengeti, safari, Kilimanjaro, Zanzibar
+tags: serengeti, safari, Kilimanjaro, Zanzibar
 authorId: teddy
 date: 2025-03-04 12:00:00
 cover: assets/serengeti.jpg

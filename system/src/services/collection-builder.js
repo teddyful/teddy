@@ -6,8 +6,9 @@
  */
 
 import fs from 'fs';
-import showdown from 'showdown';
 import FlexSearch from 'flexsearch';
+import showdown from 'showdown';
+import { stripHtml } from "string-strip-html";
 
 import Collection from '../entities/collection.js';
 import Page from '../entities/page.js';
@@ -91,9 +92,18 @@ class CollectionBuilder {
                         'enabled' in pageMetadata && pageMetadata.enabled == 'true' ) {
 
                         // Create a new page object.
-                        const page = new Page(-1, 
+                        let page = new Page(-1, 
                             pageMdAbsFilePath, pageMdRelFilePath, 
                             pageMetadata, language, this.config);
+
+                        // Parse the page content if configured.
+                        if ( this.config.site.collection.index.content ) {
+                            page.setContent(stripHtml(pageHtml).result
+                                .replace(/[\r\n]+/g, ' ')
+                                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,' ')
+                                .replace(/\s\s+/g, ' ')
+                                .trim());
+                        }
 
                         // Add the page to the list of pages.
                         pages.push(page);
@@ -175,12 +185,14 @@ class CollectionBuilder {
         if ( this.config.site.collection.enabled && 
             !this.config.build.flags.ignoreCollection ) {
 
+            // Create a clone of the document store configuration.
+            let documentStoreConfig = structuredClone(
+                this.config.site.collection.index.documentStore);
+
             // Iterate across all languages.
             for ( const language of this.config.site.languages.enabled ) {
 
                 // Lookup the ISO 3166 country code.
-                let documentStoreConfig = 
-                    this.config.site.collection.index.documentStore;
                 documentStoreConfig.language = language in ISO_639_3166_LOOKUP ? 
                     ISO_639_3166_LOOKUP[language] : language;
                 

@@ -3,7 +3,7 @@ name: Kuala Lumpur
 enabled: true
 description: Malaysia is a Southeast Asian country occupying parts of the Malay Peninsula and the island of Borneo. It's known for its beaches, rainforests and mix of Malay, Chinese, Indian and European cultural influences. The capital, Kuala Lumpur, is home to colonial buildings, busy shopping districts such as Bukit Bintang and skyscrapers such as the iconic, 451m-tall Petronas Twin Towers.
 categories: asia
-keywords: petronas, malay, borneo
+tags: petronas, malay, borneo
 authorId: teddy
 date: 2025-02-02 12:00:00
 cover: assets/kuala-lumpur.jpg

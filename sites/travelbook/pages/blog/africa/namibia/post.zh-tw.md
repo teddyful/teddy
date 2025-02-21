@@ -3,7 +3,7 @@ name: 納米布沙漠
 enabled: true
 description: 納米比亞共和國，是位於南部非洲西面的共和國。它西部瀕臨大西洋，北部接壤贊比亞和安哥拉，東部連接博茨瓦纳，而在南部則與南非相鄰，雖然納米比亞與津巴布韋無領土接壤，但兩國在贊比西河河岸僅相隔200餘米相望。納米比亞海拔在1,000米至2,000米之間，乾旱少雨，屬於亞熱帶和半乾旱氣候。納米比亞分為13個行政區和50個地方政府，它的首都和最大城市是溫得和克。在納米比亞獨立戰爭之後，納米比亞於1990年3月21日從南非統治下獲得獨立。它也是聯合國、英聯邦、非洲聯盟和南共體的成員國。
 categories: africa
-keywords: cheetah, Windhoek, Swakopmund, salt
+tags: cheetah, Windhoek, Swakopmund, salt
 authorId: teddy
 date: 2025-03-03 12:00:00
 cover: assets/desert.jpg

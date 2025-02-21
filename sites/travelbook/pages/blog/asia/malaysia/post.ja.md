@@ -3,7 +3,7 @@ name: クアラルンプール
 enabled: true
 description: マレーシアは、東南アジアに位置し、マレー半島南部およびボルネオ島北部からなる連邦立憲君主制国家。首都はクアラルンプール。
 categories: asia
-keywords: petronas, malay, borneo
+tags: petronas, malay, borneo
 authorId: teddy
 date: 2025-02-02 12:00:00
 cover: assets/kuala-lumpur.jpg

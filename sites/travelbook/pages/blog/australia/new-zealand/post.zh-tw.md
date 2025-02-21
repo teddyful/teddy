@@ -3,7 +3,7 @@ name: 霍比屯
 enabled: true
 description: 紐西蘭，位於太平洋西南部的主權島國，是英聯邦王國紐西蘭王國的主體部分，首都为惠靈頓，最大的城市則为奥克兰。紐西蘭主要由兩大島嶼组成，即北岛和南岛，两岛以庫克海峽分隔，首都惠靈頓即位于北岛南端，首都轄境还包含了一些小岛。紐西蘭是世界第六大島嶼國家。
 categories: australia
-keywords: lotr, hobbits, wellington, auckland
+tags: lotr, hobbits, wellington, auckland
 authorId: teddy
 date: 2025-01-01 12:00:00
 cover: assets/hobbiton.jpg

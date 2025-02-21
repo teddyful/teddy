@@ -3,7 +3,7 @@ name: 暑いシンガポール
 enabled: true
 description: シンガポール共和国、通称シンガポールは、東南アジアに位置し、シンガポール島および60以上の小規模な島々からなる共和制国家。都市国家である。アジア四小龍のうちの一国。
 categories: asia
-keywords: strait, republic, island
+tags: strait, republic, island
 authorId: teddy
 date: 2025-02-01 12:00:00
 cover: assets/singapore.jpg

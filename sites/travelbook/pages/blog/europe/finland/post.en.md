@@ -3,7 +3,7 @@ name: Northern Lights
 enabled: true
 description: Finland is a Northern European nation bordering Sweden, Norway and Russia. Its capital, Helsinki, occupies a peninsula and surrounding islands in the Baltic Sea. Helsinki is home to the 18th-century sea fortress Suomenlinna, the fashionable Design District and diverse museums. The Northern Lights can be seen from the country's Arctic Lapland province, a vast wilderness with national parks and ski resorts.
 categories: europe
-keywords: helsinki, baltic, Suomenlinna, Lapland
+tags: helsinki, baltic, Suomenlinna, Lapland
 authorId: teddy
 date: 2024-12-02 12:00:00
 cover: assets/northern-lights.jpg

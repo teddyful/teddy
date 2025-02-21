@@ -3,7 +3,7 @@ name: 北極光
 enabled: true
 description: 芬兰共和国，是位於歐洲北部的國家，也是北歐五國之一。國土由芬蘭本土及17萬9千多座島嶼所組成，分為19個行政區含308個市镇，面積約33.8万平方公里。芬蘭含有湖泊约18.8万个，因此擁有「千湖之国」的美稱。芬蘭西北方連接瑞典，北臨挪威，東面與俄罗斯接壤。西面被波的尼亚湾环绕，西南面面臨波罗的海，南部为芬兰湾。
 categories: europe
-keywords: helsinki, baltic, Suomenlinna, Lapland
+tags: helsinki, baltic, Suomenlinna, Lapland
 authorId: teddy
 date: 2024-12-02 12:00:00
 cover: assets/northern-lights.jpg

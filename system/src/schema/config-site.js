@@ -68,8 +68,9 @@ const siteConfigSchema = {
                         enabled: { type: 'boolean' }, 
                         index: {
                             type: 'object', 
-                            required: ['documentStore'], 
+                            required: ['content', 'documentStore'], 
                             properties: {
+                                content: { type: 'boolean' }, 
                                 documentStore: {
                                     type: 'object', 
                                     required: ['document'], 

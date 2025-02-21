@@ -3,7 +3,7 @@ name: 聖地牙哥
 enabled: true
 description: 智利共和国，是位於南美洲的国家，智利西部与南部濒临太平洋，北靠秘鲁，东邻玻利维亚及阿根廷。為南美洲國家聯盟的成員國。除此之外，智利与厄瓜多尔相同，是两個不与巴西相接的南美洲国家之一。
 categories: south-america
-keywords: chile, pacific, Armas
+tags: chile, pacific, Armas
 authorId: teddy
 date: 2024-10-02 12:00:00
 cover: assets/santiago.jpg

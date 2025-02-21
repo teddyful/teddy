@@ -3,7 +3,7 @@ name: 薩凡納
 enabled: true
 description: 肯亞共和國），是位於東非，濒临印度洋，與索馬里、埃塞俄比亚、南蘇丹、烏干達、坦桑尼亚接壤，面积约58万平方公里。肯亞人口约5242.8萬，一共有42个民族，分成班图、尼罗和库施特三大语系，官方语言是英语和斯瓦希里语。全国分为47个县市，首都为奈洛比。
 categories: africa
-keywords: savannah, lakelands, lion, elephant
+tags: savannah, lakelands, lion, elephant
 authorId: teddy
 date: 2025-03-01 12:00:00
 cover: assets/savannah.jpg

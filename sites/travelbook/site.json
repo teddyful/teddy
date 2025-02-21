@@ -32,6 +32,7 @@
             "enabled": true, 
             "pagesDirName": "blog", 
             "index": {
+                "content": true,  
                 "documentStore": {
                     "document": {
                         "id": "id", 

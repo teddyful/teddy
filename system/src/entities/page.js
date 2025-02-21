@@ -37,6 +37,11 @@ class Page {
 
         // Tags.
         this.tags = categories;
+        if ( 'tags' in pageMetadata ) {
+            const tags = [...new Set(
+                pageMetadata.tags.split(',').map(item => item.trim()))];
+            this.tags = [...new Set(this.tags.concat(tags))];
+        }
 
         // File system stats.
         const stats = fs.statSync(pageAbsPath);
@@ -79,6 +84,10 @@ class Page {
 
     setId(pageId) {
         this.id = pageId;
+    }
+
+    setContent(content) {
+        this.content = content;
     }
 
 }

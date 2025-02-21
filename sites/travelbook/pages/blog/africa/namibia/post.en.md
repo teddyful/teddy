@@ -3,7 +3,7 @@ name: Namib Desert
 enabled: true
 description: Namibia, a country in southwest Africa, is distinguished by the Namib Desert along its Atlantic Ocean coast. The country is home to diverse wildlife, including a significant cheetah population. The capital, Windhoek, and coastal town Swakopmund contain German colonial-era buildings such as Windhoek's Christuskirche, built in 1907. In the north, Etosha National Park’s salt pan draws game including rhinos and giraffes.
 categories: africa
-keywords: cheetah, Windhoek, Swakopmund, salt
+tags: cheetah, Windhoek, Swakopmund, salt
 authorId: teddy
 date: 2025-03-03 12:00:00
 cover: assets/desert.jpg

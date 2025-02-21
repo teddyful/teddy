@@ -3,7 +3,7 @@ name: Machu Picchu
 enabled: true
 description: Peru is a country in South America that's home to a section of Amazon rainforest and Machu Picchu, an ancient Incan city high in the Andes mountains. The region around Machu Picchu, including the Sacred Valley, Inca Trail and colonial city of Cusco, is rich in archaeological sites. On Peru's arid Pacific coast is Lima, the capital, with a preserved colonial center and important collections of pre-Columbian art.
 categories: south-america
-keywords: rainforest, machu picchu, inca, lima
+tags: rainforest, machu picchu, inca, lima
 authorId: teddy
 date: 2024-10-01 12:00:00
 cover: assets/machu-picchu.jpg

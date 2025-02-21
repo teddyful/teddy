@@ -3,7 +3,7 @@ name: Uyuni Salt Flats
 enabled: true
 description: Bolivia is a country in central South America, with a varied terrain spanning Andes Mountains, the Atacama Desert and Amazon Basin rainforest. At more than 3,500m, its administrative capital, La Paz, sits on the Andes' Altiplano plateau with snow-capped Mt. Illimani in the background. Nearby is glass-smooth Lake Titicaca, the continent's largest lake, straddling the border with Peru.
 categories: south-america
-keywords: andes, Atacama, Altiplano, Illimani, Titicaca, Uyuni, salt
+tags: andes, Atacama, Altiplano, Illimani, Titicaca, Uyuni, salt
 authorId: teddy
 date: 2024-10-03 12:00:00
 cover: assets/uyuni-salt-flats.jpg

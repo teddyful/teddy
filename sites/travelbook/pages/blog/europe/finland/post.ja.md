@@ -3,7 +3,7 @@ name: オーロラ
 enabled: true
 description: フィンランド共和国、通称フィンランドは、北ヨーロッパに位置する共和制国家。首都はヘルシンキ。バルト海東岸に位置する国の一つであり、国境は、北はノルウェー、西はスウェーデン、東はロシアと接する。南はフィンランド湾を挟みエストニアと相対している。
 categories: europe
-keywords: helsinki, baltic, Suomenlinna, Lapland
+tags: helsinki, baltic, Suomenlinna, Lapland
 authorId: teddy
 date: 2024-12-02 12:00:00
 cover: assets/northern-lights.jpg

@@ -3,7 +3,7 @@ name: 尼加拉瀑布
 enabled: true
 description: 加拿大是一個位于北美洲北部的国家，属于西半球及北半球，其领土西临太平洋，东濒大西洋，北接北冰洋，有部分领土位于北极圈内。加拿大东北方与丹麦领地格陵兰相望，並以漢斯島為界接壤，北方與俄羅斯隔海相望，南方及西北方与美国本土及阿拉斯加州接壤，法国属地圣皮埃尔和密克隆位于其东部的岛屿之中。加拿大的领土面积达998万4670平方公里，为全球面积第二大国家，亦是发达国家之中的领土面积最大者，加拿大的海岸線是全世界最長。该国首都为渥太华，全國五大城市2016年都会区人口排序；多伦多、蒙特利尔、温哥华、卡尔加里、埃德蒙顿。十个省和三个地区组成加拿大聯邦。加拿大被《福布斯》列於2020年退休宜居國的名單中。
 categories: north-america
-keywords: maple, toronto, montreal, bears, niagara falls
+tags: maple, toronto, montreal, bears, niagara falls
 authorId: teddy
 date: 2024-11-01 12:00:00
 cover: assets/niagara-falls.jpg

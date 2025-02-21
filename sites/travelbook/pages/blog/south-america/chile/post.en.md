@@ -3,7 +3,7 @@ name: Snow-capped Santiago
 enabled: true
 description: Chile is a long, narrow country stretching along South America's western edge, with more than 6,000km of Pacific Ocean coastline. Santiago, its capital, sits in a valley surrounded by the Andes and Chilean Coast Range mountains. The city's palm-lined Plaza de Armas contains the neoclassical cathedral and the National History Museum. The massive Parque Metropolitano offers swimming pools, a botanical garden and zoo.
 categories: south-america
-keywords: chile, pacific, Armas
+tags: chile, pacific, Armas
 authorId: teddy
 date: 2024-10-02 12:00:00
 cover: assets/santiago.jpg

@@ -97,6 +97,12 @@ class ConfigBuilder {
             `${this.config.site.web[this.options.getEnv()].domain}`;
         this.config.site.web.baseUrl = baseUrl;
 
+        // Collection configuration.
+        if ( this.config.site.collection.index.content ) {
+            this.config.site.collection.index.documentStore.document.index
+                .push('content');
+        }
+
         // Theme configuration.
         const themeConfigFileAbsPath = 
             this.config.system.themes + '/' 

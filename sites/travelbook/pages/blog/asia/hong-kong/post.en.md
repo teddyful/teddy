@@ -3,7 +3,7 @@ name: Bustling Hong Kong
 enabled: true
 description: Hong Kong is a special administrative region of China. With 7.4 million residents of various nationalities in a 1,104-square-kilometre territory, Hong Kong is the fourth most densely populated region in the world.
 categories: asia
-keywords: china, sar
+tags: china, sar
 authorId: teddy
 date: 2025-02-03 12:00:00
 cover: assets/hk.jpg

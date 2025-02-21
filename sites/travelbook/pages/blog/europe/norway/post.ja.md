@@ -3,7 +3,7 @@ name: バイキング船
 enabled: true
 description: ノルウェー王国、通称ノルウェーは、北ヨーロッパのスカンディナヴィア半島西岸に位置する立憲君主制国家である。首都は半島南端部に存在するオスロ・フィヨルドの奥に形成された港湾都市のオスロ。東にスウェーデン、ロシア、フィンランドと国境を接している。欧州連合(EU)には非加盟である。
 categories: europe
-keywords: scandinavia, fjord, viking, Sognefjord
+tags: scandinavia, fjord, viking, Sognefjord
 authorId: teddy
 date: 2024-12-01 12:00:00
 cover: assets/viking-ship.jpg

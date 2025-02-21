@@ -3,7 +3,7 @@ name: ナミブ砂漠
 enabled: true
 description: ナミビア共和国、通称ナミビアは、アフリカ南西部に位置する共和制国家である。北にアンゴラ、北東にザンビア、東にボツワナ、南に南アフリカ共和国と国境を接し、西は大西洋に面する。なお、地図を一見すると接しているように見えるジンバブエとはザンビア、ボツワナを挟んで150メートルほど離れている。首都はウィントフック。イギリス連邦加盟国のひとつである。
 categories: africa
-keywords: cheetah, Windhoek, Swakopmund, salt
+tags: cheetah, Windhoek, Swakopmund, salt
 authorId: teddy
 date: 2025-03-03 12:00:00
 cover: assets/desert.jpg

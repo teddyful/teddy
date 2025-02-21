@@ -3,7 +3,7 @@ name: 京都寺廟
 enabled: true
 description: 日本國，通稱日本，是位於東亞的島嶼國家，由北海道、本州、四國、九州等14,125座島嶼組成，总面積約37.8万平方公里。國土全境被太平洋及鄂霍次克海、日本海、东海等陆缘海環抱，西鄰朝鮮半島以及俄羅斯遠東地區，東北接千島群島，西南面臺灣與中国大陆。人口達1.241億，居於世界各國第11位，當中逾3,500萬人居住於首都東京及周邊數縣構成的首都圈，為目前世界上最大的都市圈。政治上施行单一制及议会制君主立宪制，君主天皇為國家及國民團結的象徵，實際的政治權力則由國會以及內閣總理大臣所領導的內閣掌管。
 categories: asia
-keywords: sushi, samurai, hokkaido, kyushu, honshu, anime, kyoto, temple, fuji, onsen, kanji
+tags: sushi, samurai, hokkaido, kyushu, honshu, anime, kyoto, temple, fuji, onsen, kanji
 authorId: teddy
 date: 2025-02-04 12:00:00
 cover: assets/kyoto.jpg

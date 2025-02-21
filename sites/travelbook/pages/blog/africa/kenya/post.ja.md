@@ -3,7 +3,7 @@ name: サバンナ
 enabled: true
 description: ケニア共和国（ケニアきょうわこく）、通称ケニアは、東アフリカに位置する共和制国家で、イギリス連邦加盟国である。北にエチオピア、北西に南スーダン、西にウガンダ、南にタンザニア、東にソマリアと国境を接し、南東はインド洋に面する。
 categories: africa
-keywords: savannah, lakelands, lion, elephant
+tags: savannah, lakelands, lion, elephant
 authorId: teddy
 date: 2025-03-01 12:00:00
 cover: assets/savannah.jpg

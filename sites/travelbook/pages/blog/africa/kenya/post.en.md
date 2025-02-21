@@ -3,7 +3,7 @@ name: Savannah Grasslands
 enabled: true
 description: Kenya is a country in East Africa with coastline on the Indian Ocean. It encompasses savannah, lakelands, the dramatic Great Rift Valley and mountain highlands. It is also home to wildlife like lions, elephants and rhinos. From Nairobi, the capital, safaris visit the Maasai Mara Reserve, known for its annual wildebeest migrations, and Amboseli National Park, offering views of Tanzania's 5,895m Mt. Kilimanjaro.
 categories: africa
-keywords: savannah, lakelands, lion, elephant
+tags: savannah, lakelands, lion, elephant
 authorId: teddy
 date: 2025-03-01 12:00:00
 cover: assets/savannah.jpg

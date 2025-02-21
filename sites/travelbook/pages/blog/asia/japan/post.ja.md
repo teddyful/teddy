@@ -3,7 +3,7 @@ name: 京都の寺院
 enabled: true
 description: 日本（にほん、にっぽん）、憲法上は日本国（にほんこく、にっぽんこく）は[6]、東アジアに位置する国家である。面積は377,975.64 km2（平方キロメートル、人口は1億2388万7000人。
 categories: asia
-keywords: sushi, samurai, hokkaido, kyushu, honshu, anime, kyoto, temple, fuji, onsen, kanji
+tags: sushi, samurai, hokkaido, kyushu, honshu, anime, kyoto, temple, fuji, onsen, kanji
 authorId: teddy
 date: 2025-02-04 12:00:00
 cover: assets/kyoto.jpg

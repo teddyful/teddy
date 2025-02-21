@@ -3,7 +3,7 @@ name: 賑やかな香港
 enabled: true
 description: 香港は、中華人民共和国の南部にある特別行政区である。正式名称は香港特別行政区（ホンコンとくべつぎょうせいく）。
 categories: asia
-keywords: china, sar
+tags: china, sar
 authorId: teddy
 date: 2025-02-03 12:00:00
 cover: assets/hk.jpg

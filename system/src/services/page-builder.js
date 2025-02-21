@@ -24,7 +24,7 @@ import { getVarPlaceholders, getNestedKeysFromVarPlaceholder } from
 const PAGE_METADATA_NAMESPACE = 'page.metadata';
 const PAGE_METADATA_KNOWN_KEYS = [
     'article', 'authorId', 'categories', 'cover', 'date', 'description', 
-    'enabled', 'hero', 'image', 'keywords', 'language', 'name', 'title', 'type'
+    'enabled', 'hero', 'image', 'tags', 'language', 'name', 'title', 'type'
 ];
 
 
@@ -212,10 +212,10 @@ class PageBuilder {
                 pageMetadata.description : 
                 languageData.metadata.description;
 
-        // Parse the page keywords (optional in the markdown frontmatter).
+        // Parse the page tags (optional in the markdown frontmatter).
         const pageKeywords = 
-            'keywords' in pageMetadata ? 
-                pageMetadata.keywords + 
+            'tags' in pageMetadata ? 
+                pageMetadata.tags + 
                     `,${languageData.metadata.keywords}` : 
                 languageData.metadata.keywords;
 
@@ -361,6 +361,8 @@ class PageBuilder {
                 language)
             .replaceAll('${page.metadata.name}', 
                 pageName)
+            .replaceAll('${page.metadata.tags}', 
+                pageKeywords)
             .replaceAll('${page.metadata.title}', 
                 pageTitle)
             .replaceAll('${page.metadata.type}', 
@@ -421,8 +423,8 @@ class PageBuilder {
                 pageMetaOgArticle = pageMetaOgArticle + 
                     `<meta property="article:section" content="${pageCategories[0]}" />`;
             }
-            if ( 'keywords' in pageMetadata ) {
-                const keywords = pageMetadata.keywords.
+            if ( 'tags' in pageMetadata ) {
+                const keywords = pageMetadata.tags.
                     split(',').map(item => item.trim());
                 for ( const keyword of keywords ) {
                     pageMetaOgArticle = pageMetaOgArticle + 

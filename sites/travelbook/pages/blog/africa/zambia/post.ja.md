@@ -3,7 +3,7 @@ name: モシ・オア・トゥニャ
 enabled: true
 description: ザンビア共和国（ザンビアきょうわこく）、通称ザンビアは、アフリカ大陸南部に位置する共和制国家。首都はルサカ。かつてはイギリス領北ローデシアであった地域で、独立後もイギリス連邦加盟国であり、公用語は英語である。内陸国であり、コンゴ民主共和国、タンザニア、マラウイ、モザンビーク、ジンバブエ、ナミビア、アンゴラ、ボツワナの8カ国と隣接している[注釈]。国の人口は1,735万人（2018年：世界銀行）。世界平和度指数ランキング（2018年）では163か国中48位となり、アフリカで最も平和な国の一つとして評価されている。
 categories: africa
-keywords: Zambezi, Victoria, Mosi-oa-Tunya, Batoka
+tags: Zambezi, Victoria, Mosi-oa-Tunya, Batoka
 authorId: teddy
 date: 2025-03-02 12:00:00
 cover: assets/victoria-falls.jpg

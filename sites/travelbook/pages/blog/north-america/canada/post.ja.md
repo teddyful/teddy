@@ -3,7 +3,7 @@ name: ナイアガラの滝
 enabled: true
 description: カナダは、北アメリカ大陸北部に位置する連邦立憲君主制国家。イギリス連邦加盟国で、英連邦王国の一つである。10の州と3の準州からなり、首都はオタワ。
 categories: north-america
-keywords: maple, toronto, montreal, bears, niagara falls
+tags: maple, toronto, montreal, bears, niagara falls
 authorId: teddy
 date: 2024-11-01 12:00:00
 cover: assets/niagara-falls.jpg

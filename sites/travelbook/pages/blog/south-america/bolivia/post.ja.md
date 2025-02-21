@@ -3,7 +3,7 @@ name: ウユニ塩湖
 enabled: true
 description: ボリビア多民族国、通称ボリビアは、南アメリカ大陸西部にある立憲共和制国家。憲法上の首都はスクレだが、ラパスが実質的な首都機能を担っており、議会をはじめとした政府主要機関が所在する。ラパスは標高3600メートルで、世界で最も高所にある首都となっている。
 categories: south-america
-keywords: andes, Atacama, Altiplano, Illimani, Titicaca, Uyuni, salt
+tags: andes, Atacama, Altiplano, Illimani, Titicaca, Uyuni, salt
 authorId: teddy
 date: 2024-10-03 12:00:00
 cover: assets/uyuni-salt-flats.jpg

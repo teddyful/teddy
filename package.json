@@ -27,6 +27,7 @@
         "gulp-mustache": "5.0.0",
         "minify": "12.0.1", 
         "showdown": "2.1.0", 
+        "string-strip-html": "13.4.8", 
         "try-to-catch": "3.0.1"
     }
 }

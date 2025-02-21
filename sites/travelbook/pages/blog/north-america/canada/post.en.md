@@ -3,7 +3,7 @@ name: Niagara Falls
 enabled: true
 description: Canada is a country in North America. Its ten provinces and three territories extend from the Atlantic Ocean to the Pacific Ocean and northward into the Arctic Ocean, making it the world's second-largest country by total area, with the world's longest coastline.
 categories: north-america
-keywords: maple, toronto, montreal, bears, niagara falls
+tags: maple, toronto, montreal, bears, niagara falls
 authorId: teddy
 date: 2024-11-01 12:00:00
 cover: assets/niagara-falls.jpg

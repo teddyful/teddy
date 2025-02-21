@@ -3,7 +3,7 @@ name: マチュピチュ
 enabled: true
 description: ペルー共和国、通称ペルーは、南アメリカ西部に位置する共和制国家。首都はリマ。
 categories: south-america
-keywords: rainforest, machu picchu, inca, lima
+tags: rainforest, machu picchu, inca, lima
 authorId: teddy
 date: 2024-10-01 12:00:00
 cover: assets/machu-picchu.jpg

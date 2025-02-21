@@ -3,7 +3,7 @@ name: Mosi-oa-Tunya
 enabled: true
 description: Zambia, in southern Africa, is a landlocked country of rugged terrain and diverse wildlife, with many parks and safari areas. On its border with Zimbabwe is famed Victoria Falls – indigenously called Mosi-oa-Tunya, or 'Smoke That Thunders' – plunging a misty 108m into narrow Batoka Gorge. Spanning the Zambezi River just below the falls is Victoria Falls Bridge, a spectacular viewpoint.
 categories: africa
-keywords: Zambezi, Victoria, Mosi-oa-Tunya, Batoka
+tags: Zambezi, Victoria, Mosi-oa-Tunya, Batoka
 authorId: teddy
 date: 2025-03-02 12:00:00
 cover: assets/victoria-falls.jpg

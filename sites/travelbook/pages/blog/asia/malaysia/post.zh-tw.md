@@ -3,7 +3,7 @@ name: 吉隆坡
 enabled: true
 description: 馬來西亞，简称大馬或马國，是位於东南亚的多元种族國家。由前馬來亚联合邦、北婆羅洲（今沙巴）、砂拉越及新加坡於1963年9月16日所組成的联邦制、议会民主制、选举君主制和君主立宪制國家，後新加坡州在1965年8月9日被联邦除名，并独立建国。
 categories: asia
-keywords: petronas, malay, borneo
+tags: petronas, malay, borneo
 authorId: teddy
 date: 2025-02-02 12:00:00
 cover: assets/kuala-lumpur.jpg

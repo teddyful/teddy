@@ -3,7 +3,7 @@ name: セレンゲティ国立公園
 enabled: true
 description: タンザニア連合共和国（タンザニアれんごうきょうわこく）、通称タンザニアは、東アフリカにある共和制国家。イギリス連邦加盟国。ケニア、ウガンダ、ルワンダ、ブルンジ、ザンビア、マラウイ、モザンビークと国境を接し、タンガニーカ湖対岸にはコンゴ民主共和国があり、またインド洋に面する。
 categories: africa
-keywords: serengeti, safari, Kilimanjaro, Zanzibar
+tags: serengeti, safari, Kilimanjaro, Zanzibar
 authorId: teddy
 date: 2025-03-04 12:00:00
 cover: assets/serengeti.jpg

@@ -3,7 +3,7 @@ name: Sizzling Singapore
 enabled: true
 description: Singapore, officially the Republic of Singapore, is an island country and city-state in Southeast Asia. The country's territory comprises one main island, 63 satellite islands and islets, and one outlying islet.
 categories: asia
-keywords: strait, republic, island
+tags: strait, republic, island
 authorId: teddy
 date: 2025-02-01 12:00:00
 cover: assets/singapore.jpg

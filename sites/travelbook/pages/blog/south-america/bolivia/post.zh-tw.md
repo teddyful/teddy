@@ -3,7 +3,7 @@ name: 烏尤尼鹽沼
 enabled: true
 description: 玻利維亞多民族國，通稱玻利維亞，是位於南美洲中西部的內陸國家，與巴西、秘魯、智利、阿根廷、巴拉圭五國接壤，亦為南美洲國家聯盟的成員國；其法定首都為蘇克雷，但實際上其政府位於拉巴斯，其海拔高度超過3,600米並為世界海拔最高的首都。
 categories: south-america
-keywords: andes, Atacama, Altiplano, Illimani, Titicaca, Uyuni, salt
+tags: andes, Atacama, Altiplano, Illimani, Titicaca, Uyuni, salt
 authorId: teddy
 date: 2024-10-03 12:00:00
 cover: assets/uyuni-salt-flats.jpg

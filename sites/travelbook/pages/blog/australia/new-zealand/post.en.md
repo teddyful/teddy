@@ -3,7 +3,7 @@ name: Hobbiton
 enabled: true
 description: New Zealand is an island country in the southwestern Pacific Ocean. It consists of two main landmasses—the North Island and the South Island —and over 700 smaller islands.
 categories: australia
-keywords: lotr, hobbits, wellington, auckland
+tags: lotr, hobbits, wellington, auckland
 authorId: teddy
 date: 2025-01-01 12:00:00
 cover: assets/hobbiton.jpg

@@ -3,7 +3,7 @@ name: ホビット村
 enabled: true
 description: ニュージーランドは、南西太平洋のオセアニアのポリネシアに位置する立憲君主制国家。首都はウェリントンで、最大の都市はオークランドである。
 categories: australia
-keywords: lotr, hobbits, wellington, auckland
+tags: lotr, hobbits, wellington, auckland
 authorId: teddy
 date: 2025-01-01 12:00:00
 cover: assets/hobbiton.jpg

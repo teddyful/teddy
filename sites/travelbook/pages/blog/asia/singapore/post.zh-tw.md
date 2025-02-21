@@ -3,7 +3,7 @@ name: 火熱的新加坡
 enabled: true
 description: 新加坡共和國，通称新加坡，別稱新嘉坡、星加坡、星嘉坡、獅城、星洲、星國，是位於东南亚的岛国和城邦，位於中南半島最南端，扼守马六甲海峡最南端的出口，位於其南面的新加坡海峡与印度尼西亚相隔，北面的柔佛海峡與馬來西亞相隔，並以新柔長堤與第二通道兩座橋梁相連於新馬兩岸之間。新加坡由新加坡島等63個島嶼組成，面積為728平方公里，因绿化程度较高而有花園城市之美稱。
 categories: asia
-keywords: strait, republic, island
+tags: strait, republic, island
 authorId: teddy
 date: 2025-02-01 12:00:00
 cover: assets/singapore.jpg

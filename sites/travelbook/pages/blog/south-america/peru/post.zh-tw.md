@@ -3,7 +3,7 @@ name: 馬丘比丘
 enabled: true
 description: 秘魯共和國，通称秘魯，是南美洲西部的一个国家，北邻厄瓜多尔和哥伦比亚，东与巴西和玻利维亚接壤，南接智利，西濒太平洋，是南美洲國家聯盟的成員國。
 categories: south-america
-keywords: rainforest, machu picchu, inca, lima
+tags: rainforest, machu picchu, inca, lima
 authorId: teddy
 date: 2024-10-01 12:00:00
 cover: assets/machu-picchu.jpg
