@@ -16,6 +16,9 @@ import { getFiles, hasFileExtension, loadJsonFile, pathExists } from
 import { exists } from '../utils/json-utils.js';
 import { getValue } from '../utils/json-utils.js';
 
+// Semantic versioning 2.0.0 regex - see https://semver.org
+const SEMANTIC_VERSIONING_REGEX = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+
 
 class BuildValidator {
 
@@ -59,6 +62,13 @@ class BuildValidator {
 
     #validateOptions() {
 
+        // Validate the site name.
+        if ( /[^A-Za-z0-9\-_]/.test(this.options.getSiteName()) ) {
+            throw new Error(`The site name '${this.options.getSiteName()}' ` + 
+                'contains invalid characters. Only alphanumeric, hyphen and ' + 
+                'underscore characters are permitted in site names.'); 
+        }
+
         // Validate that the specified site directory and config file exist.
         this.siteDirPath = this.systemConfig.system.sites + 
             '/' + this.options.getSiteName();
@@ -67,6 +77,13 @@ class BuildValidator {
         this.#validateDirExists(this.siteDirPath);
         this.#validateFileExists(this.siteDirPath, this.siteConfigFileName);
 
+        // Validate the theme name.
+        if ( /[^A-Za-z0-9\-_]/.test(this.options.getThemeName()) ) {
+            throw new Error(`The theme name '${this.options.getThemeName()}' ` + 
+                'contains invalid characters. Only alphanumeric, hyphen and ' + 
+                'underscore characters are permitted in theme names.'); 
+        }
+
         // Validate that the specified theme directory and config file exist.
         this.themeDirPath = this.systemConfig.system.themes + 
             '/' + this.options.getThemeName();
@@ -74,6 +91,13 @@ class BuildValidator {
             '/' + this.themeConfigFileName;
         this.#validateDirExists(this.themeDirPath);
         this.#validateFileExists(this.themeDirPath, this.themeConfigFileName);
+
+        // Validate the environment name.
+        if ( /[^A-Za-z0-9\-_]/.test(this.options.getEnv()) ) {
+            throw new Error(`The environment name '${this.options.getEnv()}' ` + 
+                'contains invalid characters. Only alphanumeric, hyphen and ' + 
+                'underscore characters are permitted in environment names.'); 
+        }
 
     }
 
@@ -97,6 +121,23 @@ class BuildValidator {
         if ( !this.ajv.validate(siteConfigSchema, this.siteConfig) )
             throw new Error('Site configuration schema error: \n' + 
                 JSON.stringify(this.ajv.errors, null, 4));
+
+        // Validate the site name against the site name command line argument.
+        if ( this.siteConfig.site.name != this.options.getSiteName() ) {
+            throw new Error('The site name provided as a command line ' + 
+                `argument ('${this.options.getSiteName()}') does not exactly ` + 
+                'match the site name in the site configuration file ' + 
+                `('${this.siteConfig.site.name}').`);
+        }
+
+        // Validate the site version.
+        if ( !(SEMANTIC_VERSIONING_REGEX.test(
+                this.siteConfig.site.version)) ) {
+            throw new Error('The site version ' + 
+                `'${this.siteConfig.site.version}' is invalid. The site ` + 
+                'version should conform to the semantic versioning 2.0.0 ' + 
+                'specification described at https://semver.org.'); 
+        }
 
         // Validate that the specified site directories exist.
         this.#validateResourceExists(this.siteConfig, 
@@ -169,6 +210,23 @@ class BuildValidator {
         if ( !this.ajv.validate(themeConfigSchema, this.themeConfig) )
             throw new Error('Theme configuration schema error: \n' + 
                 JSON.stringify(this.ajv.errors, null, 4));
+
+        // Validate the theme name against the theme name command line argument.
+        if ( this.themeConfig.theme.name != this.options.getThemeName() ) {
+            throw new Error('The theme name provided as a command line ' + 
+                `argument ('${this.options.getThemeName()}') does not ` +  
+                'exactly match the theme name in the theme configuration ' + 
+                `file ('${this.themeConfig.theme.name}').`);
+        }
+
+        // Validate the theme version.
+        if ( !(SEMANTIC_VERSIONING_REGEX.test(
+                this.themeConfig.theme.version)) ) {
+            throw new Error('The theme version ' + 
+                `'${this.themeConfig.theme.version}' is invalid. The theme ` + 
+                'version should conform to the semantic versioning 2.0.0 ' + 
+                'specification described at https://semver.org.'); 
+        }
 
         // Validate that the required directories exist.
         this.themeTemplatesDirPath = this.themeDirPath + '/templates'
