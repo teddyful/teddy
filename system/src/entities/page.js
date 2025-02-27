@@ -26,8 +26,8 @@ class Page {
 
         // Categories.
         this.categoryLanguages = [];
-        const categories = [... new Set(
-            pageMetadata.categories.split(',').map(item => item.trim()))];
+        const categories = 'categories' in pageMetadata ? [... new Set(
+            pageMetadata.categories.split(',').map(item => item.trim()))] : [];
         categories.forEach(category => {
             this.categoryLanguages.push({
                 id: category, 

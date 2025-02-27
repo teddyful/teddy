@@ -8,17 +8,17 @@
 class Search {
 
     constructor() {
-		this.language = this.#getLanguage();
-		this.collectionSize = this.#getCollectionSize();
+		this.language = Search.getLanguage();
+		this.collectionSize = Search.getCollectionSize();
 	}
 
-    #getLanguage() {
+    static getLanguage() {
         return document.documentElement.lang !== null ? 
             document.documentElement.lang : DEFAULT_LANGUAGE;
     }
 
-    #getCollectionSize() {
-		return COLLECTION_SIZES[this.#getLanguage()];
+    static getCollectionSize() {
+		return COLLECTION_SIZES[Search.getLanguage()];
 	}
 
     static sanitizeQuery(query) {

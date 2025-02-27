@@ -87,11 +87,8 @@ class CollectionBuilder {
                     // Check that the page is enabled and contains the required 
                     // metadata. Pages must be explicitly enabled in the 
                     // markdown frontmatter and have the mandatory metadata 
-                    // (name, description and categories) defined in order 
-                    // to be built.
-                    if ( 'name' in pageMetadata && pageMetadata.name &&
-                        'description' in pageMetadata && pageMetadata.description &&
-                        'categories' in pageMetadata && pageMetadata.categories &&
+                    // defined in order to be built.
+                    if ( 'name' in pageMetadata && pageMetadata.name && 
                         'enabled' in pageMetadata && pageMetadata.enabled == 'true' ) {
 
                         // Create a new page object.

@@ -218,6 +218,7 @@ class AssetBuilder {
             '/js/vendors/teddy';
         createDirectory(targetDirAbsPath);
         const js = `const ASSETS_BASE_URL = '${this.config.site.urls.assets}';
+const COLLECTION_BASE_URL = '${this.config.site.urls.collection}';
 const COLLECTION_PAGINATION_SIZE = ${this.config.site.collection.pagination.size};
 const COLLECTION_SIZES = ${JSON.stringify(this.config.site.collection.sizes)};
 const DEFAULT_LANGUAGE = '${this.config.site.languages.enabled[0]}';
