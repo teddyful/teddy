@@ -161,6 +161,7 @@ class CollectionBuilder {
                         size: pages.length, 
                         pagination: this.config.site.collection.pagination, 
                         sort: this.config.site.collection.sort, 
+                        search: this.config.site.collection.search, 
                         pages: {
                             head: pagesHead
                         }, 
