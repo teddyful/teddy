@@ -22,7 +22,7 @@ class Search {
 	}
 
     static sanitizeQuery(query) {
-        return query.replace(/[`!|£^*&;$%@"<>()+-={}[]#~:?\\\/,]/gi, '')
+        return query.replace(/[`!|£^*&;$%@"<>()+-={}\[\]#~:?\\\/,]/gi, '')
             .replace(/\s\s+/g, ' ')
             .trim();
     }
