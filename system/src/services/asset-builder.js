@@ -218,16 +218,28 @@ class AssetBuilder {
             '/js/vendors/teddy';
         createDirectory(targetDirAbsPath);
         const js = `const ASSETS_BASE_URL = '${this.config.site.urls.assets}';
-const COLLECTION_BASE_URL = '${this.config.site.urls.collection}';
 const COLLECTION_PAGINATION_SIZE = ${this.config.site.collection.pagination.size};
 const COLLECTION_SIZES = ${JSON.stringify(this.config.site.collection.sizes)};
-const DEFAULT_LANGUAGE = '${this.config.site.languages.enabled[0]}';
 const DOMAIN_NAME = '${this.config.site.web[this.config.build.env].domain}';
 const INDEX_DOCUMENT_STORE_CONFIG = ${JSON.stringify(
     this.config.site.collection.index.documentStore)};
 const LANGUAGE_INDEX_KEYS = ${JSON.stringify(languageIndexKeys)};
 const MIN_SEARCH_QUERY_LENGTH = ${this.config.site.collection.search.minQueryLength};`;
         writeStringToFile(js, `${targetDirAbsPath}/config.js`);
+    }
+
+    generateContentJs() {
+        let content = {};
+        for ( const language of this.config.site.languages.enabled ) {
+            content[language] = structuredClone(
+                this.config.site.languages.data[language]);
+            delete content[language].collection.metadata.pages;
+        }
+        const targetDirAbsPath = this.config.build.distDirs.assets + 
+            '/js/vendors/teddy';
+        createDirectory(targetDirAbsPath);
+        const js = `const site = ${JSON.stringify(content)};`;
+        writeStringToFile(js, `${targetDirAbsPath}/site.js`);
     }
 
 }

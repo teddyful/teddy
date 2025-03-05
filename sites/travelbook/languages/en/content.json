@@ -10,6 +10,20 @@
             "reset": "Reset Filters", 
             "search": "Search", 
             "searchPlaceholder": "Type and hit enter..."
+        }, 
+        "messages": {
+            "filters": {
+                "search": {
+                    "results": "Found ${searchResults.length} posts containing the phrase '${searchQuery}'.", 
+                    "invalid": "Invalid search query - please try again."
+                }, 
+                "categories": {
+                    "results": "Found ${searchResults.length} posts in the category '${category.name}'."
+                }, 
+                "combined": {
+                    "results": "Found ${searchResults.length} posts containing the phrase '${searchQuery}' in the category '${category.name}'."
+                }
+            }
         }
     }
 }

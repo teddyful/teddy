@@ -7,20 +7,6 @@
 
 class Search {
 
-    constructor() {
-		this.language = Search.getLanguage();
-		this.collectionSize = Search.getCollectionSize();
-	}
-
-    static getLanguage() {
-        return document.documentElement.lang !== null ? 
-            document.documentElement.lang : DEFAULT_LANGUAGE;
-    }
-
-    static getCollectionSize() {
-		return COLLECTION_SIZES[Search.getLanguage()];
-	}
-
     static sanitizeQuery(query) {
         return query.replace(/[`!|£^*&;$%@"<>()+-={}\[\]#~:?\\\/,]/gi, '')
             .replace(/\s\s+/g, ' ')
@@ -31,15 +17,15 @@ class Search {
 
         // Regenerate the index configuration.
         let indexConfig = INDEX_DOCUMENT_STORE_CONFIG;
-        indexConfig.language = this.language in ISO_639_3166_LOOKUP ? 
-            ISO_639_3166_LOOKUP[this.language] : this.language;
+        indexConfig.language = PAGE_LANGUAGE in ISO_639_3166_LOOKUP ? 
+            ISO_639_3166_LOOKUP[PAGE_LANGUAGE] : PAGE_LANGUAGE;
         if ( CJK_ISO_3166.includes(indexConfig.language) ) {
             indexConfig.encode = cjkTokenizer;
         }
 
         // Create an empty index using the same build-time index configuration.
         this.index = new FlexSearch.Document(indexConfig);
-        const indexKeys = LANGUAGE_INDEX_KEYS[this.language];
+        const indexKeys = LANGUAGE_INDEX_KEYS[PAGE_LANGUAGE];
 
         // Define the HTTP headers for the Fetch API.
         let headers = new Headers();
@@ -48,11 +34,14 @@ class Search {
         // Iterate over all index keys and import their data into the index.
         for ( const key of indexKeys ) {
             const indexDataUrl = 
-                `${ASSETS_BASE_URL}/collection/${this.language}/${key}.json`;
+                `${ASSETS_BASE_URL}/collection/${PAGE_LANGUAGE}/${key}.json`;
             const response = await fetch(indexDataUrl, headers);
             const json = await response.json();
             await this.index.import(key, json ?? null);
         }
+
+        // Set the collection size.
+        this.collectionSize = COLLECTION_SIZES[PAGE_LANGUAGE];
 
     }
 
@@ -80,9 +69,10 @@ class Search {
         }));
     }
 
-    async query(searchQuery, offset = 0, limit = 10, enrich = true) {
+    async query(searchQuery, offset = 0, limit = 10, 
+        enrich = true, minSearchQueryLength = 2) {
         const sanitizedSearchQuery = Search.sanitizeQuery(searchQuery);
-        if ( sanitizedSearchQuery.length >= MIN_SEARCH_QUERY_LENGTH ) {
+        if ( sanitizedSearchQuery.length >= minSearchQueryLength ) {
             return this.#deduplicateHits(await this.index.searchAsync(
                 sanitizedSearchQuery, {
                     offset: offset, 
@@ -90,6 +80,7 @@ class Search {
                     enrich: enrich
                 }));
         }
+        return [];
     }
 
     // Exists a bug in Flexsearch where performing a query and tag-based filter
@@ -99,9 +90,9 @@ class Search {
     // increase the offset until it reaches the size of the collection, or
     // the number of hits equals the requested limit - whichever comes first.
     async queryAndFilterByTags(searchQuery, tags, 
-        offset = 0, limit = 10, enrich = true) {
+        offset = 0, limit = 10, enrich = true, minSearchQueryLength = 2) {
         const sanitizedSearchQuery = Search.sanitizeQuery(searchQuery);
-        if ( sanitizedSearchQuery.length >= MIN_SEARCH_QUERY_LENGTH ) {
+        if ( sanitizedSearchQuery.length >= minSearchQueryLength ) {
             let docs = new Map();
             let liveOffset = offset;
             while ( liveOffset < this.collectionSize ) {
@@ -125,6 +116,7 @@ class Search {
             }
             return [...docs.values()];
         }
+        return [];
     }
 
     #deduplicateHits(hits) {

@@ -443,6 +443,11 @@ class PageBuilder {
                 `${pageMeta}</head>`);
         }
 
+        // Inject the page language.
+        const pageLangHtml = 
+            `<script>const PAGE_LANGUAGE = '${language}';</script>`;
+        pageHtml = pageHtml.replace('</head>', `${pageLangHtml}</head>`);
+
         // Inject system assets if enabled.
         if ( this.config.site.html.inject.systemAssets ) {
             pageHtml = pageHtml.replace('</head>', 

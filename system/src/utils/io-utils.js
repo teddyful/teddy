@@ -63,7 +63,7 @@ function writeJsonToFile(json, targetFilePath) {
 
 // Write a string object to file.
 function writeStringToFile(str, targetFilePath) {
-    fs.writeFileSync(targetFilePath, str, 'utf-8');
+    fs.writeFileSync(targetFilePath, str, {encoding: 'utf8'});
 }
 
 export { copyFile, createDirectory, getFiles, 

@@ -217,6 +217,7 @@ gulp.task('build-system-assets', async function(done) {
     await assetBuilder.deploySystemJsAssets();
     const languageIndexKeys = collectionBuilder.getLanguageIndexKeys();
     assetBuilder.generateBuildConfigJs(languageIndexKeys);
+    assetBuilder.generateContentJs(languageIndexKeys);
     done();
 });
 

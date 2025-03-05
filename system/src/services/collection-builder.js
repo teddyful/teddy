@@ -89,7 +89,10 @@ class CollectionBuilder {
                     // markdown frontmatter and have the mandatory metadata 
                     // defined in order to be built.
                     if ( 'name' in pageMetadata && pageMetadata.name && 
-                        'enabled' in pageMetadata && pageMetadata.enabled == 'true' ) {
+                        'enabled' in pageMetadata && pageMetadata.enabled == 'true' && 
+                        ( !('index' in pageMetadata) || 
+                            ( 'index' in pageMetadata && pageMetadata.index == 'true' ) ) 
+                    ) {
 
                         // Create a new page object.
                         let page = new Page(-1, 

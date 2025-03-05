@@ -8,7 +8,8 @@
                 "teddy": [ 
                     "vendors/teddy/config.js", 
                     "vendors/teddy/lang.js", 
-                    "vendors/teddy/search.js"
+                    "vendors/teddy/search.js", 
+                    "vendors/teddy/site.js"
                 ], 
                 "vendors": [
                     "vendors/flexsearch/0.7.43/flexsearch.bundle.min.js"

@@ -10,6 +10,20 @@
             "reset": "フィルターをリセット", 
             "search": "検索", 
             "searchPlaceholder": "検索..."
+        }, 
+        "messages": {
+            "filters": {
+                "search": {
+                    "results": "「${searchQuery}」 というフレーズを含む投稿が ${searchResults.length} 件見つかりました。", 
+                    "invalid": "検索クエリが無効です。もう一度お試しください。"
+                }, 
+                "categories": {
+                    "results": "「${category.name}」 カテゴリに ${searchResults.length} 件の投稿が見つかりました。"
+                }, 
+                "combined": {
+                    "results": "「${category.name}」 カテゴリに 「${searchQuery}」 というフレーズを含む ${searchResults.length} 件の投稿が見つかりました。"
+                }
+            }
         }
     }
 }

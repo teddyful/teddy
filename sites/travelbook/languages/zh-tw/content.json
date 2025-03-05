@@ -10,6 +10,20 @@
             "reset": "重置過濾器", 
             "search": "搜尋", 
             "searchPlaceholder": "搜尋..."
+        }, 
+        "messages": {
+            "filters": {
+                "search": {
+                    "results": "找到 ${searchResults.length} 個包含短語 「${searchQuery}」 的貼文。", 
+                    "invalid": "無效的搜尋查詢。請重試。"
+                }, 
+                "categories": {
+                    "results": "在 「${category.name}」 類別中找到 ${searchResults.length} 個貼文。"
+                }, 
+                "combined": {
+                    "results": "在 「${category.name」 類別中找到 ${searchResults.length} 個包含短語 「${searchQuery}」 的貼文。"
+                }
+            }
         }
     }
 }

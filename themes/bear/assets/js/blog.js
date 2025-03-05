@@ -1,210 +1,298 @@
 /**
- * Basic client search and filter services using vanilla JavaScript
- * for demo theme purposes only.
+ * Basic demo blog listing page using Mithril.
  *
  * @author jillurquddus
  * @since  0.0.1
  */
 
 /* -----------------------------------------------------------------------------
- * INITIALISATION
+ * BLOG LISTING
  * ---------------------------------------------------------------------------*/
 
-// Blog page elements.
+// Blog listing page elements.
 const elements = {
     blog: {
-        listing: document.getElementById('blog-listing'), 
-        notification: document.getElementById('blog-listing-notification'), 
-        firstPost: document.getElementsByClassName('blog-post')[0], 
-        loadMore: document.getElementById('blog-load-more'), 
+        listing: {
+            container: document.getElementById('blog-listing'), 
+            firstPost: document.getElementsByClassName('blog-post')[0], 
+            loadMore: document.getElementById('blog-listing-load-more')
+        }, 
         filters: {
+            message: document.getElementById('blog-filters-message'), 
             search: {
-                form: document.getElementById('blog-search-form'), 
-                input: document.getElementById('blog-search-query')
+                form: document.getElementById('blog-search-form')
             }, 
-            categories: document.getElementsByClassName('blog-category'), 
+            categories: {
+                container: document.getElementById('blog-categories'), 
+                items: document.getElementsByClassName('blog-category')
+            }, 
             reset: document.getElementById('blog-filters-reset')
         }
     }
 }
 
-// Initialise the search service.
-const search = new Search();
-let searchQuery = null;
-let categoryFilter = null;
-let hits = {};
-let collectionDisplaySize = 0;
-
 /* -----------------------------------------------------------------------------
- * BLOG SERVICES
+ * SEARCH
  * ---------------------------------------------------------------------------*/
 
-// Reset the blog view.
-async function resetBlog() {
-    searchQuery = null;
-    categoryFilter = null;
-    elements.blog.filters.search.input.value = '';
-    Array.from(elements.blog.filters.categories).forEach(function(elem) {
-        elem.classList.remove('active');
-    });
-    await updateBlog();
-}
+async function doSearch(loadMore = false) {
 
-// Update the blog view with the current search parameters and hits.
-async function updateBlog(loadMore = false) {
+    searchResultsDelta = [];
     if ( !loadMore ) {
-        hits = {};
-        collectionDisplaySize = 0;
-        elements.blog.notification.style.display = 'block';
-        elements.blog.listing.innerHTML = '';
+        searchResults = [];
     }
-    await doSearch();
-    renderSearchResults();
-}
-
-// Request the search service.
-async function doSearch() {
 
     // No search query and no category filter.
-    if ( searchQuery == null && categoryFilter == null ) {
-        hits = await search.getDocuments(collectionDisplaySize, 
-            COLLECTION_PAGINATION_SIZE);
+    if ( !searchQuery && !categoryFilter ) {
+        searchResultsDelta = !loadMore ? headDocs : 
+            await search.getDocuments(searchResults.length, 
+                COLLECTION_PAGINATION_SIZE);
     }
 
     // Search query with no category filter.
-    else if ( searchQuery !== null && categoryFilter == null ) {
-        hits = await search.query(searchQuery, 
-            collectionDisplaySize, COLLECTION_PAGINATION_SIZE);
+    else if ( searchQuery && !categoryFilter ) {
+        searchResultsDelta = await search.query(searchQuery, 
+            searchResults.length, COLLECTION_PAGINATION_SIZE, 
+            MIN_SEARCH_QUERY_LENGTH);
     }
 
     // Search query with category filter.
-    else if ( searchQuery !== null && categoryFilter !== null ) {
-        hits = await search.queryAndFilterByTags(searchQuery, categoryFilter, 
-            collectionDisplaySize, COLLECTION_PAGINATION_SIZE);
+    else if ( searchQuery && categoryFilter ) {
+        searchResultsDelta = await search.queryAndFilterByTags(searchQuery, 
+            categoryFilter, searchResults.length, COLLECTION_PAGINATION_SIZE, 
+            MIN_SEARCH_QUERY_LENGTH);
     }
 
     // Category filter with no search query.
-    else if ( searchQuery == null && categoryFilter !== null ) {
-        hits = await search.getDocumentsByTags(categoryFilter, 
-            collectionDisplaySize, COLLECTION_PAGINATION_SIZE);
+    else if ( !searchQuery && categoryFilter ) {
+        searchResultsDelta = await search.getDocumentsByTags(categoryFilter, 
+            searchResults.length, COLLECTION_PAGINATION_SIZE);
     }
 
-}
-
-// Render search results.
-function renderSearchResults() {
-
-    if ( hits.length > 0 ) {
-
-        // Hide the zero results notification.
-        elements.blog.notification.style.display = 'none';
-
-        // Iterate over the hits.
-        for ( const doc of hits ) {
-
-            // Generate the blog post element and append it to the blog listing.
-            let post = elements.blog.firstPost.cloneNode(true);
-            let postImage = post.getElementsByClassName('blog-post-img')[0];
-            postImage.setAttribute('src', `${doc.relUrl}/${doc.cover}`);
-            postImage.setAttribute('alt', doc.name);
-            let postTitle = post.getElementsByClassName('blog-post-title')[0];
-            postTitle.setAttribute('href', doc.relUrl);
-            postTitle.innerHTML = doc.name;
-            let postAuthor = post.getElementsByClassName('blog-post-author')[0];
-            postAuthor.setAttribute('href', doc.authorUrl);
-            postAuthor.innerHTML = doc.author;
-            let postDate = post.getElementsByClassName('blog-post-date')[0];
-            postDate.innerHTML = doc.displayDate;
-            let postDescription = post.getElementsByClassName(
-                'blog-post-description')[0];
-            postDescription.innerHTML = doc.description;
-            let postReadMore = post.getElementsByClassName(
-                'blog-post-read-more')[0];
-            postReadMore.setAttribute('href', doc.relUrl);
-            let categories = '';
-            for ( const category of doc.categoryLanguages ) {
-                categories += category.name
-            }
-            let postCategories = post.getElementsByClassName(
-                'blog-post-categories')[0];
-            postCategories.innerHTML = categories;
-
-            // Append the post to the blog listing & increment the display size.
-            elements.blog.listing.innerHTML = 
-                elements.blog.listing.innerHTML + post.outerHTML;
-            collectionDisplaySize++;
-
-        }
-
-    }
-
-    // Display the load more button.
-    if ( hits.length < COLLECTION_PAGINATION_SIZE ) {
-        elements.blog.loadMore.style.display = 'none';
-    } else {
-        elements.blog.loadMore.style.display = 'inline-block';
-    }
+    searchResults = searchResults.concat(searchResultsDelta);
 
 }
 
 /* -----------------------------------------------------------------------------
- * EVENT HANDLERS
+ * COMPONENTS
  * ---------------------------------------------------------------------------*/
 
-// Load more event handler.
-elements.blog.loadMore.addEventListener('click', async function(e) {
-    await updateBlog(true);
-}, false);
+function updateMessageTemplate(template) {
+    let message = template.replace('${searchResults.length} ', 
+        searchResults.length < COLLECTION_PAGINATION_SIZE ? 
+            `${searchResults.length} ` : '');
+    if ( searchQuery )
+        message = message.replace('${searchQuery}', searchQuery);
+    if ( categoryFilter ) 
+        message = message.replace('${category.name}', 
+            site[PAGE_LANGUAGE].taxonomy.categories[categoryFilter]);
+    return message;
+}
 
-// Form submission event handler.
-elements.blog.filters.search.form.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const rawQuery = elements.blog.filters.search.input.value;
-    const sanitizedQuery = Search.sanitizeQuery(rawQuery);
-    if ( ( sanitizedQuery.length >= MIN_SEARCH_QUERY_LENGTH ) || 
-        rawQuery.length == 0 ) {
-        searchQuery = rawQuery.length == 0 ? null : sanitizedQuery;
-        await updateBlog();
+function generateFilteringMessage() {
+
+    // Search query with category filter.
+    if ( searchQuery && categoryFilter ) {
+        return searchQuery.length >= MIN_SEARCH_QUERY_LENGTH ? 
+            updateMessageTemplate(site[PAGE_LANGUAGE]
+                .content.messages.filters.combined.results) : 
+            site[PAGE_LANGUAGE].content.messages.filters.search.invalid;
     }
-}, false);
 
-// Category filter event handler.
-Array.from(elements.blog.filters.categories).forEach(function(categoryElem) {
-    categoryElem.addEventListener('click', async function(e) {
-        e.preventDefault();
-        
-        // Deselect category filter.
-        if ( e.target.classList.contains('active') ) {
-            Array.from(elements.blog.filters.categories).forEach(
-                function(elem) {
-                    elem.classList.remove('active');
-                });
-            categoryFilter = null;
-            
-        } 
-        
-        // Select category filter.
-        else {
-            Array.from(elements.blog.filters.categories).forEach(
-                function(elem) {
-                    elem.classList.remove('active');
-                });
-            e.target.classList.add('active');
-            categoryFilter = e.target.getAttribute('data-category-id');
+    // Search query with no category filter.
+    else if ( searchQuery ) {
+        return searchQuery.length >= MIN_SEARCH_QUERY_LENGTH ? 
+            updateMessageTemplate(site[PAGE_LANGUAGE]
+                .content.messages.filters.search.results) : 
+            site[PAGE_LANGUAGE].content.messages.filters.search.invalid;
+    } 
+    
+    // Category filter with no search query.
+    else if ( categoryFilter ) {
+        return updateMessageTemplate(site[PAGE_LANGUAGE]
+            .content.messages.filters.categories.results);
+    }
+    
+}
+
+const FilteringMessage = {
+    view: () => {
+        return searchQuery || categoryFilter ? 
+            m('p', generateFilteringMessage()) : null;
+    }
+}
+
+function generateBlogListingPost(doc) {
+    let post = elements.blog.listing.firstPost.cloneNode(true);
+    let postImage = post.getElementsByClassName('blog-post-img')[0];
+    postImage.setAttribute('src', `${doc.relUrl}/${doc.cover}`);
+    postImage.setAttribute('alt', doc.name);
+    let postTitle = post.getElementsByClassName('blog-post-title')[0];
+    postTitle.setAttribute('href', doc.relUrl);
+    postTitle.innerHTML = doc.name;
+    let postAuthor = post.getElementsByClassName('blog-post-author')[0];
+    postAuthor.setAttribute('href', doc.authorUrl);
+    postAuthor.innerHTML = doc.author;
+    let postDate = post.getElementsByClassName('blog-post-date')[0];
+    postDate.innerHTML = doc.displayDate;
+    let postDescription = post.getElementsByClassName(
+        'blog-post-description')[0];
+    postDescription.innerHTML = doc.description;
+    let postReadMore = post.getElementsByClassName(
+        'blog-post-read-more')[0];
+    postReadMore.setAttribute('href', doc.relUrl);
+    let categories = '';
+    for ( const category of doc.categoryLanguages ) {
+        categories += category.name
+    }
+    let postCategories = post.getElementsByClassName(
+        'blog-post-categories')[0];
+    postCategories.innerHTML = categories;
+    return post.outerHTML;
+}
+
+const BlogListing = {
+    view: () => {
+        return [].concat(
+            searchResults.map(doc => m.trust(generateBlogListingPost(doc)))
+        );
+    }
+}
+
+const LoadMore = {
+    view: () => {
+        return searchResultsDelta.length < COLLECTION_PAGINATION_SIZE ? null : 
+            m('button', {
+                type: 'button', 
+                class: 'btn btn-primary', 
+                onclick: async function(e) {
+                    await doSearch(true);
+                    m.redraw();
+                }
+            }, site[PAGE_LANGUAGE].content.labels.loadMore);
+    }
+}
+
+const SearchForm = {
+    view: function() {
+        return m('form', { 
+            class: 'widget-search', 
+            onsubmit: async function (e) {
+                e.preventDefault();
+                searchQuery = rawQuery;
+                await doSearch();
+                m.redraw();
+            }
+        }, [
+            m('input', {
+                id: 'blog-search-input', 
+                type: 'search', 
+                placeholder: site[PAGE_LANGUAGE]
+                    .content.labels.searchPlaceholder,
+                onchange: function(e) {
+                    rawQuery = Search.sanitizeQuery(
+                        e.currentTarget.value);
+                }, 
+                oninput: async function(e) {
+
+                    // Search query input is cleared.
+                    if ( !e.currentTarget.value ) {
+                        searchQuery = null;
+                        await doSearch();
+                        m.redraw();
+                    }
+
+                }
+            }), 
+            m('button', { type: 'submit'}, [
+                m('i', { class: 'fas fa-magnifying-glass' })
+            ])
+        ])
+    }
+}
+
+function generateCategoryFilterName(category) {
+    return `${category.name}<small class="ms-auto">(${category.count})</small>`;
+}
+
+function deactivateCategories() {
+    Array.from(elements.blog.filters.categories.items).forEach(
+        function(elem) {
+            elem.classList.remove('active');
         }
+    );
+}
 
-        await updateBlog();
-        
-    }, false);
-});
+const Categories = {
+    view: function() {
+        return m('ul', { class: 'list-unstyled widget-list' }, [].concat(
+            site[PAGE_LANGUAGE].collection.metadata.categories.map(category => 
+                m('li', [
+                    m('a', {
+                        href: '#', 
+                        class: 'd-flex blog-category', 
+                        onclick: async function(e) {
+                            e.preventDefault();
+                            if (e.currentTarget.classList.contains('active')) {
+                                categoryFilter = null;
+                                deactivateCategories();
+                            } else {
+                                categoryFilter = [category.id];
+                                deactivateCategories();
+                                e.currentTarget.classList.add('active');
+                            }
+                            await doSearch();
+                            m.redraw();
+                        }
+                    }, m.trust(generateCategoryFilterName(category)))
+                ])
+            )
+        ));
+    }
+}
 
-// Reset filters event handler.
-elements.blog.filters.reset.addEventListener('click', async function(e) {
-    await resetBlog();
-}, false);
+function clearSearchForm() {
+    Array.from(elements.blog.filters.search.form
+        .querySelectorAll('input[type=search]')).forEach(
+        function(elem) {
+            elem.value = '';
+        }
+    );
+}
 
-// Page load event handler.
-document.addEventListener('DOMContentLoaded', async function(e) {
+const Reset = {
+    view: function() {
+        return m('button', {
+            type: 'button', 
+            class: 'btn btn-primary btn-sm', 
+            onclick: async function(e) {
+                clearSearchForm();
+                deactivateCategories();
+                searchQuery = null;
+                categoryFilter = null;
+                await doSearch();
+                m.redraw();
+            }
+        }, site[PAGE_LANGUAGE].content.labels.reset)
+    }
+}
+
+// Initialise the search service and mount the components.
+const search = new Search();
+let searchQuery = null;
+let rawQuery = null;
+let categoryFilter = null;
+let searchResults = [];
+let searchResultsDelta = [];
+let headDocs = [];
+(async function() {
     await search.loadIndex();
-    await resetBlog();
-});
+    headDocs = await search.getDocuments(0, COLLECTION_PAGINATION_SIZE);
+    await doSearch();
+    m.mount(elements.blog.listing.container, BlogListing);
+    m.mount(elements.blog.listing.loadMore, LoadMore);
+    m.mount(elements.blog.filters.search.form, SearchForm);
+    m.mount(elements.blog.filters.message, FilteringMessage);
+    m.mount(elements.blog.filters.categories.container, Categories);
+    m.mount(elements.blog.filters.reset, Reset);
+}());

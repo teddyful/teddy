@@ -29,9 +29,7 @@
 
                     <!-- Blog Listing -->
                     <div class="col-lg-9 mb-5 mb-lg-0">
-                        <div id="blog-listing-notification">
-                            <p>{{ content.labels.notification }}</p>
-                        </div>
+                        <div id="blog-filters-message"></div>
                         <div id="blog-listing">
                             {{ #collection.metadata.pages.head }}
                                 <article class="blog-post row mb-5">
@@ -53,9 +51,7 @@
                                 </article>
                             {{ /collection.metadata.pages.head }}
                         </div>
-                        <div id="blog-listing-load-more" class="text-center">
-                            <button id="blog-load-more" type="button" class="btn btn-primary">{{ content.labels.loadMore }}</button>
-                        </div>
+                        <div id="blog-listing-load-more" class="text-center"></div>
                     </div>
 
                     <!-- Blog Filters -->
@@ -64,21 +60,14 @@
                         <!-- Search -->
                         <div class="widget">
                             <h5 class="widget-title"><span>{{ content.labels.search }}</span></h5>
-                            <form id="blog-search-form" class="widget-search">
-                                <input id="blog-search-query" name="blog-search-query" type="search" placeholder="{{ content.labels.searchPlaceholder }}">
-                                <button id="blog-search-submit-button" type="submit"><i class="fas fa-magnifying-glass"></i></button>
-                            </form>
+                            <div id="blog-search-form"></div>
                         </div>
 
                          <!-- Categories -->
                         <div class="widget">
                             <h5 class="widget-title"><span>{{ content.labels.categories }}</span></h5>
-                            <ul class="list-unstyled widget-list">
-                                {{ #collection.metadata.categories }}
-                                    <li><a href="#" class="d-flex blog-category" data-category-id="{{ id }}">{{ name }}<small class="ms-auto">({{ count }})</small></a></li>
-                                {{ /collection.metadata.categories }}
-                            </ul>
-                            <button id="blog-filters-reset" type="button" class="btn btn-primary btn-sm">{{ content.labels.reset }}</button>
+                            <div id="blog-categories"></div>
+                            <div id="blog-filters-reset"></div>
                         </div>
 
                         <!-- Recent Articles -->
@@ -114,6 +103,7 @@
         {{> partials/body/body-js.html }}
 
         <!-- Theme-specific JavaScript -->
+        <script src="{{{ urls.assets }}}/js/vendors/mithril/2.2.14/mithril.min.js"></script>
         {{ #theme.assets.minify.js }}
             <script src="{{{ urls.assets }}}/js/blog.min.js"></script>
         {{ /theme.assets.minify.js }}
