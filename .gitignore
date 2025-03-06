@@ -133,3 +133,6 @@ dist
 # Teddy site output directories
 sites/*/build
 sites/*/public
+
+# Teddy system update temporary directories
+working/
