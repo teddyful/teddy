@@ -16,13 +16,13 @@ class BuildCleaner {
 
     cleanDistDirectories() {
 
-        if ( this.config.build.flags.customCssOnly || 
-                this.config.build.flags.customJsOnly || 
-                this.config.build.flags.ignoreAssets || 
-                this.config.build.flags.ignoreCss || 
-                this.config.build.flags.ignoreFonts || 
-                this.config.build.flags.ignoreImages || 
-                this.config.build.flags.ignoreJs ) {
+        if ( this.config.build.opts.customCssOnly || 
+                this.config.build.opts.customJsOnly || 
+                this.config.build.opts.ignoreAssets || 
+                this.config.build.opts.ignoreCss || 
+                this.config.build.opts.ignoreFonts || 
+                this.config.build.opts.ignoreImages || 
+                this.config.build.opts.ignoreJs ) {
     
                 // Delete everything except the assets directory.
                 return deleteSync([
@@ -48,7 +48,7 @@ class BuildCleaner {
     }
 
     postBuildCleanup() {
-        if ( !this.config.build.flags.skipPostBuildCleanup ) {
+        if ( !this.config.build.opts.skipPostBuildCleanup ) {
             return deleteSync([
                 `${this.config.build.distDirs.build}/**`], {
                     dot: true, 

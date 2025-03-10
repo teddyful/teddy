@@ -16,7 +16,7 @@ class TemplateBuilder {
     }
 
     async translateTemplates() {
-        if ( !this.config.build.flags.ignoreHtml ) {
+        if ( !this.config.build.opts.ignoreHtml ) {
             for ( const language of this.config.site.languages.enabled ) {
                 
                 // Identify the path to the templates directory.

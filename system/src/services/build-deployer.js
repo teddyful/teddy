@@ -5,10 +5,9 @@
  * @since  0.0.1
  */
 
-import gulp from 'gulp';
 import path from 'path';
 import hosts from '../enums/hosts.js';
-import { copyFile, pathExists, writeJsonToFile } from 
+import { copyDir, copyFile, pathExists, writeJsonToFile } from 
     '../utils/io-utils.js';
 
 
@@ -35,20 +34,17 @@ class BuildDeployer {
         }
     }
 
-    async deployDefaultLanguagePages() {
-        if ( !this.config.build.flags.ignoreHtml ) {
+    deployDefaultLanguagePages() {
+        if ( !this.config.build.opts.ignoreHtml ) {
             const defaultLanguage = this.config.site.languages.enabled[0];
-            await new Promise((resolve, reject) => {
-                gulp.src([this.config.build.distDirs.base + 
-                        `/${defaultLanguage}/**`])
-                    .pipe(gulp.dest(this.config.build.distDirs.base))
-                    .on('end', resolve);
-            });
+            const defaultLanguageDir = this.config.build.distDirs.base + 
+                `/${defaultLanguage}/`;
+            copyDir(defaultLanguageDir, this.config.build.distDirs.base);
         }
     }
 
     deployWebConfig() {
-        if ( !this.config.build.flags.ignoreWebConfig) {
+        if ( !this.config.build.opts.ignoreWebConfig) {
             const env = this.config.build.env;
             const webConfigBaseDirPath = 
                 this.config.system.build.siteDirs.web + '/hosts/';
@@ -65,7 +61,7 @@ class BuildDeployer {
     }
 
     deployRobots() {
-        if ( !this.config.build.flags.ignoreRobots) {
+        if ( !this.config.build.opts.ignoreRobots) {
             const filepath = this.config.system.build.siteDirs.web + 
                 '/robots/robots.txt';
             if ( pathExists(filepath) ) {
@@ -77,7 +73,7 @@ class BuildDeployer {
     }
 
     deploySitemap() {
-        if ( !this.config.build.flags.ignoreSitemap) {
+        if ( !this.config.build.opts.ignoreSitemap) {
             const filepath = this.config.system.build.siteDirs.web + 
             '/sitemap/sitemap.xml';
             if ( pathExists(filepath) ) {

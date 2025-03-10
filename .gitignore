@@ -131,6 +131,7 @@ dist
 .pnp.*
 
 # Teddy site output directories
+logs/
 sites/*/build
 sites/*/public
 

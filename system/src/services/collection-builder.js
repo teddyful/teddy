@@ -33,7 +33,7 @@ class CollectionBuilder {
         let languageMetadata = new Map();
 
         if ( this.config.site.collection.enabled && 
-            !this.config.build.flags.ignoreCollection ) {
+            !this.config.build.opts.ignoreCollection ) {
 
             // Get all files in the designated collection directory.
             const collectionDirPath = this.config.system.build.siteDirs.pages + 
@@ -188,7 +188,7 @@ class CollectionBuilder {
 
     index() {
         if ( this.config.site.collection.enabled && 
-            !this.config.build.flags.ignoreCollection ) {
+            !this.config.build.opts.ignoreCollection ) {
 
             // Create a clone of the document store configuration.
             let documentStoreConfig = structuredClone(

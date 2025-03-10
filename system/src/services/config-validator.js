@@ -1,5 +1,5 @@
 /**
- * Build validator service.
+ * Configuration validator service.
  *
  * @author jillurquddus
  * @since  0.0.1
@@ -20,11 +20,11 @@ import { getValue } from '../utils/json-utils.js';
 const SEMANTIC_VERSIONING_REGEX = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
 
 
-class BuildValidator {
+class ConfigValidator {
 
-    constructor(systemConfig, options) {
+    constructor(systemConfig, opts) {
         this.systemConfig = systemConfig;
-        this.options = options;
+        this.opts = opts;
         this.siteConfigFileName = 'site.json';
         this.themeConfigFileName = 'theme.json';
         this.ajv = new Ajv();
@@ -63,38 +63,38 @@ class BuildValidator {
     #validateOptions() {
 
         // Validate the site name.
-        if ( /[^A-Za-z0-9\-_]/.test(this.options.getSiteName()) ) {
-            throw new Error(`The site name '${this.options.getSiteName()}' ` + 
+        if ( /[^A-Za-z0-9\-_]/.test(this.opts.siteName) ) {
+            throw new Error(`The site name '${this.opts.siteName}' ` + 
                 'contains invalid characters. Only alphanumeric, hyphen and ' + 
                 'underscore characters are permitted in site names.'); 
         }
 
         // Validate that the specified site directory and config file exist.
         this.siteDirPath = this.systemConfig.system.sites + 
-            '/' + this.options.getSiteName();
+            '/' + this.opts.siteName;
         this.siteConfigFilePath = this.siteDirPath + 
             '/' + this.siteConfigFileName;
         this.#validateDirExists(this.siteDirPath);
         this.#validateFileExists(this.siteDirPath, this.siteConfigFileName);
 
         // Validate the theme name.
-        if ( /[^A-Za-z0-9\-_]/.test(this.options.getThemeName()) ) {
-            throw new Error(`The theme name '${this.options.getThemeName()}' ` + 
+        if ( /[^A-Za-z0-9\-_]/.test(this.opts.themeName) ) {
+            throw new Error(`The theme name '${this.opts.themeName}' ` + 
                 'contains invalid characters. Only alphanumeric, hyphen and ' + 
                 'underscore characters are permitted in theme names.'); 
         }
 
         // Validate that the specified theme directory and config file exist.
         this.themeDirPath = this.systemConfig.system.themes + 
-            '/' + this.options.getThemeName();
+            '/' + this.opts.themeName;
         this.themeConfigFilePath = this.themeDirPath + 
             '/' + this.themeConfigFileName;
         this.#validateDirExists(this.themeDirPath);
         this.#validateFileExists(this.themeDirPath, this.themeConfigFileName);
 
         // Validate the environment name.
-        if ( /[^A-Za-z0-9\-_]/.test(this.options.getEnv()) ) {
-            throw new Error(`The environment name '${this.options.getEnv()}' ` + 
+        if ( /[^A-Za-z0-9\-_]/.test(this.opts.env) ) {
+            throw new Error(`The environment name '${this.opts.env}' ` + 
                 'contains invalid characters. Only alphanumeric, hyphen and ' + 
                 'underscore characters are permitted in environment names.'); 
         }
@@ -123,9 +123,9 @@ class BuildValidator {
                 JSON.stringify(this.ajv.errors, null, 4));
 
         // Validate the site name against the site name command line argument.
-        if ( this.siteConfig.site.name != this.options.getSiteName() ) {
+        if ( this.siteConfig.site.name != this.opts.siteName ) {
             throw new Error('The site name provided as a command line ' + 
-                `argument ('${this.options.getSiteName()}') does not exactly ` + 
+                `argument ('${this.opts.siteName}') does not exactly ` + 
                 'match the site name in the site configuration file ' + 
                 `('${this.siteConfig.site.name}').`);
         }
@@ -195,7 +195,7 @@ class BuildValidator {
         }
 
         // Validate that an object for this environment exists in site.web.
-        const env = this.options.getEnv();
+        const env = this.opts.env;
         if ( !(env in this.siteConfig.site.web) ) {
             throw new Error('No web configuration exists for the environment ' + 
                 `'${env}' in the site configuration 'site.web' namespace.`);
@@ -212,9 +212,9 @@ class BuildValidator {
                 JSON.stringify(this.ajv.errors, null, 4));
 
         // Validate the theme name against the theme name command line argument.
-        if ( this.themeConfig.theme.name != this.options.getThemeName() ) {
+        if ( this.themeConfig.theme.name != this.opts.themeName ) {
             throw new Error('The theme name provided as a command line ' + 
-                `argument ('${this.options.getThemeName()}') does not ` +  
+                `argument ('${this.opts.themeName}') does not ` +  
                 'exactly match the theme name in the theme configuration ' + 
                 `file ('${this.themeConfig.theme.name}').`);
         }
@@ -360,4 +360,4 @@ class BuildValidator {
 
 }
 
-export default BuildValidator;
+export default ConfigValidator;

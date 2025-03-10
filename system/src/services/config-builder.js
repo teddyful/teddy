@@ -12,16 +12,16 @@ import { loadJsonFile } from '../utils/io-utils.js';
 
 class ConfigBuilder {
 
-    constructor(systemConfig, options) {
+    constructor(systemConfig, opts) {
         this.systemConfig = systemConfig;
-        this.options = options;
+        this.opts = opts;
     }
 
     build() {
 
         // Load the site configuration.
         const siteDirPath = this.systemConfig.system.sites + 
-            '/' + this.options.getSiteName();
+            '/' + this.opts.siteName;
         const siteConfigFilePath = siteDirPath + '/site.json';
         this.siteConfig = loadJsonFile(siteConfigFilePath);
 
@@ -41,7 +41,7 @@ class ConfigBuilder {
 
         // Update the site configuration with the theme name.
         this.config.site.theme = {
-            name: this.options.getThemeName()
+            name: this.opts.themeName
         }
 
         // Build metadata and user options.
@@ -51,12 +51,12 @@ class ConfigBuilder {
             date: buildDate, 
             id: this.config.site.version + 
                 `-${buildDate.replace(/[-:.TZ]/g, "")}`, 
-            env: this.options.getEnv(), 
-            flags: this.options.getFlags()
+            env: this.opts.env, 
+            opts: this.opts
         }
 
         // Build directory structure.
-        const distDirVersion = this.options.flags.distUseBuildId ? 
+        const distDirVersion = this.opts.distUseBuildId ? 
             this.config.build.id : this.config.site.version;
         const distDirBase = 
             `${this.config.system.build.siteDistDir}/${this.config.build.env}`;
@@ -99,10 +99,10 @@ class ConfigBuilder {
         this.config.site.urls.assets = `/assets/${distDirVersion}`;
 
         // Site configuration.
-        const http = this.config.site.web[this.options.getEnv()].http.secure ? 
+        const http = this.config.site.web[this.opts.env].http.secure ? 
             'https': 'http';
         const baseUrl = `${http}://` + 
-            `${this.config.site.web[this.options.getEnv()].domain}`;
+            `${this.config.site.web[this.opts.env].domain}`;
         this.config.site.web.baseUrl = baseUrl;
 
         // Collection configuration.

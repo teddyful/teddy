@@ -47,7 +47,7 @@ class PageBuilder {
     }
 
     async translatePages() {
-        if ( !this.config.build.flags.ignoreHtml ) {
+        if ( !this.config.build.opts.ignoreHtml ) {
 
             // Generate system assets HTML;
             this.systemAssetsHtml = this.#generateSystemAssetsHtml();

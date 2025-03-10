@@ -5,12 +5,11 @@
  * @since  0.0.1
  */
 
-import gulp from 'gulp';
 import tryToCatch from 'try-to-catch';
 import { minify } from 'minify';
 
-import { createDirectory, hasFileExtension, pathExists, writeStringToFile } from 
-    '../utils/io-utils.js';
+import { copyDir, copyFile, createDirectory, hasFileExtension, pathExists, 
+    writeStringToFile } from '../utils/io-utils.js';
 import { exists } from '../utils/json-utils.js';
 
 
@@ -43,8 +42,8 @@ class AssetBuilder {
 
     async buildCustomCssAssets(sourceType) {
         if ( this.config.site.assets.minify.css &&  
-                !this.config.build.flags.ignoreAssets && 
-                !this.config.build.flags.ignoreCss ) {
+                !this.config.build.opts.ignoreAssets && 
+                !this.config.build.opts.ignoreCss ) {
             await this.#buildCustomAssets(
                 sourceType, 'css', this.cssMinifierOptions);
         }
@@ -52,8 +51,8 @@ class AssetBuilder {
 
     async buildCustomJsAssets(sourceType) {
         if ( this.config.site.assets.minify.js &&  
-                !this.config.build.flags.ignoreAssets && 
-                !this.config.build.flags.ignoreJs ) {
+                !this.config.build.opts.ignoreAssets && 
+                !this.config.build.opts.ignoreJs ) {
             await this.#buildCustomAssets(
                 sourceType, 'js', this.jsMinifierOptions);
         }
@@ -92,63 +91,61 @@ class AssetBuilder {
 
     }
 
-    async deployCssAssets(sourceType) {
-        if ( !this.config.build.flags.ignoreAssets && 
-                !this.config.build.flags.ignoreCss && 
-                !this.config.build.flags.customCssOnly ) {
+    deployCssAssets(sourceType) {
+        if ( !this.config.build.opts.ignoreAssets && 
+                !this.config.build.opts.ignoreCss && 
+                !this.config.build.opts.customCssOnly ) {
             const assetsDirAbsPath = 
                 this.#ascertainPathToAssets(sourceType, 'css');
             if ( assetsDirAbsPath ) {
                 const targetDirAbsPath = 
                     `${this.config.build.distDirs.assets}/css`;
-                await this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
+                this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
             }
         }
     }
 
-    async deployJsAssets(sourceType) {
-        if ( !this.config.build.flags.ignoreAssets && 
-                !this.config.build.flags.ignoreJs && 
-                !this.config.build.flags.customJsOnly ) {
+    deployJsAssets(sourceType) {
+        if ( !this.config.build.opts.ignoreAssets && 
+                !this.config.build.opts.ignoreJs && 
+                !this.config.build.opts.customJsOnly ) {
             const assetsDirAbsPath = 
                 this.#ascertainPathToAssets(sourceType, 'js');
             if ( assetsDirAbsPath ) {
                 const targetDirAbsPath = 
                     `${this.config.build.distDirs.assets}/js`;
-                await this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
+                this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
             }
         }
     }
 
-    async deployImageAssets(sourceType) {
-        if ( !this.config.build.flags.ignoreAssets && 
-                !this.config.build.flags.ignoreImages ) {
+    deployImageAssets(sourceType) {
+        if ( !this.config.build.opts.ignoreAssets && 
+                !this.config.build.opts.ignoreImages ) {
             const assetsDirAbsPath = 
                 this.#ascertainPathToAssets(sourceType, 'images');
             if ( assetsDirAbsPath ) {
                 const targetDirAbsPath = 
                     `${this.config.build.distDirs.assets}/images`;
-                await this.#deployAssets(assetsDirAbsPath, 
-                    targetDirAbsPath, false);
+                this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
             }
         }
     }
 
-    async deployFontAssets(sourceType) {
-        if ( !this.config.build.flags.ignoreAssets && 
-                !this.config.build.flags.ignoreFonts ) {
+    deployFontAssets(sourceType) {
+        if ( !this.config.build.opts.ignoreAssets && 
+                !this.config.build.opts.ignoreFonts ) {
             const assetsDirAbsPath = 
                 this.#ascertainPathToAssets(sourceType, 'fonts');
             if ( assetsDirAbsPath ) {
                 const targetDirAbsPath = 
                     `${this.config.build.distDirs.assets}/fonts`;
-                await this.#deployAssets(assetsDirAbsPath, 
-                    targetDirAbsPath, false);
+                this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
             }
         }
     }
 
-    async deployFavicon(sourceType) {
+    deployFavicon(sourceType) {
         const assetsDirAbsPath = 
             this.#ascertainPathToAssets(sourceType, 'images');
         if ( assetsDirAbsPath ) {
@@ -158,11 +155,8 @@ class AssetBuilder {
                     this.config.site.assets.custom.images.favicon.deployToRoot ) {
                     const faviconFileAbsPath = assetsDirAbsPath + '/' + 
                         this.config.site.assets.custom.images.favicon.ico;
-                    await new Promise((resolve, reject) => {
-                        gulp.src([faviconFileAbsPath])
-                            .pipe(gulp.dest(this.config.build.distDirs.base))
-                            .on('end', resolve);
-                    });
+                    copyFile(faviconFileAbsPath, 
+                        this.config.build.distDirs.base, false);
                 }
             } else if ( sourceType == 'theme' ) {
                 if ( exists(this.config, 'site', 'theme', 'assets', 'custom', 
@@ -170,11 +164,8 @@ class AssetBuilder {
                     this.config.site.theme.assets.custom.images.favicon.deployToRoot ) {
                     const faviconFileAbsPath = assetsDirAbsPath + '/' + 
                         this.config.site.theme.assets.custom.images.favicon.ico;
-                    await new Promise((resolve, reject) => {
-                        gulp.src([faviconFileAbsPath])
-                            .pipe(gulp.dest(this.config.build.distDirs.base))
-                            .on('end', resolve);
-                    });
+                    copyFile(faviconFileAbsPath, 
+                        this.config.build.distDirs.base, false);
                 }
             }
         }
@@ -189,27 +180,22 @@ class AssetBuilder {
         } else return null;
     }
 
-    async deploySystemJsAssets() {
-        if ( !this.config.build.flags.ignoreAssets && 
-                !this.config.build.flags.ignoreJs && 
-                !this.config.build.flags.customJsOnly ) {
+    deploySystemJsAssets() {
+        if ( !this.config.build.opts.ignoreAssets && 
+                !this.config.build.opts.ignoreJs && 
+                !this.config.build.opts.customJsOnly ) {
             const assetsDirAbsPath = 
                 `${this.config.system.assets.dir}/js`;
             const targetDirAbsPath = 
                 `${this.config.build.distDirs.assets}/js`;
-            await this.#deployAssets(
-                assetsDirAbsPath, targetDirAbsPath);
+            this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
         }
     }
 
-    async #deployAssets(assetsDirAbsPath, targetDirAbsPath) {
+    #deployAssets(assetsDirAbsPath, targetDirAbsPath) {
         if ( pathExists(assetsDirAbsPath) ) {
             createDirectory(targetDirAbsPath);
-            await new Promise((resolve, reject) => {
-                gulp.src([`${assetsDirAbsPath}/**`])
-                    .pipe(gulp.dest(targetDirAbsPath))
-                    .on('end', resolve);
-            });
+            copyDir(assetsDirAbsPath, targetDirAbsPath);
         }
     }
 
