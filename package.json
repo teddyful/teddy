@@ -6,7 +6,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "node build.js"
+        "build": "node build.js", 
+        "test": "vitest run --config ./system/tests/vitest.config.js"
     },
     "repository": {
         "type": "git",
@@ -24,11 +25,13 @@
         "del": "8.0.0", 
         "flexsearch": "0.7.43", 
         "gulp": "5.0.0", 
-        "gulp-mustache": "5.0.0",
+        "gulp-mustache": "5.0.0", 
         "minify": "13.0.0", 
         "showdown": "2.1.0", 
         "string-strip-html": "13.4.8", 
         "try-to-catch": "3.0.1", 
+        "vite": "6.2.1", 
+        "vitest": "3.0.8", 
         "winston": "3.17.0", 
         "winston-daily-rotate-file": "5.0.0"
     }

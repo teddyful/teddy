@@ -104,4 +104,5 @@ function cjkTokenizer(str) {
 
 export { ISO_639_3166_LOOKUP, CJK_ISO_3166, 
     LANG_ALPHABETS, LANG_SINGLE_CHARS, 
+    isAlphabet, isSingleChar, 
     customTokenizer, cjkTokenizer };
