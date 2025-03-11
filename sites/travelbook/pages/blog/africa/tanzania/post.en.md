@@ -1,7 +1,7 @@
 ---
 name: Serengeti National Park
 enabled: true
-description: Tanzania is an East African country known for its vast wilderness areas. They include the plains of Serengeti National Park, a safari mecca populated by the 'big five' game (elephant, lion, leopard, buffalo, rhino), and Kilimanjaro National Park, home to Africa’s highest mountain. Offshore lie the tropical islands of Zanzibar, with Arabic influences, and Mafia, with a marine park home to whale sharks and coral reefs.
+description: Tanzania is an East African country known for its vast wilderness areas. They include the plains of Serengeti National Park, a safari mecca populated by the 'big five' game (elephant, lion, leopard, buffalo, rhino), and Kilimanjaro National Park, home to Africa's highest mountain. Offshore lie the tropical islands of Zanzibar, with Arabic influences, and Mafia, with a marine park home to whale sharks and coral reefs.
 categories: africa
 tags: serengeti, safari, Kilimanjaro, Zanzibar
 authorId: teddy

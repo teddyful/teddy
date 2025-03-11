@@ -23,7 +23,15 @@ class BuildDeployer {
     }
 
     deployBuildMetadata() {
-        writeJsonToFile({id: this.config.build.id}, 
+        const buildMetadata = {
+            id: this.config.build.id, 
+            date: this.config.build.date, 
+            site: {
+                name: this.config.site.name, 
+                version: this.config.site.version
+            }
+        };
+        writeJsonToFile(buildMetadata, 
             `${this.config.build.distDirs.base}/build.json`);
     }
 

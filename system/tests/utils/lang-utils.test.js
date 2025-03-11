@@ -9,8 +9,7 @@ import { expect, test } from 'vitest';
 import { isAlphabet, isSingleChar, customTokenizer, cjkTokenizer } 
     from '../../src/utils/lang-utils.js';
 
-test('character is used by languages that rely on spaces to separate words', 
-    () => {
+test('character is used by languages that use spaces to separate words', () => {
     expect(isAlphabet('x'.charCodeAt(0))).toBe(true);
 });
 

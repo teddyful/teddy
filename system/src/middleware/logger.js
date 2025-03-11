@@ -7,7 +7,7 @@
 
 import winston from 'winston';
 import 'winston-daily-rotate-file'
-const { combine, errors, label, printf, timestamp } = winston.format;
+const { combine, errors, label, printf, timestamp, uncolorize } = winston.format;
 
 
 const loggingFormat = printf(({ level, message, label, timestamp }) => {
@@ -40,6 +40,7 @@ const logger = winston.createLogger({
         timestamp({
             format: 'YYYY-MM-DD HH:mm:ss.SSS'
         }),
+        uncolorize(), 
         loggingFormat
     ),
     transports: [

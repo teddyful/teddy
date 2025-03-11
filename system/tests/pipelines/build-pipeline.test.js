@@ -6,7 +6,8 @@
  */
 
 import fs from 'fs';
-import { expect, test } from 'vitest';
+import FlexSearch from 'flexsearch';
+import { beforeAll, describe, expect, test } from 'vitest';
 
 import BuildPipeline from '../../src/pipelines/build-pipeline.js';
 
@@ -254,15 +255,91 @@ const buildResources = [
     'templates/zh-tw/post.html'
 ];
 
-test('build pipeline creates demo TravelBook site', async () => {
-    const buildPipeline = new BuildPipeline(opts);
-    await buildPipeline.build();
-    const publicResourcePaths = publicResources.map(
-        resource => `${publicDirectory}/${resource}`);
-    const buildResourcePaths = buildResources.map(
-        resource => `${buildDirectory}/${resource}`);
-    const resources = publicResourcePaths.concat(buildResourcePaths);
-    for ( const resource of resources ) {
-        expect(fs.existsSync(resource)).toBe(true);
-    }
+let index = null;
+const LANGUAGE = 'en';
+const LANGUAGE_INDEX_KEYS = {
+    "en": [
+        "reg", 
+        "name.cfg", 
+        "name.map", 
+        "name.ctx", 
+        "description.cfg", 
+        "description.map", 
+        "description.ctx", 
+        "content.cfg", 
+        "content.map", 
+        "content.ctx", 
+        "tag", 
+        "store"
+    ]
+};
+
+
+describe('static site', () => {
+
+    beforeAll(async () => {
+        const buildPipeline = new BuildPipeline(opts);
+        await buildPipeline.build();
+    });
+
+    test('demo TravelBook site resources exist', () => {
+        const publicResourcePaths = publicResources.map(
+            resource => `${publicDirectory}/${resource}`);
+        const buildResourcePaths = buildResources.map(
+            resource => `${buildDirectory}/${resource}`);
+        const resources = publicResourcePaths.concat(buildResourcePaths);
+        for ( const resource of resources ) {
+            expect(fs.existsSync(resource)).toBe(true);
+        }
+    });
+
+    test('demo TravelBook site root blog listing page', () => {
+        const htmlPath = `${publicDirectory}/blog/index.html`;
+        const html = fs.readFileSync(htmlPath, 'utf8');
+        const expectedHtmlPath = 
+            './system/tests/resources/travelbook/blog/index.html';
+        const expectedHtml = fs.readFileSync(expectedHtmlPath, 'utf8');
+        expect(html).toEqual(expectedHtml);
+    });
+
+});
+
+describe('document store', () => {
+
+    beforeAll(async () => {
+        const documentStorePath = 
+            `${publicDirectory}/assets/${siteVersion}/collection/${LANGUAGE}`;
+        const configPath = `${buildDirectory}/config/config.json`;
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        let documentStoreConfig = config.site.collection.index.documentStore;
+        documentStoreConfig.language = LANGUAGE;
+        index = new FlexSearch.Document(documentStoreConfig);
+        const indexKeys = LANGUAGE_INDEX_KEYS[LANGUAGE];
+        for ( const key of indexKeys ) {
+            const path = `${documentStorePath}/${key}.json`;
+            const json = JSON.parse(fs.readFileSync(path, 'utf8'));
+            await index.import(key, json ?? null);
+        }
+    });
+
+    test('get document by ID', async () => {
+        const document = await index.get(10);
+        const expectedDocument = {
+            id: 10,
+            name: 'Sognefjord and Viking Ships',
+            description: 'Norway is a Scandinavian country encompassing mountains, glaciers and deep coastal fjords. Oslo, the capital, is a city of green spaces and museums. Preserved 9th-century Viking ships are displayed at the Viking Ship Museum in Oslo. Bergen, with colorful wooden houses, is the starting point for cruises to the dramatic Sognefjord. Norway is also known for fishing, hiking and skiing, notably at Lillehammers Olympic resort.',
+            categoryLanguages: [ { id: 'europe', name: 'Europe' } ],
+            tags: [ 'europe', 'scandinavia', 'fjord', 'viking', 'Sognefjord' ],
+            date: '2024-12-01T12:00:00.000Z',
+            displayDate: '1 December 2024',
+            relUrl: 'europe/norway',
+            coverExists: true,
+            cover: 'assets/viking-ship.jpg',
+            author: 'Teddy',
+            authorUrl: '/about',
+            content: 'Lorem ipsum dolor sit amet consectetur adipiscing elit Curabitur sem lacus rutrum convallis scelerisque eget dignissim a ligula Maecenas vitae dapibus nibh ut facilisis nulla Fusce maximus in leo nec ullamcorper Orci varius natoque penatibus et magnis dis parturient montes nascetur ridiculus mus Pellentesque nec varius augue Duis blandit dui ut tristique consequat Nullam vel ligula lectus Section Heading Donec quis sem enim In rutrum id dui sed convallis Mauris sagittis libero quis libero finibus quis accumsan turpis rutrum Donec consectetur elementum justo sit amet auctor Vivamus fringilla id est vitae laoreet Donec ornare id ligula et pharetra Sed dictum ante at orci rutrum vel faucibus quam auctor Morbi in mauris dignissim purus porttitor viverra ac sit amet leo Vestibulum dignissim sapien ut eleifend aliquet lectus diam gravida nibh et eleifend metus justo ut ante Class aptent taciti sociosqu ad litora torquent per conubia nostra per inceptos himenaeos Praesent vitae suscipit erat Vestibulum eu est ut lacus congue sagittis Vivamus sodales felis ut orci sodales vitae feugiat augue tristique Lorem ipsum dolor sit amet consectetur adipiscing elit Curabitur sem lacus rutrum convallis scelerisque eget dignissim a ligula Maecenas vitae dapibus nibh ut facilisis nulla Fusce maximus in leo nec ullamcorper Teddy Sed egestas erat nisl quis pharetra quam sodales in Mauris eu est id sapien malesuada porta consectetur sit amet ipsum Aliquam erat volutpat Duis tristique eleifend quam at accumsan Ut a nisl rhoncus iaculis lorem eget pulvinar nisl Cras neque quam ultricies id sapien sed mattis varius arcu Quisque feugiat arcu ac nulla gravida a laoreet dui congue Quisque nec risus nec eros elementum scelerisque nec in odio Etiam at purus aliquet faucibus eros eget placerat sem'
+        }
+        expect(document).toEqual(expectedDocument);
+    });
+
 });
