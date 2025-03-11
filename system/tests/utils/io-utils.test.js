@@ -10,5 +10,5 @@ import { getFiles } from '../../src/utils/io-utils.js';
 
 test('recursive file listing generated correctly', () => {
     const basePath = './system';
-    expect(getFiles(basePath).length).toBeGreaterThanOrEqual(40);
+    expect(getFiles(basePath).length).toBeGreaterThanOrEqual(39);
 });

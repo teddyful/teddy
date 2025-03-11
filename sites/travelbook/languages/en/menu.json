@@ -53,7 +53,7 @@
                     }
                 ]
             }, 
-            "copyright": "Free theme by <a href=\"{{{ urls.external.themefisher }}}\" target=\"_blank\">Themefisher</a>"
+            "copyright": "Built using <a href=\"{{{ urls.external.teddy }}}\" target=\"_blank\">Teddy</a>"
         }, 
         "languages": [
             {

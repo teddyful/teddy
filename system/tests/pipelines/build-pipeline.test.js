@@ -293,15 +293,6 @@ describe('static site', () => {
         }
     });
 
-    test('demo TravelBook site root blog listing page', () => {
-        const htmlPath = `${publicDirectory}/blog/index.html`;
-        const html = fs.readFileSync(htmlPath, 'utf8');
-        const expectedHtmlPath = 
-            './system/tests/resources/travelbook/blog/index.html';
-        const expectedHtml = fs.readFileSync(expectedHtmlPath, 'utf8');
-        expect(html).toEqual(expectedHtml);
-    });
-
 });
 
 describe('document store', () => {

@@ -53,7 +53,7 @@
                     }
                 ]
             }, 
-            "copyright": "無料テーマ <a href=\"{{{ urls.external.themefisher }}}\" target=\"_blank\">Themefisher</a>"
+            "copyright": "<a href=\"{{{ urls.external.teddy }}}\" target=\"_blank\">Teddy</a> を使用して構築"
         }, 
         "languages": [
             {
