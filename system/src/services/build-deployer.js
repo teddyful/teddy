@@ -75,12 +75,22 @@ class BuildDeployer {
     deploySitemap() {
         if ( !this.config.build.opts.ignoreSitemap) {
             const filepath = this.config.system.build.siteDirs.web + 
-            '/sitemap/sitemap.xml';
+                '/sitemap/sitemap.xml';
             if ( pathExists(filepath) ) {
                 const filename = path.basename(filepath);
                 copyFile(filepath, 
                     `${this.config.build.distDirs.base}/${filename}`);
             }
+        }
+    }
+
+    deployBuildErrorPage() {
+        const filepath = this.config.system.assets.dir + 
+            '/html/build-error.html';
+        if ( pathExists(filepath) && 
+            pathExists(this.config.build.distDirs.base) ) {
+            copyFile(filepath, 
+                `${this.config.build.distDirs.base}/index.html`);
         }
     }
 

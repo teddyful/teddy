@@ -5,6 +5,7 @@
  * @since  0.0.1
  */
 
+import path from 'path';
 import tryToCatch from 'try-to-catch';
 import { minify } from 'minify';
 
@@ -41,7 +42,7 @@ class AssetBuilder {
     }
 
     async buildCustomCssAssets(sourceType) {
-        if ( this.config.site.assets.minify.css &&  
+        if ( this.config.build.opts.minifyCss &&  
                 !this.config.build.opts.ignoreAssets && 
                 !this.config.build.opts.ignoreCss ) {
             await this.#buildCustomAssets(
@@ -50,7 +51,7 @@ class AssetBuilder {
     }
 
     async buildCustomJsAssets(sourceType) {
-        if ( this.config.site.assets.minify.js &&  
+        if ( this.config.build.opts.minifyJs &&  
                 !this.config.build.opts.ignoreAssets && 
                 !this.config.build.opts.ignoreJs ) {
             await this.#buildCustomAssets(
@@ -73,7 +74,7 @@ class AssetBuilder {
                 `/${this.config.site.theme.name}/assets`;
         }
         if ( assets && 'custom' in assets && assetType in assets.custom ) {
-            const assetRelPaths = assets[assetType].filter(
+            const assetRelPaths = assets.custom[assetType].filter(
                 assetRelPath => hasFileExtension(assetRelPath, assetType));
             for (const relPath of assetRelPaths) {
                 const absPath = `${assetBasePath}/${assetType}/${relPath}`;
@@ -85,6 +86,8 @@ class AssetBuilder {
                     relPath.replace(`.${assetType}`, `.min.${assetType}`);
                 const outputAbsPath = this.config.build.distDirs.assets + 
                     `/${assetType}/${outputRelPath}`;
+                const outputDirAbsPath = path.dirname(outputAbsPath);
+                createDirectory(outputDirAbsPath);
                 writeStringToFile(minified, outputAbsPath);
             }
         }

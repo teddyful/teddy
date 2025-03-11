@@ -134,6 +134,7 @@ dist
 logs/
 sites/*/build
 sites/*/public
+undefined/
 
 # Teddy system update temporary directories
 working/

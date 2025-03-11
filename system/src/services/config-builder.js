@@ -17,7 +17,7 @@ class ConfigBuilder {
         this.opts = opts;
     }
 
-    build() {
+    build(error = false) {
 
         // Load the site configuration.
         const siteDirPath = this.systemConfig.system.sites + 
@@ -67,6 +67,10 @@ class ConfigBuilder {
             assets:  `${distDirBase}/assets/${distDirVersion}`
         }
 
+        if ( error ) {
+            return this.config;
+        }
+
         // Collection pages directory name.
         const collectionPagesDirName = this.config.site.collection.pagesDirName
             .replace(/\s+/g, '-')
@@ -92,6 +96,15 @@ class ConfigBuilder {
                 this.config.site.languages.data[language].urls);
             this.config.site.languages.data[language].urls.assets = 
                 `/assets/${distDirVersion}`;
+
+            // Asset configuration.
+            this.config.site.languages.data[language].assets = {
+                minify: {
+                    css: this.config.build.opts.minifyCss, 
+                    html: this.config.build.opts.minifyHtml, 
+                    js: this.config.build.opts.minifyJs
+                }
+            }
 
         }
 

@@ -23,9 +23,12 @@ class BuildPipeline {
     constructor(opts) {
         this.statusCode = 1;
         this.opts = opts;
+        this.isValidConfig = false;
+        this.configBuilder = null;
         this.config = null;
         this.collectionBuilder = null;
         this.buildCleaner = null;
+        this.buildSetup = null;
         this.buildDeployer = null;
         this.assetBuilder = null;
     }
@@ -38,29 +41,29 @@ class BuildPipeline {
             logger.info(`Site name: ${this.opts.siteName}`);
             logger.info(`Theme name: ${this.opts.themeName}`);
             logger.info(`Environment name: ${this.opts.env}`);
-            logger.info('Stage 1 - Validating configuration...');
+            logger.info('Stage 1 of 12 - Validating configuration...');
             this.#validateConfig();
-            logger.info('Stage 2 - Aggregating configuration...');
+            logger.info('Stage 2 of 12 - Aggregating configuration...');
             this.#buildConfig();
-            logger.info('Stage 3 - Pre-build cleaning...');
+            logger.info('Stage 3 of 12 - Pre-build cleaning...');
             this.#cleanPreBuild();
-            logger.info('Stage 4 - Setting up the build environment...');
+            logger.info('Stage 4 of 12 - Setting up the build environment...');
             this.#setup();
-            logger.info('Stage 5 - Deploying static artifacts...');
+            logger.info('Stage 5 of 12 - Deploying static artifacts...');
             await this.#deployArtifacts();
-            logger.info('Stage 6 - Indexing the collection...');
+            logger.info('Stage 6 of 12 - Indexing the collection...');
             this.#indexCollection();
-            logger.info('Stage 7 - Building templates...');
+            logger.info('Stage 7 of 12 - Building templates...');
             await this.#buildTemplates();
-            logger.info('Stage 8 - Building pages...');
+            logger.info('Stage 8 of 12 - Building pages...');
             await this.#buildPages();
-            logger.info('Stage 9 - Building custom assets...');
+            logger.info('Stage 9 of 12 - Building custom assets...');
             await this.#buildCustomAssets();
-            logger.info('Stage 10 - Building system assets...');
+            logger.info('Stage 10 of 12 - Building system assets...');
             this.#buildSystemAssets();
-            logger.info('Stage 11 - Deploying assets...');
+            logger.info('Stage 11 of 12 - Deploying assets...');
             this.#deployAssets();
-            logger.info('Stage 12 - Post-build cleaning...');
+            logger.info('Stage 12 of 12 - Post-build cleaning...');
             this.#cleanPostBuild();
             logger.info('Successfully finished building the static site!');
             logger.info(`Build directory: ${systemConfig.system.sites}` + 
@@ -73,6 +76,8 @@ class BuildPipeline {
             logger.error('An error was encountered whilst running the build ' + 
                 'pipeline. Please consult the log files for further details.');
             logger.error(err.stack);
+            logger.info('Processing the build directory post-error...');
+            this.#processBuildError();
         }
 
     }
@@ -80,13 +85,14 @@ class BuildPipeline {
     #validateConfig() {
         const configValidator = new ConfigValidator(systemConfig, this.opts);
         configValidator.validate();
+        this.isValidConfig = true;
     }
 
     #buildConfig() {
 
         // Configuration builder.
-        let configBuilder = new ConfigBuilder(systemConfig, this.opts);
-        this.config = configBuilder.build();
+        this.configBuilder = new ConfigBuilder(systemConfig, this.opts);
+        this.config = this.configBuilder.build();
 
         // Collection builder.
         this.collectionBuilder = new CollectionBuilder(this.config);
@@ -100,8 +106,8 @@ class BuildPipeline {
     }
 
     #setup() {
-        const buildSetup = new BuildSetup(this.config);
-        buildSetup.createDistDirectoryStructure();
+        this.buildSetup = new BuildSetup(this.config);
+        this.buildSetup.createDistDirectoryStructure();
     }
 
     async #deployArtifacts() {
@@ -159,6 +165,24 @@ class BuildPipeline {
 
     #cleanPostBuild() {
         this.buildCleaner.postBuildCleanup();
+    }
+
+    #processBuildError() {
+        try {
+            if ( this.isValidConfig ) {
+                this.configBuilder = new ConfigBuilder(systemConfig, this.opts);
+                this.config = this.configBuilder.build(true);
+                this.buildCleaner = new BuildCleaner(this.config);
+                this.buildSetup = new BuildSetup(this.config);
+                this.buildDeployer = new BuildDeployer(this.config);
+                this.buildCleaner.postErrorBuildCleanup();
+                this.buildSetup.createBaseDistDirectory();
+                this.buildDeployer.deployBuildErrorPage();
+            }
+        } catch (err) {
+            logger.error('Could not process the build directory post-error.');
+            logger.debug(err.stack);
+        }
     }
 
 }

@@ -23,7 +23,6 @@ const siteConfigSchema = {
             properties: {
                 assets: {
                     type: 'object', 
-                    required: ['minify'], 
                     properties: {
                         custom: {
                             type: 'object', 
@@ -49,15 +48,6 @@ const siteConfigSchema = {
                                     } 
                                 }, 
                                 js: { type: 'array' }
-                            }
-                        }, 
-                        minify: {
-                            type: 'object', 
-                            required: ['css', 'html', 'js'], 
-                            properties: {
-                                css: { type: 'boolean' }, 
-                                html: { type: 'boolean' }, 
-                                js: { type: 'boolean' }
                             }
                         }
                     }

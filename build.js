@@ -47,6 +47,9 @@ program.name(packageConfig.name)
     .option('--ignore-robots', 'Ignore the robots.txt file', false)
     .option('--ignore-sitemap', 'Ignore the sitemap.xml file', false)
     .option('--ignore-web-config', 'Ignore all web configuration files', false)
+    .option('--minify-css', 'Minify custom CSS assets', false)
+    .option('--minify-html', 'Minify output HTML', false)
+    .option('--minify-js', 'Minify custom JavaScript assets', false)
     .option('--skip-post-build-cleanup', 'Skip the post-build cleanup', false)
     .action(async function(opts) {
         logger.info('Started the Teddy static website builder ' + 

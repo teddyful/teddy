@@ -6,6 +6,7 @@
  */
 
 import { deleteSync } from 'del';
+import { pathExists } from '../utils/io-utils.js';
 
 
 class BuildCleaner {
@@ -39,8 +40,8 @@ class BuildCleaner {
             return deleteSync([
                 `${this.config.build.distDirs.build}/**`, 
                 `${this.config.build.distDirs.base}/**`], {
-                dot: true, 
-                force: true
+                    dot: true, 
+                    force: true
             });
     
         }
@@ -54,6 +55,21 @@ class BuildCleaner {
                     dot: true, 
                     force: true
                 });
+        }
+    }
+
+    postErrorBuildCleanup() {
+        if ( pathExists(this.config.build.distDirs.build) ) {
+            deleteSync([`${this.config.build.distDirs.build}/**`], {
+                dot: true, 
+                force: true
+            });
+        }
+        if ( pathExists(this.config.build.distDirs.base) ) {
+            deleteSync([`${this.config.build.distDirs.base}/**`], {
+                dot: true, 
+                force: true
+            });
         }
     }
 

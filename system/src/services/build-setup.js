@@ -24,6 +24,10 @@ class BuildSetup {
         createDirectory(this.config.build.distDirs.assets + '/collection');
     }
 
+    createBaseDistDirectory() {
+        createDirectory(this.config.build.distDirs.base);
+    }
+
 }
 
 export default BuildSetup;

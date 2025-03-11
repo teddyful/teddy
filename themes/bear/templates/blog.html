@@ -104,12 +104,12 @@
 
         <!-- Theme-specific JavaScript -->
         <script src="{{{ urls.assets }}}/js/vendors/mithril/2.2.14/mithril.min.js"></script>
-        {{ #theme.assets.minify.js }}
+        {{ #assets.minify.js }}
             <script src="{{{ urls.assets }}}/js/blog.min.js"></script>
-        {{ /theme.assets.minify.js }}
-        {{ ^theme.assets.minify.js }}
+        {{ /assets.minify.js }}
+        {{ ^assets.minify.js }}
             <script src="{{{ urls.assets }}}/js/blog.js"></script>
-        {{ /theme.assets.minify.js }}
+        {{ /assets.minify.js }}
 
     </body>
 

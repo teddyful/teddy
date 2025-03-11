@@ -139,7 +139,7 @@ class PageBuilder {
                             writeStringToFile(pageHtml, pageHtmlAbsFilePath);
 
                             // Minify the HTML if configured.
-                            if ( this.config.site.assets.minify.html ) {
+                            if ( this.config.build.opts.minifyHtml ) {
                                 const [error, minifiedHtml] = await tryToCatch(
                                     minify, pageHtmlAbsFilePath, 
                                     miniferOptions);
