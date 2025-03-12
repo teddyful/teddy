@@ -52,7 +52,7 @@ class BuildPipeline {
             logger.info('Stage 5 of 12 - Deploying static artifacts...');
             await this.#deployArtifacts();
             logger.info('Stage 6 of 12 - Indexing the collection...');
-            this.#indexCollection();
+            await this.#indexCollection();
             logger.info('Stage 7 of 12 - Building templates...');
             await this.#buildTemplates();
             logger.info('Stage 8 of 12 - Building pages...');
@@ -120,8 +120,8 @@ class BuildPipeline {
         this.buildDeployer.deploySitemap();
     }
 
-    #indexCollection() {
-        this.collectionBuilder.index();
+    async #indexCollection() {
+        await this.collectionBuilder.index();
     }
 
     async #buildTemplates() {

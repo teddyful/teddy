@@ -186,7 +186,7 @@ class CollectionBuilder {
 
     }
 
-    index() {
+    async index() {
         if ( this.config.site.collection.enabled && 
             !this.config.build.opts.ignoreCollection ) {
 
@@ -221,7 +221,7 @@ class CollectionBuilder {
                 // Export the index.
                 let keys = [];
                 const indexDirBaseAbsPath = this.config.build.distDirs.assets;
-                index.export(function(key, data) { 
+                await index.export(function(key, data) { 
                     keys.push(key);
                     const indexDirAbsPath = indexDirBaseAbsPath 
                         + `/collection/${language}`;

@@ -1,6 +1,6 @@
 {
     "name": "teddy",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Opinionated open-source content management system (CMS) and static site generator (SSG) that focuses on simplicity and easy content management.", 
     "main": "build.js", 
     "private": true,
