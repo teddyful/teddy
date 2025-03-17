@@ -21,7 +21,7 @@
                     "results": "在 「${category.name}」 類別中找到 ${searchResults.length} 個貼文。"
                 }, 
                 "combined": {
-                    "results": "在 「${category.name」 類別中找到 ${searchResults.length} 個包含短語 「${searchQuery}」 的貼文。"
+                    "results": "在 「${category.name}」 類別中找到 ${searchResults.length} 個包含短語 「${searchQuery}」 的貼文。"
                 }
             }
         }
