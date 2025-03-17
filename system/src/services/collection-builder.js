@@ -32,6 +32,9 @@ class CollectionBuilder {
         let languagePages = new Map();
         let languageMetadata = new Map();
 
+        // Initialise an object to store language-specific collection sizes.
+        this.config.site.collection.sizes = {};
+
         if ( this.config.site.collection.enabled && 
             !this.config.build.opts.ignoreCollection ) {
 
@@ -39,9 +42,6 @@ class CollectionBuilder {
             const collectionDirPath = this.config.system.build.siteDirs.pages + 
                 '/' + this.config.site.collection.pagesDirName;
             const collectionPagesFilePaths = getFiles(collectionDirPath);
-
-            // Initialise an object to store language-specific collection sizes.
-            this.config.site.collection.sizes = {};
 
             // Iterate across all languages.
             for ( const language of this.config.site.languages.enabled ) {

@@ -25,7 +25,8 @@ class Search {
 
         // Create an empty index using the same build-time index configuration.
         this.index = new FlexSearch.Document(indexConfig);
-        const indexKeys = LANGUAGE_INDEX_KEYS[PAGE_LANGUAGE];
+        const indexKeys = PAGE_LANGUAGE in LANGUAGE_INDEX_KEYS ? 
+            LANGUAGE_INDEX_KEYS[PAGE_LANGUAGE] : [];
 
         // Define the HTTP headers for the Fetch API.
         let headers = new Headers();
@@ -41,7 +42,8 @@ class Search {
         }
 
         // Set the collection size.
-        this.collectionSize = COLLECTION_SIZES[PAGE_LANGUAGE];
+        this.collectionSize = PAGE_LANGUAGE in COLLECTION_SIZES ? 
+            COLLECTION_SIZES[PAGE_LANGUAGE] : 0;
 
     }
 

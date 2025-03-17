@@ -223,7 +223,10 @@ const MIN_SEARCH_QUERY_LENGTH = ${this.config.site.collection.search.minQueryLen
         for ( const language of this.config.site.languages.enabled ) {
             content[language] = structuredClone(
                 this.config.site.languages.data[language]);
-            delete content[language].collection.metadata.pages;
+            if ( exists(content[language], 
+                    'collection', 'metadata', 'pages') ) {
+                delete content[language].collection.metadata.pages;
+            }
         }
         const targetDirAbsPath = this.config.build.distDirs.assets + 
             '/js/vendors/teddy';
