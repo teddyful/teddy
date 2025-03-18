@@ -3,8 +3,8 @@
         "name": "bear", 
         "version": "0.0.1", 
         "author": "Jillur Quddus", 
-        "repo": "https://github.com/teddyful/teddy-bear", 
-        "license": "https://github.com/teddyful/teddy-bear/blob/main/LICENSE", 
+        "repo": "https://github.com/teddyful/teddy", 
+        "license": "https://github.com/teddyful/teddy/blob/main/LICENSE", 
         "assets": {
             "custom": {
                 "css": [
