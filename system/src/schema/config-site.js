@@ -96,7 +96,7 @@ const siteConfigSchema = {
                                 }
                             }
                         }, 
-                        pagesDirName: { type: 'string' }, 
+                        pagesDir: { type: 'string' }, 
                         pagination: {
                             type: 'object', 
                             required: ['size'], 
@@ -136,7 +136,7 @@ const siteConfigSchema = {
                         required: [
                             'index', 
                             'media', 
-                            'pagesDirName', 
+                            'pagesDir', 
                             'pagination', 
                             'search', 
                             'sort', 

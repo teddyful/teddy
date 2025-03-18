@@ -145,7 +145,7 @@ class ConfigValidator {
             this.systemConfig.system.build.siteDirs.languages);
         if ( this.siteConfig.site.collection.enabled ) {
             this.#validateResourceExists(this.siteConfig, 
-                ['site', 'collection', 'pagesDirName'], 
+                ['site', 'collection', 'pagesDir'], 
                 this.systemConfig.system.build.siteDirs.pages);
         }
 

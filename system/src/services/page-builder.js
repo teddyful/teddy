@@ -331,7 +331,7 @@ class PageBuilder {
         // Generate the page type to use that will be used, for example, 
         // as the OG type.
         const pageIsArticle = pageResourceUrl.startsWith(
-            '/' + this.config.site.collection.pagesDirName + '/');
+            '/' + this.config.site.collection.pagesDir + '/');
         const pageType = pageIsArticle ? 
             'article' : 'website';
 

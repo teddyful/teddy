@@ -25,7 +25,7 @@
         }, 
         "collection": {
             "enabled": true, 
-            "pagesDirName": "blog", 
+            "pagesDir": "blog", 
             "index": {
                 "content": true,  
                 "documentStore": {

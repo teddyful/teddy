@@ -72,7 +72,7 @@ class ConfigBuilder {
         }
 
         // Collection pages directory name.
-        const collectionPagesDirName = this.config.site.collection.pagesDirName
+        const collectionPagesDir = this.config.site.collection.pagesDir
             .replace(/\s+/g, '-')
             .replace(/[^A-Za-z0-9\-_.\\\/]/g, '')
             .toLowerCase().trim();
@@ -90,7 +90,7 @@ class ConfigBuilder {
 
             // Generate localized URLs for user-defined URLs.
             this.config.site.languages.data[language].urls.collection = 
-                `/${collectionPagesDirName}`;
+                `/${collectionPagesDir}`;
             UrlBuilder.localizeUrls(language, 
                 this.config.site.languages.enabled[0], 
                 this.config.site.languages.data[language].urls);
@@ -119,7 +119,7 @@ class ConfigBuilder {
         this.config.site.web.baseUrl = baseUrl;
 
         // Collection configuration.
-        this.config.site.urls.collection = `/${collectionPagesDirName}`;
+        this.config.site.urls.collection = `/${collectionPagesDir}`;
         if ( this.config.site.collection.index.content && 
             !this.config.site.collection.index.documentStore.document.index
                 .includes('content') ) {

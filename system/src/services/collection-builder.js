@@ -40,7 +40,7 @@ class CollectionBuilder {
 
             // Get all files in the designated collection directory.
             const collectionDirPath = this.config.system.build.siteDirs.pages + 
-                '/' + this.config.site.collection.pagesDirName;
+                '/' + this.config.site.collection.pagesDir;
             const collectionPagesFilePaths = getFiles(collectionDirPath);
 
             // Iterate across all languages.
