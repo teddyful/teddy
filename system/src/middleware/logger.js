@@ -22,7 +22,7 @@ const fileRotateTransport = new winston.transports.DailyRotateFile({
     filename: 'logs/teddy-%DATE%.log', 
     datePattern: 'YYYY-MM-DD', 
     level: 'debug', 
-    maxFiles: '14d', 
+    maxFiles: '31d', 
     maxSize: '10m'
 });
 
