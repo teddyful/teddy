@@ -28,14 +28,9 @@ class AssetBuilder {
         };
         this.jsMinifierOptions = {
             "js": {
-                "type": "putout",
-                "putout": {
-                    "quote": "'",
-                    "mangle": true,
-                    "mangleClassNames": true,
-                    "removeUnusedVariables": true,
-                    "removeConsole": false,
-                    "removeUselessSpread": true
+                "type": "terser",
+                "terser": {
+                    "mangle": false
                 }
             }
         };
