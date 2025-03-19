@@ -13,6 +13,7 @@ import tryToCatch from 'try-to-catch';
 import UrlBuilder from './url-builder.js';
 import { minify } from 'minify';
 
+import logger from '../middleware/logger.js';
 import { createDirectory, copyFile, getFiles, 
     hasFileExtension, hasFileExtensions, writeStringToFile } from 
         '../utils/io-utils.js';
@@ -75,6 +76,7 @@ class PageBuilder {
                         `/languages/${language}.json`, 'utf-8'));
 
                 // Iterate across all page markdown files for this language.
+                let numPagesProcessed = 0;
                 for (const pageMdRelFilePath of this.languagePages[language]) {
 
                     // Identify source, dependency and target paths.
@@ -171,12 +173,26 @@ class PageBuilder {
                                     assetTargetFilePath
                                 );
                             }
+                            numPagesProcessed += 1;
 
+                        } else {
+                            logger.debug('Page Builder - Skipping ' + 
+                                `'${pageMdAbsFilePath}' as it is not ` + 
+                                'enabled in its frontmatter.');
                         }
 
+                    } else {
+                        logger.debug('Page Builder - Skipping ' + 
+                            `'${pageMdAbsFilePath}' as the corresponding ` + 
+                            `HTML template '${templateFileName}' does ` + 
+                            'not exist.');
                     }
 
                 }
+
+                logger.debug('Page Builder - Found and processed ' + 
+                    `${numPagesProcessed} enabled markdown pages associated ` + 
+                    `with the language '${language}'.`);
 
             }
 

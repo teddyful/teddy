@@ -5,6 +5,7 @@
  * @since  0.0.1
  */
 
+import logger from '../middleware/logger.js';
 import LanguageBuilder from './language-builder.js';
 import UrlBuilder from './url-builder.js';
 import { loadJsonFile } from '../utils/io-utils.js';
@@ -66,6 +67,8 @@ class ConfigBuilder {
                 `/build/${this.config.build.env}/${distDirVersion}`, 
             assets:  `${distDirBase}/assets/${distDirVersion}`
         }
+        logger.debug('Config Builder - Build configuration: ');
+        logger.debug(JSON.stringify(this.config.build, null, 4));
 
         if ( error ) {
             return this.config;

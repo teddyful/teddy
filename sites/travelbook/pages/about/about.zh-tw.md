@@ -1,5 +1,5 @@
 ---
-name: About
+name: 資訊
 enabled: true
 ---
 

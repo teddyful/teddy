@@ -10,6 +10,7 @@ import FlexSearch from 'flexsearch';
 import showdown from 'showdown';
 import { stripHtml } from "string-strip-html";
 
+import logger from '../middleware/logger.js';
 import Collection from '../entities/collection.js';
 import Page from '../entities/page.js';
 import { createDirectory, getFiles, hasFileExtension } from 
@@ -176,6 +177,10 @@ class CollectionBuilder {
                 languagePages.set(language, pages);
                 languageMetadata.set(language, 
                     this.config.site.languages.data[language].collection.metadata);
+                logger.debug('Collection Builder - Found and processed ' + 
+                    `${pages.length} enabled markdown page documents ` + 
+                    `associated with the language '${language}'.`
+                )
 
             }
 

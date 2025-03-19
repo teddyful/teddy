@@ -38,7 +38,8 @@ class BuildDeployer {
     deployLanguages() {
         for ( const language of this.config.site.languages.enabled ) {
             writeJsonToFile(this.config.site.languages.data[language], 
-                `${this.config.build.distDirs.build}/languages/${language}.json`);
+                `${this.config.build.distDirs.build}/languages/` + 
+                    `${language}.json`);
         }
     }
 
