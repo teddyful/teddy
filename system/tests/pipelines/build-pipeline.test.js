@@ -20,6 +20,7 @@ const opts = {
     ignoreAssets: false,
     ignoreCollection: false,
     ignoreCss: false,
+    ignoreData: false,
     ignoreFonts: false,
     ignoreHtml: false,
     ignoreImages: false,

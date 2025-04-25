@@ -21,6 +21,7 @@ class BuildCleaner {
                 this.config.build.opts.customJsOnly || 
                 this.config.build.opts.ignoreAssets || 
                 this.config.build.opts.ignoreCss || 
+                this.config.build.opts.ignoreData || 
                 this.config.build.opts.ignoreFonts || 
                 this.config.build.opts.ignoreImages || 
                 this.config.build.opts.ignoreJs ) {

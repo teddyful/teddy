@@ -169,6 +169,19 @@ class AssetBuilder {
         }
     }
 
+    deployDataAssets(sourceType) {
+        if ( !this.config.build.opts.ignoreAssets && 
+            !this.config.build.opts.ignoreData ) {
+            const assetsDirAbsPath = 
+                this.#ascertainPathToAssets(sourceType, 'data');
+            if ( assetsDirAbsPath ) {
+                const targetDirAbsPath = 
+                    `${this.config.build.distDirs.assets}/data`;
+                this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
+            }
+        }
+    }
+
     #ascertainPathToAssets(sourceType, assetType) {
         if ( sourceType == 'site' ) {
             return this.config.system.build.siteDirs.assets + '/' + assetType;
