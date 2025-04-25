@@ -2,7 +2,7 @@
 <div align="center">
 <h1>Teddy</h1>
 <p>Opinionated open-source content management system (CMS) and static site generator (SSG) that focuses on simplicity and easy content management.</p>
-<p><a href="https://teddyful.com" target="_blank">Docs</a> | <a href="https://teddyful.com/docs/latest/installation/" target="_blank">Installation</a> | <a href="https://teddyful.com/docs/latest/configuration/" target="_blank">Configuration</a> | <a href="https://teddyful.com/docs/latest/build/" target="_blank">Build</a> | <a href="https://teddyful.com/docs/latest/releases/" target="_blank">Releases</a> | <a href="https://teddyful.com/docs/latest/credits/" target="_blank">Credits</a></p>
+<p><a href="https://teddyful.com" target="_blank">Docs</a> | <a href="https://teddyful.com/docs/latest/installation/" target="_blank">Installation</a> | <a href="https://teddyful.com/docs/latest/configuration/" target="_blank">Configuration</a> | <a href="https://teddyful.com/docs/latest/build/" target="_blank">Build</a> | <a href="https://github.com/teddyful/teddy/releases" target="_blank">Releases</a> | <a href="https://teddyful.com/docs/latest/credits/" target="_blank">Credits</a></p>
 </div>
 
 ## Table of Contents  
