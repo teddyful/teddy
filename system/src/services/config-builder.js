@@ -57,15 +57,17 @@ class ConfigBuilder {
         }
 
         // Build directory structure.
-        const distDirVersion = this.opts.distUseBuildId ? 
-            this.config.build.id : this.config.site.version;
         const distDirBase = 
             `${this.config.system.build.siteDistDir}/${this.config.build.env}`;
+        const distDirVersion = this.opts.distDirBuildId ? 
+            this.config.build.id : this.config.site.version;
+        const assetsDirBase = this.opts.distDirNone ? '/assets' : 
+            `/assets/${distDirVersion}`;
         this.config.build.distDirs = {
             base: distDirBase, 
             build: siteDirPath + 
                 `/build/${this.config.build.env}/${distDirVersion}`, 
-            assets:  `${distDirBase}/assets/${distDirVersion}`
+            assets: `${distDirBase}${assetsDirBase}`
         }
         logger.debug('Config Builder - Build configuration: ');
         logger.debug(JSON.stringify(this.config.build, null, 4));
@@ -98,7 +100,7 @@ class ConfigBuilder {
                 this.config.site.languages.enabled[0], 
                 this.config.site.languages.data[language].urls);
             this.config.site.languages.data[language].urls.assets = 
-                `/assets/${distDirVersion}`;
+                assetsDirBase;
 
             // Asset configuration.
             this.config.site.languages.data[language].assets = {
@@ -112,7 +114,7 @@ class ConfigBuilder {
         }
 
         // Static assets relative URLs.
-        this.config.site.urls.assets = `/assets/${distDirVersion}`;
+        this.config.site.urls.assets = assetsDirBase;
 
         // Site configuration.
         const http = this.config.site.web[this.opts.env].http.secure ? 
