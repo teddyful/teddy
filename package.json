@@ -1,6 +1,6 @@
 {
     "name": "teddy",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "description": "Opinionated open-source content management system (CMS) and static site generator (SSG) that focuses on simplicity and easy content management.", 
     "main": "build.js", 
     "private": true,
@@ -28,11 +28,11 @@
         "gulp-mustache": "5.0.0", 
         "minify": "14.1.0", 
         "showdown": "2.1.0", 
-        "string-strip-html": "13.4.13", 
+        "string-strip-html": "13.4.23", 
         "try-to-catch": "3.0.1", 
         "vite": "6.3.6", 
         "vitest": "3.2.4", 
-        "winston": "3.18.1", 
+        "winston": "3.18.3", 
         "winston-daily-rotate-file": "5.0.0"
     }
 }
