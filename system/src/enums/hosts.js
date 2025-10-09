@@ -6,8 +6,8 @@
  */
 
 const hosts = {
-    'apache-http-server': 'apache/.htaccess', 
-    'cloudflare-pages': 'cloudflare/pages/_headers'
+    'apache-http-server': ['apache/.htaccess'], 
+    'cloudflare-pages': ['cloudflare/pages/_headers', 'cloudflare/pages/404.html']
 };
 
 export default hosts;

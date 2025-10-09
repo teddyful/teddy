@@ -59,11 +59,14 @@ class BuildDeployer {
                 this.config.system.build.siteDirs.web + '/hosts/';
             const webHost = this.config.site.web[env].host;
             if ( webHost in hosts ) {
-                const filepath = webConfigBaseDirPath + hosts[webHost];
-                if ( filepath && pathExists(filepath) ) {
-                    const filename = path.basename(filepath);
-                    copyFile(filepath, 
-                        `${this.config.build.distDirs.base}/${filename}`);
+                const webConfigFiles = hosts[webHost];
+                for (const webConfigFile of webConfigFiles) {
+                    const filepath = webConfigBaseDirPath + webConfigFile;
+                    if ( filepath && pathExists(filepath) ) {
+                        const filename = path.basename(filepath);
+                        copyFile(filepath, 
+                            `${this.config.build.distDirs.base}/${filename}`);
+                    }
                 }
             }
         }
