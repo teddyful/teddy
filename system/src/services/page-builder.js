@@ -255,7 +255,14 @@ class PageBuilder {
             pageMetadata.authorId : 
             languageData.contributors.default;
         const pageAuthorName = languageData.contributors[pageAuthorId].name;
-        const pageAuthorUrl = languageData.contributors[pageAuthorId].url;
+        const pageAuthorUrl = 'url' in languageData.contributors[pageAuthorId] ? 
+            languageData.contributors[pageAuthorId].url : '#';
+        const pageAuthorRole = 'role' in languageData.contributors[pageAuthorId] ? 
+            languageData.contributors[pageAuthorId].role : '';
+        const pageAuthorDescription = 'description' in languageData.contributors[pageAuthorId] ? 
+            languageData.contributors[pageAuthorId].description : '';
+        const pageAuthorAvatar = 'avatar' in languageData.contributors[pageAuthorId] ? 
+            languageData.contributors[pageAuthorId].avatar : '';
 
         // Parse the page date (optional in the markdown frontmatter). If the
         // 'date' property is not found, then the page date will default
@@ -357,6 +364,12 @@ class PageBuilder {
                 pageAuthorName)
             .replaceAll('${page.metadata.author.url}', 
                 pageAuthorUrl)
+            .replaceAll('${page.metadata.author.role}', 
+                pageAuthorRole)
+            .replaceAll('${page.metadata.author.description}', 
+                pageAuthorDescription)
+            .replaceAll('${page.metadata.author.avatar}', 
+                pageAuthorAvatar)
             .replaceAll('${page.metadata.categories}', 
                 pageCategories.join(', '))
             .replaceAll('${page.metadata.cover}', 
