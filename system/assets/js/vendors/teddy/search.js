@@ -8,8 +8,9 @@
 class Search {
 
     static sanitizeQuery(query) {
-        return query.replace(/[`!|£^*&;$%@"<>()+-={}\[\]#~:?\\\/,]/gi, '')
+        return query.replace(/[^a-zA-Z0-9_\-\s]/gi, '')
             .replace(/\s\s+/g, ' ')
+            .replace(/\s/g, ' ')
             .trim();
     }
 
