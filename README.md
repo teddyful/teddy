@@ -42,6 +42,6 @@ Teddy was originally designed and built by [Jillur Quddus](https://hyperlearning
 
 ### Open Source Libraries
 
-Teddy is powered by a collection of amazing open-source software libraries. Please check them out on our <a href="https://teddyful.com/docs/latest/credits/" target="_blank">credits</a> page and, if you are able to, consider a donation to your favourite ones to help support the awesome open-source community.
+Teddy is powered by a collection of amazing open source software libraries. Check them out on our <a href="https://teddyful.com/docs/latest/credits/" target="_blank">credits</a> page and, if you are able to, please consider a donation to your favourite ones and help support the awesome open-source community.
 
 <p align="right"><a href="#readme-top">Back to Top &#9650;</a></p>
