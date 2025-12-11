@@ -111,6 +111,12 @@ class ConfigBuilder {
                 }
             }
 
+            // Site configuration.
+            this.config.site.languages.data[language].site = {
+                name: this.config.site.name, 
+                version: this.config.site.version
+            }
+
         }
 
         // Static assets relative URLs.
