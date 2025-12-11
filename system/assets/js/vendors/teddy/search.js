@@ -7,11 +7,40 @@
 
 class Search {
 
-    static sanitizeQuery(query) {
-        return query.replace(/[^a-zA-Z0-9_\-\s]/gi, '')
-            .replace(/\s\s+/g, ' ')
-            .replace(/\s/g, ' ')
-            .trim();
+    static sanitizeQuery(query, unicodeProperties = true) {
+        const filteredQuery = unicodeProperties ? 
+            
+            // Using Unicode properties.
+            query.replace(/[^\p{Letter}\p{Number}_\-\s]/gu, '') : 
+
+            // Without using Unicode properties (legacy systems).
+            // Keep the following character sets:
+            // Alphanumeric                                             a-zA-Z0-9
+            // Underscore, hyphen and whitespace                        _\-\s
+            // Extended Latin (incl. characters for Vietnamese)         \u0100-\u024f
+            // Chinese characters (CJK unified ideographs)              \u4e00-\u9fff
+            // Japanese Hiragana                                        \u3040-\u309f
+            // Japanese Katakana                                        \u30a0-\u30ff
+            // Korean (Hangul syllables)                                \uac00-\ud7af
+            // Greek (and Coptic)                                       \u0370-\u03ff
+            // Cyrillic                                                 \u0400-\u04ff
+            // Arabic                                                   \u0600-\u06ff
+            // Thai                                                     \u0e00-\u0e7f
+            // Hindi (Devanagari)                                       \u0900-\u097f
+            // Bengali                                                  \u0980-\u09ff
+            // Tamil                                                    \u0b80-\u0bff
+            // Gujarati                                                 \u0a80-\u0aff
+            // Hebrew                                                   \u0590-\u05ff
+            // Tibetan                                                  \u0f00-\u0fff
+            // Mongolian                                                \u1800-\u18af
+            query.replace(/[^a-zA-Z0-9_\-\s\u0100-\u024f\u4e00-\u9fff\u30a0-\u30ff\u3040-\u309f\uac00-\ud7af\u0370-\u03ff\u0400-\u04ff\u0600-\u06ff\u0e00-\u0e7f\u0900-\u097f\u0980-\u09ff\u0b80-\u0bff\u0a80-\u0aff\u0590-\u05ff\u0f00-\u0fff\u1800-\u18af]/gi, '');
+
+        // Clean and standardise whitespace characters.
+        return filteredQuery
+                .replace(/\s\s+/g, ' ')
+                .replace(/\s/g, ' ')
+                .trim();
+
     }
 
     async loadIndex() {
