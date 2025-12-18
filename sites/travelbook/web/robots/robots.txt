@@ -1,2 +1,5 @@
 User-agent: *
+Allow: /assets/images/favicon/
+Allow: /assets/images/opengraph/
 Disallow: /assets/
+Sitemap: https://demo.teddyful.com/sitemap.xml

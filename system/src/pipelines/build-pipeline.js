@@ -6,6 +6,7 @@
  */
 
 import logger from '../middleware/logger.js';
+import packageConfig from '../../../package.json' with { type: 'json' };
 import systemConfig from '../../../config/system.json' with { type: 'json' };
 import AssetBuilder from '../services/asset-builder.js';
 import BuildCleaner from '../services/build-cleaner.js';
@@ -91,7 +92,7 @@ class BuildPipeline {
     #buildConfig() {
 
         // Configuration builder.
-        this.configBuilder = new ConfigBuilder(systemConfig, this.opts);
+        this.configBuilder = new ConfigBuilder(packageConfig, systemConfig, this.opts);
         this.config = this.configBuilder.build();
 
         // Collection builder.

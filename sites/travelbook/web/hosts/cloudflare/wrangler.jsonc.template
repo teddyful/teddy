@@ -1,0 +1,12 @@
+{
+    "$schema": "./node_modules/wrangler/config-schema.json",
+    "name": "travelbook",
+    "compatibility_date": "2025-12-18",
+    "assets": {
+        "directory": "./sites/travelbook/public/production/", 
+        "not_found_handling": "404-page"
+    },
+    "observability": {
+        "enabled": true
+    }
+}

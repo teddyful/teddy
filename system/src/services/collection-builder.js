@@ -225,11 +225,10 @@ class CollectionBuilder {
 
                 // Export the index.
                 let keys = [];
-                const indexDirBaseAbsPath = this.config.build.distDirs.assets;
+                const indexDirBaseAbsPath = this.config.build.distDirs.collection;
                 await index.export(function(key, data) { 
                     keys.push(key);
-                    const indexDirAbsPath = indexDirBaseAbsPath 
-                        + `/collection/${language}`;
+                    const indexDirAbsPath = indexDirBaseAbsPath + `/${language}`;
                     createDirectory(indexDirAbsPath);
                     fs.writeFileSync(`${indexDirAbsPath}/${key}.json`, 
                         data !== undefined ? data : '');

@@ -496,12 +496,20 @@ class PageBuilder {
         let html = '';
 
         // System JavaScript assets.
-        const jsAssets = this.config.system.assets.js.vendors.concat(
-            this.config.system.assets.js.teddy
-        );
+        const jsAssets = this.config.system.assets.js.vendors
+            .concat(this.config.system.assets.js.teddy);
         for ( const jsAsset of jsAssets ) {
+            const resolvedJsAsset = jsAsset
+                .replace('{package.version}', this.config.package.version);
             html = `${html}<script src="${this.config.site.urls.assets}` + 
-                `/js/${jsAsset}"></script>\n`;
+                `/js/${resolvedJsAsset}"></script>\n`;
+        }
+
+        // Site configuration JavaScript assets.
+        const siteConfigJsAssets = this.config.system.assets.js.site;
+        for ( const siteConfigJsAsset of siteConfigJsAssets ) {
+            html = `${html}<script src="${this.config.site.urls.siteConfig}` + 
+                `/${siteConfigJsAsset}"></script>\n`;
         }
 
         return html;

@@ -13,7 +13,10 @@ import { loadJsonFile } from '../utils/io-utils.js';
 
 class ConfigBuilder {
 
-    constructor(systemConfig, opts) {
+    constructor(packageConfig, systemConfig, opts) {
+        this.packageConfig = {
+            package: packageConfig
+        };
         this.systemConfig = systemConfig;
         this.opts = opts;
     }
@@ -27,7 +30,7 @@ class ConfigBuilder {
         this.siteConfig = loadJsonFile(siteConfigFilePath);
 
         // Generate the base configuration.
-        this.config = Object.assign({}, this.systemConfig, this.siteConfig);
+        this.config = Object.assign({}, this.packageConfig, this.systemConfig, this.siteConfig);
 
         // Update the system configuration with site directory structure.
         this.config.system.build = {
@@ -56,22 +59,59 @@ class ConfigBuilder {
             opts: this.opts
         }
 
-        // Build directory structure.
+        // Base distribution directory path.
         const distDirBase = 
             `${this.config.system.build.siteDistDir}/${this.config.build.env}`;
-        const distDirVersion = this.opts.distDirBuildId ? 
-            this.config.build.id : this.config.site.version;
-        const assetsDirBase = this.opts.distDirNone ? '/assets' : 
-            `/assets/${distDirVersion}`;
+
+        // Build distribution directory path.
+        let buildDirBase = siteDirPath + 
+                `/build/${this.config.build.env}/${this.config.site.version}`;
+        if ( this.opts.versionBuildDate ) {
+            buildDirBase = `${buildDirBase}/${this.config.build.date}`;
+        }
+
+        // Assets distribution directory path.
+        let assetsDirBase = '/assets';
+        if ( this.opts.versionAssetsSiteNumber && !this.opts.versionAssetsBuildId ) {
+            assetsDirBase = `/assets/${this.config.site.version}`;
+        } else if ( this.opts.versionAssetsBuildId && !this.opts.versionAssetsSiteNumber ) {
+            assetsDirBase = `/assets/${this.config.build.id}`;
+        } else if ( this.opts.versionAssetsSiteNumber && this.opts.versionAssetsBuildId ) {
+            assetsDirBase = `/assets/${this.config.site.version}/${this.config.build.date}`;
+        }
+
+        // Collection distribution directory path.
+        let collectionDirBase = '/collection';
+        if ( this.opts.versionCollectionSiteNumber && !this.opts.versionCollectionBuildId ) {
+            collectionDirBase = `/collection/${this.config.site.version}`;
+        } else if ( this.opts.versionCollectionBuildId && !this.opts.versionCollectionSiteNumber ) {
+            collectionDirBase = `/collection/${this.config.build.id}`;
+        } else if ( this.opts.versionCollectionSiteNumber && this.opts.versionCollectionBuildId ) {
+            collectionDirBase = `/collection/${this.config.site.version}/${this.config.build.date}`;
+        }
+        collectionDirBase = `${assetsDirBase}${collectionDirBase}`;
+
+        // Site JavaScript assets distribution directory path.
+        let siteConfigDirBase = '/js/site';
+        if ( this.opts.versionSiteConfigSiteNumber && !this.opts.versionSiteConfigBuildId ) {
+            siteConfigDirBase = `/js/site/${this.config.site.version}`;
+        } else if ( this.opts.versionSiteConfigBuildId && !this.opts.versionSiteConfigSiteNumber ) {
+            siteConfigDirBase = `/js/site/${this.config.build.id}`;
+        } else if ( this.opts.versionSiteConfigSiteNumber && this.opts.versionSiteConfigBuildId ) {
+            siteConfigDirBase = `/js/site/${this.config.site.version}/${this.config.build.date}`;
+        }
+        siteConfigDirBase = `${assetsDirBase}${siteConfigDirBase}`;
+
+        // Distribution directory paths.
         this.config.build.distDirs = {
             base: distDirBase, 
-            build: siteDirPath + 
-                `/build/${this.config.build.env}/${distDirVersion}`, 
-            assets: `${distDirBase}${assetsDirBase}`
+            build: buildDirBase, 
+            assets: `${distDirBase}${assetsDirBase}`, 
+            collection: `${distDirBase}${collectionDirBase}`, 
+            siteConfig: `${distDirBase}${siteConfigDirBase}`, 
         }
         logger.debug('Config Builder - Build configuration: ');
         logger.debug(JSON.stringify(this.config.build, null, 4));
-
         if ( error ) {
             return this.config;
         }
@@ -121,6 +161,8 @@ class ConfigBuilder {
 
         // Static assets relative URLs.
         this.config.site.urls.assets = assetsDirBase;
+        this.config.site.urls.collectionIndex = collectionDirBase;
+        this.config.site.urls.siteConfig = siteConfigDirBase;
 
         // Site configuration.
         const http = this.config.site.web[this.opts.env].http.secure ? 

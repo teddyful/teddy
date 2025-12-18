@@ -65,7 +65,7 @@ class Search {
         // Iterate over all index keys and import their data into the index.
         for ( const key of indexKeys ) {
             const indexDataUrl = 
-                `${ASSETS_BASE_URL}/collection/${PAGE_LANGUAGE}/${key}.json`;
+                `${COLLECTION_INDEX_BASE_URL}/${PAGE_LANGUAGE}/${key}.json`;
             const response = await fetch(indexDataUrl, headers);
             const json = await response.json();
             await this.index.import(key, json ?? null);

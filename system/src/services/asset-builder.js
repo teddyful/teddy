@@ -195,11 +195,21 @@ class AssetBuilder {
         if ( !this.config.build.opts.ignoreAssets && 
                 !this.config.build.opts.ignoreJs && 
                 !this.config.build.opts.customJsOnly ) {
+            
+            // Vendor system JavaScript asset subdirectories are already versioned.
+            const vendorAssetsDirAbsPath = 
+                `${this.config.system.assets.dir}/js/vendors`;
+            const vendorTargetDirAbsPath = 
+                `${this.config.build.distDirs.assets}/js/vendors`;
+            this.#deployAssets(vendorAssetsDirAbsPath, vendorTargetDirAbsPath);
+
+            // Create a versioned subdirectory for Teddy system JavaScript assets.
             const assetsDirAbsPath = 
-                `${this.config.system.assets.dir}/js`;
+                `${this.config.system.assets.dir}/js/teddy`;
             const targetDirAbsPath = 
-                `${this.config.build.distDirs.assets}/js`;
+                `${this.config.build.distDirs.assets}/js/vendors/teddy/${this.config.package.version}`;
             this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
+
         }
     }
 
@@ -211,10 +221,10 @@ class AssetBuilder {
     }
 
     generateBuildConfigJs(languageIndexKeys) {
-        const targetDirAbsPath = this.config.build.distDirs.assets + 
-            '/js/vendors/teddy';
+        const targetDirAbsPath = this.config.build.distDirs.siteConfig;
         createDirectory(targetDirAbsPath);
         const js = `const ASSETS_BASE_URL = '${this.config.site.urls.assets}';
+const COLLECTION_INDEX_BASE_URL = '${this.config.site.urls.collectionIndex}';
 const COLLECTION_PAGINATION_SIZE = ${this.config.site.collection.pagination.size};
 const COLLECTION_SIZES = ${JSON.stringify(this.config.site.collection.sizes)};
 const DEFAULT_LANGUAGE = '${this.config.site.languages.enabled[0]}';
@@ -222,7 +232,8 @@ const DOMAIN_NAME = '${this.config.site.web[this.config.build.env].domain}';
 const INDEX_DOCUMENT_STORE_CONFIG = ${JSON.stringify(
     this.config.site.collection.index.documentStore)};
 const LANGUAGE_INDEX_KEYS = ${JSON.stringify(languageIndexKeys)};
-const MIN_SEARCH_QUERY_LENGTH = ${this.config.site.collection.search.minQueryLength};`;
+const MIN_SEARCH_QUERY_LENGTH = ${this.config.site.collection.search.minQueryLength};
+const SITE_VERSION = '${this.config.site.version}';`;
         writeStringToFile(js, `${targetDirAbsPath}/config.js`);
     }
 
@@ -236,8 +247,7 @@ const MIN_SEARCH_QUERY_LENGTH = ${this.config.site.collection.search.minQueryLen
                 delete content[language].collection.metadata.pages;
             }
         }
-        const targetDirAbsPath = this.config.build.distDirs.assets + 
-            '/js/vendors/teddy';
+        const targetDirAbsPath = this.config.build.distDirs.siteConfig;
         createDirectory(targetDirAbsPath);
         const js = `const site = ${JSON.stringify(content)};`;
         writeStringToFile(js, `${targetDirAbsPath}/site.js`);
