@@ -25,7 +25,7 @@ class UrlBuilder {
                 dir.replace(/\s+/g, '-').toLowerCase());
             const url = cleanDirs.length == 1 && cleanDirs[0] == 'home' ? 
                `${languagePrefix}/` : 
-               `${languagePrefix}/${cleanDirs.join('/')}`;
+               `${languagePrefix}/${cleanDirs.join('/')}/`;
             resolvedText = resolvedText.replaceAll(urlPlaceholder, url);
         }
         return resolvedText;

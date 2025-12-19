@@ -58,15 +58,15 @@
         "languages": [
             {
                 "name": "English", 
-                "url": "/en"
+                "url": "/en/"
             }, 
             {
                 "name": "Japanese 日本語", 
-                "url": "/ja"
+                "url": "/ja/"
             }, 
             {
                 "name": "Chinese 中文", 
-                "url": "/zh-tw"
+                "url": "/zh-tw/"
             }
         ]
     }
