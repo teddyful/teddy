@@ -1,6 +1,6 @@
 {
     "name": "teddy",
-    "version": "0.0.9",
+    "version": "0.0.10",
     "description": "Opinionated open-source content management system (CMS) and static site generator (SSG) that focuses on simplicity and easy content management.",
     "main": "build.js",
     "private": true,
@@ -34,6 +34,6 @@
         "vitest": "4.0.16",
         "winston": "3.19.0",
         "winston-daily-rotate-file": "5.0.0",
-        "wrangler": "^4.55.0"
+        "wrangler": "^4.56.0"
     }
 }
