@@ -43,13 +43,25 @@
             "media": {
                 "extensions": {
                     "allowed": [
+                        "aac", 
+                        "alac", 
+                        "bmp", 
+                        "eps", 
+                        "flac", 
                         "gif", 
+                        "heic", 
                         "jpg", 
                         "jpeg", 
+                        "mkv", 
+                        "mov", 
                         "mp3", 
                         "mp4", 
                         "pdf", 
-                        "png"
+                        "png", 
+                        "svg", 
+                        "tiff", 
+                        "webm", 
+                        "webp"
                     ]
                 }
             }, 
