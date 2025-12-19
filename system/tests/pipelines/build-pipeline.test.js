@@ -26,6 +26,7 @@ const opts = {
     ignoreJs: false,
     ignoreRobots: false,
     ignoreSitemap: false,
+    ignoreVideos: false,
     ignoreWebConfig: false,
     minifyCss: false,
     minifyHtml: false,

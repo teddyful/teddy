@@ -157,6 +157,8 @@ class BuildPipeline {
         this.assetBuilder.deployJsAssets('site');
         this.assetBuilder.deployImageAssets('theme');
         this.assetBuilder.deployImageAssets('site');
+        this.assetBuilder.deployVideoAssets('theme');
+        this.assetBuilder.deployVideoAssets('site');
         this.assetBuilder.deployFontAssets('theme');
         this.assetBuilder.deployFontAssets('site');
         this.assetBuilder.deployDataAssets('theme');

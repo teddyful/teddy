@@ -24,7 +24,8 @@ class BuildCleaner {
                 this.config.build.opts.ignoreData || 
                 this.config.build.opts.ignoreFonts || 
                 this.config.build.opts.ignoreImages || 
-                this.config.build.opts.ignoreJs ) {
+                this.config.build.opts.ignoreJs || 
+                this.config.build.opts.ignoreVideos ) {
     
                 // Delete everything except the assets directory.
                 return deleteSync([

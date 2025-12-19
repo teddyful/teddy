@@ -130,6 +130,19 @@ class AssetBuilder {
         }
     }
 
+    deployVideoAssets(sourceType) {
+        if ( !this.config.build.opts.ignoreAssets && 
+                !this.config.build.opts.ignoreVideos ) {
+            const assetsDirAbsPath = 
+                this.#ascertainPathToAssets(sourceType, 'videos');
+            if ( assetsDirAbsPath ) {
+                const targetDirAbsPath = 
+                    `${this.config.build.distDirs.assets}/videos`;
+                this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
+            }
+        }
+    }
+
     deployFontAssets(sourceType) {
         if ( !this.config.build.opts.ignoreAssets && 
                 !this.config.build.opts.ignoreFonts ) {
