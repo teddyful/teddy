@@ -14,6 +14,12 @@
 /assets/css/style.min.css
   Cache-Control: public, max-age=86400, must-revalidate
 
+/assets/css/vendors/*
+  Cache-Control: public, max-age=2592000, must-revalidate
+
+/assets/fonts/vendors/*
+  Cache-Control: public, max-age=2592000, must-revalidate
+
 /assets/images/*
   Cache-Control: public, max-age=604800, must-revalidate
 
@@ -23,8 +29,6 @@
 /assets/js/site/*
   Cache-Control: public, max-age=86400, must-revalidate
 
-/assets/css/vendors/*
-/assets/fonts/vendors/*
 /assets/js/vendors/*
   Cache-Control: public, max-age=2592000, must-revalidate
 
