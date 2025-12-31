@@ -51,7 +51,8 @@ class BuildCleaner {
     }
 
     postBuildCleanup() {
-        if ( !this.config.build.opts.skipPostBuildCleanup ) {
+        if ( !this.config.build.opts.skipPostBuildCleanup && 
+                !this.config.build.opts.generateDsPdf ) {
             return deleteSync([
                 `${this.config.build.distDirs.build}/**`], {
                     dot: true, 

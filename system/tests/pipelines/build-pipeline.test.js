@@ -16,6 +16,7 @@ const opts = {
     env: 'local',
     customCssOnly: false,
     customJsOnly: false,
+    generateDsPdf: false,
     ignoreAssets: false,
     ignoreCollection: false,
     ignoreCss: false,

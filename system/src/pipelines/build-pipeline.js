@@ -16,6 +16,7 @@ import CollectionBuilder from '../services/collection-builder.js';
 import ConfigBuilder from '../services/config-builder.js';
 import ConfigValidator from '../services/config-validator.js';
 import PageBuilder from '../services/page-builder.js';
+import PdfBuilder from '../services/pdf-builder.js';
 import TemplateBuilder from '../services/template-builder.js';
 
 
@@ -32,39 +33,43 @@ class BuildPipeline {
         this.buildSetup = null;
         this.buildDeployer = null;
         this.assetBuilder = null;
+        this.pdfBuilder = null;
     }
 
     async build() {
         try {
 
+            const numberStages = 13;
             const startTime = performance.now();
             logger.info('Building the static site...');
             logger.info(`Site name: ${this.opts.siteName}`);
             logger.info(`Theme name: ${this.opts.themeName}`);
             logger.info(`Environment name: ${this.opts.env}`);
-            logger.info('Stage 1 of 12 - Validating configuration...');
+            logger.info(`Stage 1 of ${numberStages} - Validating configuration...`);
             this.#validateConfig();
-            logger.info('Stage 2 of 12 - Aggregating configuration...');
+            logger.info(`Stage 2 of ${numberStages} - Aggregating configuration...`);
             this.#buildConfig();
-            logger.info('Stage 3 of 12 - Pre-build cleaning...');
+            logger.info(`Stage 3 of ${numberStages} - Pre-build cleaning...`);
             this.#cleanPreBuild();
-            logger.info('Stage 4 of 12 - Setting up the build environment...');
+            logger.info(`Stage 4 of ${numberStages} - Setting up the build environment...`);
             this.#setup();
-            logger.info('Stage 5 of 12 - Deploying static artifacts...');
+            logger.info(`Stage 5 of ${numberStages} - Deploying static artifacts...`);
             await this.#deployArtifacts();
-            logger.info('Stage 6 of 12 - Indexing the collection...');
+            logger.info(`Stage 6 of ${numberStages} - Indexing the collection...`);
             await this.#indexCollection();
-            logger.info('Stage 7 of 12 - Building templates...');
+            logger.info(`Stage 7 of ${numberStages} - Building templates...`);
             await this.#buildTemplates();
-            logger.info('Stage 8 of 12 - Building pages...');
+            logger.info(`Stage 8 of ${numberStages} - Building pages...`);
             await this.#buildPages();
-            logger.info('Stage 9 of 12 - Building custom assets...');
+            logger.info(`Stage 9 of ${numberStages} - Building custom assets...`);
             await this.#buildCustomAssets();
-            logger.info('Stage 10 of 12 - Building system assets...');
+            logger.info(`Stage 10 of ${numberStages} - Building system assets...`);
             this.#buildSystemAssets();
-            logger.info('Stage 11 of 12 - Deploying assets...');
+            logger.info(`Stage 11 of ${numberStages} - Deploying assets...`);
             this.#deployAssets();
-            logger.info('Stage 12 of 12 - Post-build cleaning...');
+            logger.info(`Stage 12 of ${numberStages} - Building data sources...`);
+            this.#buildDataSources();
+            logger.info(`Stage 13 of ${numberStages} - Post-build cleaning...`);
             this.#cleanPostBuild();
             logger.info('Successfully finished building the static site!');
             logger.info(`Build directory: ${systemConfig.system.sites}` + 
@@ -166,6 +171,11 @@ class BuildPipeline {
         this.assetBuilder.deployFavicon('theme');
         this.assetBuilder.deployFavicon('site');
         this.assetBuilder.deploySystemJsAssets();
+    }
+
+    #buildDataSources() {
+        this.pdfBuilder = new PdfBuilder(this.config);
+        this.pdfBuilder.build();
     }
 
     #cleanPostBuild() {

@@ -81,8 +81,10 @@ class Page {
             config.site.languages.enabled[0], this.authorUrl);
 
         // Bespoke index keys to propagate.
-        const reservedIndexKeys = ['author', 'authorId', 'authorUrl', 'categories', 'categoryLanguages', 'content', 
-            'cover', 'coverExists', 'date', 'description', 'displayDate', 'enabled', 'id', 'name', 'relUrl', 'tags'];
+        const reservedIndexKeys = ['author', 'authorId', 'authorUrl', 
+            'categories', 'categoryLanguages', 'content', 'cover', 
+            'coverExists', 'datasource', 'date', 'description', 'displayDate', 
+            'enabled', 'id', 'index', 'name', 'relUrl', 'tags'];
         if ( config.site.collection.enabled ) {
             for ( const indexKey of config.site.collection.index.documentStore.document.index ) {
                 if ( !reservedIndexKeys.includes(indexKey) && indexKey in pageMetadata ) {

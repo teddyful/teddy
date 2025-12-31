@@ -14,6 +14,7 @@ const ISO_639_3166_LOOKUP = {
     "ko": "kr", 
     "kor": "kr", 
     "zh": "cn", 
+    "zh-cn": "cn", 
     "zh-hk": "cn", 
     "zh-tw": "cn"
 }

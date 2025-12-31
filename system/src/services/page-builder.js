@@ -24,8 +24,9 @@ import { getVarPlaceholders, getNestedKeysFromVarPlaceholder } from
 
 const PAGE_METADATA_NAMESPACE = 'page.metadata';
 const PAGE_METADATA_KNOWN_KEYS = [
-    'article', 'authorId', 'categories', 'cover', 'date', 'description', 
-    'enabled', 'hero', 'image', 'tags', 'language', 'name', 'title', 'type'
+    'article', 'authorId', 'categories', 'cover', 'datasource', 'date', 
+    'description', 'enabled', 'hero', 'image', 'index', 'tags', 'language', 
+    'name', 'title', 'type'
 ];
 
 
