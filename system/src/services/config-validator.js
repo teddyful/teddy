@@ -56,7 +56,12 @@ class ConfigValidator {
         this.#validateResourceExists(this.systemConfig, 
             ['system', 'assets', 'js', 'vendors'], 
             this.systemConfig.system.assets.dir + '/js');
-
+        for ( const key of Object.keys(
+            this.systemConfig.system.assets.fonts) ) {
+            this.#validateResourceExists(this.systemConfig, 
+                ['system', 'assets', 'fonts', key], 
+                this.systemConfig.system.assets.dir + '/fonts');
+        }
 
     }
 
@@ -194,6 +199,13 @@ class ConfigValidator {
             }
         }
 
+        // Validate that the specified datasource language font files exist.
+        for ( const key of Object.keys(
+            this.siteConfig.site.datasources.fonts) ) {
+            this.#validateFilePathExists(
+                this.siteConfig.site.datasources.fonts[key]);
+        }
+
         // Validate that an object for this environment exists in site.web.
         const env = this.opts.env;
         if ( !(env in this.siteConfig.site.web) ) {
@@ -312,6 +324,11 @@ class ConfigValidator {
         if ( !pathExists(path) )
             throw new Error(`The required file '${fileName}' does not exist ` + 
                 `in the directory '${dirPath}'.`);
+    }
+
+    #validateFilePathExists(filePath) {
+        if ( !pathExists(filePath) )
+            throw new Error(`The required file '${filePath}' does not exist.`);
     }
 
     #validatePages() {

@@ -16,18 +16,6 @@ import { createDirectory, getFiles, hasFileExtension } from
     '../utils/io-utils.js';
 
 
-const SUPPORTED_LANGUAGES = {
-    'en': ['Helvetica'], 
-    'ja': ['NotoSansJP-Regular', 'NotoSansJP-Regular.ttf'], 
-    'jpn': ['NotoSansJP-Regular', 'NotoSansJP-Regular.ttf'], 
-    'ko': ['NotoSansKR-Regular', 'NotoSansKR-Regular.ttf'], 
-    'kor': ['NotoSansKR-Regular', 'NotoSansKR-Regular.ttf'], 
-    'zh': ['NotoSansSC-Regular', 'NotoSansSC-Regular.ttf'], 
-    'zh-cn': ['NotoSansSC-Regular', 'NotoSansSC-Regular.ttf'], 
-    'zh-hk': ['NotoSansHK-Regular', 'NotoSansHK-Regular.ttf'], 
-    'zh-sg': ['NotoSansTC-Regular', 'NotoSansTC-Regular.ttf'], 
-    'zh-tw': ['NotoSansTC-Regular', 'NotoSansTC-Regular.ttf']
-};
 const DEFAULT_FONT_NAME = 'Helvetica';
 const DEFAULT_FONT_SIZE = 12;
 const HEADING_FONT_SIZE = 18;
@@ -52,78 +40,73 @@ class PdfBuilder {
             // Iterate across all languages.
             for ( const language of this.config.site.languages.enabled ) {
 
-                // Check that the language is supported.
-                if ( SUPPORTED_LANGUAGES.hasOwnProperty(language) ) {
+                // Initialise the list of pages for this language.
+                let pages = [];
 
-                    // Initialise the list of pages for this language.
-                    let pages = [];
+                // Filter all pages that are markdown files
+                // associated with the current language.
+                const pageLanguageMdFilePaths = 
+                    pageFilePaths.filter(
+                        filename => hasFileExtension(filename, 'md') &&
+                            filename.toLowerCase().endsWith(
+                                `.${language}.md`)
+                );
 
-                    // Filter all pages that are markdown files
-                    // associated with the current language.
-                    const pageLanguageMdFilePaths = 
-                        pageFilePaths.filter(
-                            filename => hasFileExtension(filename, 'md') &&
-                                filename.toLowerCase().endsWith(
-                                    `.${language}.md`)
-                    );
+                // Iterate across all filtered pages.
+                for (const pageMdRelFilePath of pageLanguageMdFilePaths) {
 
-                    // Iterate across all filtered pages.
-                    for (const pageMdRelFilePath of pageLanguageMdFilePaths) {
+                    // Identify the absolute path to the page markdown file.
+                    const pageMdAbsFilePath = 
+                        this.config.system.build.siteDirs.pages + 
+                            `/${pageMdRelFilePath}`;
 
-                        // Identify the absolute path to the page markdown file.
-                        const pageMdAbsFilePath = 
-                            this.config.system.build.siteDirs.pages + 
-                                `/${pageMdRelFilePath}`;
+                    // Read the contents of the page markdown file.
+                    const pageMd = fs.readFileSync(
+                        `${pageMdAbsFilePath}`, 'utf8');
 
-                        // Read the contents of the page markdown file.
-                        const pageMd = fs.readFileSync(
-                            `${pageMdAbsFilePath}`, 'utf8');
+                    // Instantiate the markdown to HTML converter.
+                    let converter = new showdown.Converter({
+                        metadata: true
+                    });
 
-                        // Instantiate the markdown to HTML converter.
-                        let converter = new showdown.Converter({
-                            metadata: true
+                    // Convert and parse the contents of the page markdown file.
+                    const pageHtml = converter.makeHtml(pageMd);
+                    const pageMetadata = converter.getMetadata();
+
+                    // Check that the page is enabled and contains the required 
+                    // metadata. Pages must be explicitly enabled in the 
+                    // markdown frontmatter and have the mandatory metadata 
+                    // defined in order to be built.
+                    if ( 'enabled' in pageMetadata && pageMetadata.enabled == 'true' && 
+                        ( !('datasource' in pageMetadata) || 
+                            ( 'datasource' in pageMetadata && pageMetadata.index == 'true' ) ) 
+                    ) {
+
+                        // Create a new page object.
+                        let page = new Page(-1, 
+                            pageMdAbsFilePath, pageMdRelFilePath, 
+                            pageMetadata, language, this.config);
+
+                        // Parse the page content.
+                        page.setContent(stripHtml(pageHtml).result.trim());
+
+                        // Add the page to the list of pages.
+                        pages.push(page);
+
+                        // Generate the page ID for each page.
+                        pages.forEach(function (page, idx) {
+                            page.setId(idx);
                         });
-
-                        // Convert and parse the contents of the page markdown file.
-                        const pageHtml = converter.makeHtml(pageMd);
-                        const pageMetadata = converter.getMetadata();
-
-                        // Check that the page is enabled and contains the required 
-                        // metadata. Pages must be explicitly enabled in the 
-                        // markdown frontmatter and have the mandatory metadata 
-                        // defined in order to be built.
-                        if ( 'enabled' in pageMetadata && pageMetadata.enabled == 'true' && 
-                            ( !('datasource' in pageMetadata) || 
-                                ( 'datasource' in pageMetadata && pageMetadata.index == 'true' ) ) 
-                        ) {
-
-                            // Create a new page object.
-                            let page = new Page(-1, 
-                                pageMdAbsFilePath, pageMdRelFilePath, 
-                                pageMetadata, language, this.config);
-
-                            // Parse the page content.
-                            page.setContent(stripHtml(pageHtml).result.trim());
-
-                            // Add the page to the list of pages.
-                            pages.push(page);
-
-                            // Generate the page ID for each page.
-                            pages.forEach(function (page, idx) {
-                                page.setId(idx);
-                            });
-
-                        }
 
                     }
 
-                    // Generate a single PDF data source file.
-                    this.#generatePdf(pages, language);
-                    logger.debug('PDF Builder - Found and processed ' + 
-                        `${pages.length} enabled markdown page documents ` + 
-                        `associated with the language '${language}'.`);
-
                 }
+
+                // Generate a single PDF data source file.
+                this.#generatePdf(pages, language);
+                logger.debug('PDF Builder - Found and processed ' + 
+                    `${pages.length} enabled markdown page documents ` + 
+                    `associated with the language '${language}'.`);
 
             }
 
@@ -149,14 +132,19 @@ class PdfBuilder {
             });
             doc.pipe(fs.createWriteStream(pdfPath));
 
-            // Register a suitable font if required.
-            const fontData = SUPPORTED_LANGUAGES[language];
-            if ( fontData.length == 2 ) {
+            // Register the language-specific font if specified.
+            let fontAlias = DEFAULT_FONT_NAME;
+            if ( this.config.site.datasources.fonts.hasOwnProperty(language) ) {
+                const fontFilePath = this.config.site.datasources.fonts[language];
+                fontAlias = 'CustomLanguageFont';
+                doc.registerFont(fontAlias, fontFilePath);
+            } else if ( this.config.system.assets.fonts.hasOwnProperty(language) ) {
                 const fontFilePath = this.config.system.assets.dir + 
-                    `/fonts/${fontData[1]}`;
-                doc.registerFont(fontData[0], fontFilePath);
+                    `/fonts/${this.config.system.assets.fonts[language]}`;
+                fontAlias = 'CustomLanguageFont';
+                doc.registerFont(fontAlias, fontFilePath);
             }
-            doc.font(fontData[0]);
+            doc.font(fontAlias);
 
             // Add each site page as a new PDF page.
             const siteBaseUrl = 
@@ -181,7 +169,7 @@ class PdfBuilder {
                 doc.text(`Source: ${pageAbsoluteUrl}`).moveDown();
 
                 // Page description.
-                doc.font(fontData[0]);
+                doc.font(fontAlias);
                 doc.fontSize(METADATA_FONT_SIZE);
                 if ( page.description ) {
                     doc.text(page.description).moveDown();

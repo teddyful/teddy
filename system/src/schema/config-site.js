@@ -14,6 +14,7 @@ const siteConfigSchema = {
             required: [
                 'assets', 
                 'collection', 
+                'datasources', 
                 'html', 
                 'languages', 
                 'name', 
@@ -142,6 +143,13 @@ const siteConfigSchema = {
                             'sort', 
                             'taxonomy'
                         ]
+                    }
+                }, 
+                datasources: {
+                    type: 'object', 
+                    required: ['fonts'], 
+                    properties: {
+                        fonts: { type: 'object' }
                     }
                 }, 
                 html: {

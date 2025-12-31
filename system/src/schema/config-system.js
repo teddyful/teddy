@@ -15,13 +15,39 @@ const systemConfigSchema = {
             properties: {
                 assets: {
                     type: 'object', 
-                    required: ['dir', 'js'], 
+                    required: ['dir', 'fonts', 'js'], 
                     properties: {
                         dir: { type: 'string' }, 
+                        fonts: {
+                            type: 'object', 
+                            required: [
+                                'ja', 
+                                'jpn', 
+                                'ko', 
+                                'kor', 
+                                'zh', 
+                                'zh-cn', 
+                                'zh-hk', 
+                                'zh-sg', 
+                                'zh-tw'
+                            ], 
+                            properties: {
+                                ja: { type: 'string' }, 
+                                jpn: { type: 'string' }, 
+                                ko: { type: 'string' }, 
+                                kor: { type: 'string' }, 
+                                zh: { type: 'string' }, 
+                                'zh-cn': { type: 'string' }, 
+                                'zh-hk': { type: 'string' }, 
+                                'zh-sg': { type: 'string' }, 
+                                'zh-tw': { type: 'string' }
+                            }
+                        }, 
                         js: {
                             type: 'object', 
-                            required: ['teddy', 'vendors'], 
+                            required: ['site', 'teddy', 'vendors'], 
                             properties: {
+                                site: { type: 'array' }, 
                                 teddy: { type: 'array' }, 
                                 vendors: { type: 'array' }
                             }

@@ -88,6 +88,11 @@
                 "minQueryLength": 2
             }
         }, 
+        "datasources": {
+            "fonts": {
+                
+            }
+        }, 
         "html": {
             "inject": {
                 "metadata": true, 
