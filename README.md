@@ -16,12 +16,12 @@
 Teddy is an opinionated open-source content management system (CMS) and static site generator (SSG) that focuses on simplicity and easy content management.
 
 * Collaboratively manage content using version-controlled [markdown](https://www.markdownguide.org/) files.
-* Host your static websites for free by automatically deploying to JAMstack platforms such as [Cloudflare Pages](https://pages.cloudflare.com/).
+* Host your static websites for free by automatically deploying to JAMstack platforms such as [Cloudflare Workers (Static Assets)](https://developers.cloudflare.com/workers/static-assets/).
 * Edit and build your websites entirely within [VS Code](https://code.visualstudio.com/) using the custom Teddy markdown editor and website builder VS Code extension.
 * Free, open-source, easily extensible and feature-rich, including custom themes and multilingual websites.
 * Small code footprint, quick and efficient - no databases required.
 
-Teddy is written in JavaScript and requires the [Node.js](https://nodejs.org/) JavaScript runtime environment to build static websites. Teddy was created by [Jillur Quddus](https://hyperlearning.ai/team/jillurquddus), a computational mathematician at HyperLearning AI, and is released under the [GNU GPLv3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) open-source software license.
+Teddy is written in JavaScript and requires the [Node.js](https://nodejs.org/) JavaScript runtime environment to build static websites. Teddy was created by [Jillur Quddus](https://hyperlearning.ai/team/jillurquddus/), a computational mathematician at HyperLearning AI, and is released under the [GNU GPLv3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) open-source software license.
 
 <p align="right"><a href="#readme-top">Back to Top &#9650;</a></p>
 
@@ -35,13 +35,13 @@ The official Teddy website, <a href="https://teddyful.com" target="_blank">teddy
 
 ### Team Teddy
 
-Teddy was originally designed and built by [Jillur Quddus](https://hyperlearning.ai/team/jillurquddus), a computational mathematician at [HyperLearning AI](https://hyperlearning.ai/). Teddy started life as an applied learning project in the autumn of 2024 as Jillur studied how to apply JavaScript to serverside programming using the Node.js runtime environment. Jillur decided to open source the project in March 2025 under the [GNU GPLv3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) open-source software license. It is now actively maintained by the following core development team.
+Teddy was originally designed and built by [Jillur Quddus](https://hyperlearning.ai/team/jillurquddus/), a computational mathematician at [HyperLearning AI](https://hyperlearning.ai/). Teddy started life as an applied learning project in the autumn of 2024 as Jillur studied how to apply JavaScript to serverside programming using the Node.js runtime environment. Jillur decided to open source the project in March 2025 under the [GNU GPLv3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) open-source software license. It is now actively maintained by the following core development team.
 
-* [Jillur Quddus](https://hyperlearning.ai/team/jillurquddus) - Project Owner and Lead Developer
-* [Jane Yang](https://hyperlearning.ai/team/janeyang) - Principal Developer
+* [Jillur Quddus](https://hyperlearning.ai/team/jillurquddus/) - Project Owner and Lead Developer
+* [Jane Yang](https://hyperlearning.ai/team/janeyang/) - Principal Developer
 
 ### Open Source Libraries
 
-Teddy is powered by a collection of amazing open source software libraries. Check them out on our <a href="https://teddyful.com/docs/latest/credits/" target="_blank">credits</a> page and, if you are able to, please consider a donation to your favourite ones and help support the awesome open-source community.
+Teddy is powered by a collection of amazing open-source software libraries. Check them out on our <a href="https://teddyful.com/docs/latest/credits/" target="_blank">credits</a> page and, if you are able to, consider donating to your favourite ones to help support the awesome open-source community.
 
 <p align="right"><a href="#readme-top">Back to Top &#9650;</a></p>
