@@ -40,12 +40,16 @@
                     }
                 }
             }, 
-            "media": {
+            "assets": {
                 "extensions": {
                     "allowed": [
                         "aac", 
                         "alac", 
+                        "avif", 
                         "bmp", 
+                        "csv", 
+                        "doc", 
+                        "docx", 
                         "eps", 
                         "flac", 
                         "gif", 
@@ -54,16 +58,30 @@
                         "html", 
                         "jpg", 
                         "jpeg", 
+                        "json", 
+                        "jsonc", 
                         "mkv", 
                         "mov", 
                         "mp3", 
                         "mp4", 
+                        "odp", 
+                        "ods", 
+                        "odt", 
                         "pdf", 
                         "png", 
+                        "ppt", 
+                        "pptx", 
                         "svg", 
                         "tiff", 
+                        "toml", 
+                        "txt", 
                         "webm", 
-                        "webp"
+                        "webp", 
+                        "xls", 
+                        "xlsx", 
+                        "xml", 
+                        "yaml", 
+                        "yml"
                     ]
                 }
             }, 

@@ -84,7 +84,7 @@ const siteConfigSchema = {
                                 }
                             }
                         }, 
-                        media: {
+                        assets: {
                             type: 'object', 
                             required: ['extensions'], 
                             properties: {
@@ -136,7 +136,7 @@ const siteConfigSchema = {
                     then: {
                         required: [
                             'index', 
-                            'media', 
+                            'assets', 
                             'pagesDir', 
                             'pagination', 
                             'search', 

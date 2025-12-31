@@ -157,7 +157,7 @@ class PageBuilder {
                                 pageMdAbsDirPath, true);
                             const filteredAssetFiles = assetFiles.filter(
                                 filename => hasFileExtensions(filename, 
-                                    this.config.site.collection.media.extensions.allowed
+                                    this.config.site.collection.assets.extensions.allowed
                                 )
                             );
                             for (const assetFile of filteredAssetFiles) {
