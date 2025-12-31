@@ -8,6 +8,9 @@
 import Ajv from "ajv";
 import path from 'path';
 import siteConfigSchema from '../schema/config-site.js';
+import siteContributorsSchema from '../schema/config-site-contributors.js';
+import siteMetadataSchema from '../schema/config-site-metadata.js';
+import siteTaxonomySchema from '../schema/config-site-taxonomy.js';
 import systemConfigSchema from '../schema/config-system.js';
 import themeConfigSchema from '../schema/config-theme.js';
 
@@ -46,13 +49,13 @@ class ConfigValidator {
             throw new Error('System configuration schema error: \n' + 
                 JSON.stringify(this.ajv.errors, null, 4));
 
-        // Validate that the specified system directories exist.
+        // Validate that the required system directories exist.
         this.#validateResourceExists(this.systemConfig, ['system', 'sites']);
         this.#validateResourceExists(this.systemConfig, ['system', 'themes']);
         this.#validateResourceExists(this.systemConfig, 
             ['system', 'assets', 'dir']);
 
-        // Validate that the specified files exist.
+        // Validate that the required files exist.
         this.#validateResourceExists(this.systemConfig, 
             ['system', 'assets', 'js', 'vendors'], 
             this.systemConfig.system.assets.dir + '/js');
@@ -154,21 +157,43 @@ class ConfigValidator {
                 this.systemConfig.system.build.siteDirs.pages);
         }
 
-        // Validate that the specified site files exist.
+        // Validate that the required site files exist.
         for ( const language of this.siteConfig.site.languages.enabled ) {
-            this.#validateFileExists(
+            
+            // metadata.json
+            const siteLanguageDirPath = 
                 this.systemConfig.system.build.siteDirs.languages + 
-                    `/${language}`, 'metadata.json');
-            this.#validateFileExists(
-                this.systemConfig.system.build.siteDirs.languages + 
-                    `/${language}`, 'contributors.json');
+                    `/${language}`;
+            const metadataFileName = 'metadata.json';
+            this.#validateFileExists(siteLanguageDirPath, metadataFileName);
+            const metadata = loadJsonFile(
+                `${siteLanguageDirPath}/${metadataFileName}`);
+            if ( !this.ajv.validate(siteMetadataSchema, metadata) )
+                throw new Error(`Site metadata schema (${language}) ` + 
+                    'error: \n' + JSON.stringify(this.ajv.errors, null, 4));
+
+            // contributors.json
+            const contributorsFileName = 'contributors.json';
+            this.#validateFileExists(siteLanguageDirPath, contributorsFileName);
+            const contributors = loadJsonFile(
+                `${siteLanguageDirPath}/${contributorsFileName}`);
+            if ( !this.ajv.validate(siteContributorsSchema, contributors) )
+                throw new Error(`Site contributors schema (${language}) ` + 
+                    'error: \n' + JSON.stringify(this.ajv.errors, null, 4));
+
+            // taxonomy.json
             if ( this.siteConfig.site.collection.enabled && 
                 this.siteConfig.site.collection.taxonomy.categories.length > 0 
             ) {
-                this.#validateFileExists(
-                    this.systemConfig.system.build.siteDirs.languages + 
-                        `/${language}`, 'taxonomy.json');
+                const taxonomyFileName = 'taxonomy.json';
+                this.#validateFileExists(siteLanguageDirPath, taxonomyFileName);
+                const taxonomy = loadJsonFile(
+                    `${siteLanguageDirPath}/${taxonomyFileName}`);
+                if ( !this.ajv.validate(siteTaxonomySchema, taxonomy) )
+                    throw new Error(`Site taxonomy schema (${language}) ` + 
+                        'error: \n' + JSON.stringify(this.ajv.errors, null, 4));
             }
+
         }
 
         // Validate that the specified asset files exist.
