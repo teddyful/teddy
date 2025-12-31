@@ -5,15 +5,15 @@
         "assets": {
             "dir": "./system/assets", 
             "fonts": {
-                "ja": "NotoSansJP-Regular.ttf", 
-                "jpn": "NotoSansJP-Regular.ttf", 
-                "ko": "NotoSansKR-Regular.ttf", 
-                "kor": "NotoSansKR-Regular.ttf", 
-                "zh": "NotoSansSC-Regular.ttf", 
-                "zh-cn": "NotoSansSC-Regular.ttf", 
-                "zh-hk": "NotoSansHK-Regular.ttf", 
-                "zh-sg": "NotoSansTC-Regular.ttf", 
-                "zh-tw": "NotoSansTC-Regular.ttf"
+                "ja": "NotoSans/NotoSansJP-Regular.ttf", 
+                "jpn": "NotoSans/NotoSansJP-Regular.ttf", 
+                "ko": "NotoSans/NotoSansKR-Regular.ttf", 
+                "kor": "NotoSans/NotoSansKR-Regular.ttf", 
+                "zh": "NotoSans/NotoSansSC-Regular.ttf", 
+                "zh-cn": "NotoSans/NotoSansSC-Regular.ttf", 
+                "zh-hk": "NotoSans/NotoSansHK-Regular.ttf", 
+                "zh-sg": "NotoSans/NotoSansTC-Regular.ttf", 
+                "zh-tw": "NotoSans/NotoSansTC-Regular.ttf"
             }, 
             "js": {
                 "site": [
