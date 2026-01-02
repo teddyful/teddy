@@ -224,13 +224,6 @@ class ConfigValidator {
             }
         }
 
-        // Validate that the specified datasource language font files exist.
-        for ( const key of Object.keys(
-            this.siteConfig.site.datasources.fonts) ) {
-            this.#validateFilePathExists(
-                this.siteConfig.site.datasources.fonts[key]);
-        }
-
         // Validate that an object for this environment exists in site.web.
         const env = this.opts.env;
         if ( !(env in this.siteConfig.site.web) ) {
