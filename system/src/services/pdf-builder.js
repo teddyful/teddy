@@ -16,7 +16,7 @@ import { createDirectory, getFiles, hasFileExtension } from
     '../utils/io-utils.js';
 
 
-const DEFAULT_SYSTEM_FONT_FILE = 'NotoSans/NotoSans-Regular.ttf';
+const DEFAULT_SYSTEM_FONT_FILE = 'Noto/NotoSans/NotoSans-Regular.ttf';
 const DEFAULT_FONT_SIZE = 12;
 const HEADING_FONT_SIZE = 18;
 const METADATA_FONT_SIZE = 12;
