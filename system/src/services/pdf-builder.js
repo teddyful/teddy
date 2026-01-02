@@ -16,7 +16,7 @@ import { createDirectory, getFiles, hasFileExtension } from
     '../utils/io-utils.js';
 
 
-const DEFAULT_FONT_NAME = 'Helvetica';
+const DEFAULT_SYSTEM_FONT_FILE = 'NotoSans/NotoSans-Regular.ttf';
 const DEFAULT_FONT_SIZE = 12;
 const HEADING_FONT_SIZE = 18;
 const METADATA_FONT_SIZE = 12;
@@ -132,8 +132,15 @@ class PdfBuilder {
             });
             doc.pipe(fs.createWriteStream(pdfPath));
 
+            // Register the default font that supports Latin, Greek
+            // and Cyrillic characters, found in: 
+            // system/assets/fonts/NotoSans/NotoSans-Regular.ttf.
+            let fontAlias = 'DefaultLanguageFont';
+            const defaultFontFilePath = this.config.system.assets.dir + 
+                    `/fonts/${DEFAULT_SYSTEM_FONT_FILE}`;
+            doc.registerFont(fontAlias, defaultFontFilePath);
+
             // Register the language-specific font if specified.
-            let fontAlias = DEFAULT_FONT_NAME;
             if ( this.config.site.datasources.fonts.hasOwnProperty(language) ) {
                 const fontFilePath = this.config.site.datasources.fonts[language];
                 fontAlias = 'CustomLanguageFont';
@@ -164,7 +171,7 @@ class PdfBuilder {
                 // Page absolute URL.
                 const pageAbsoluteUrl = page.relUrl != '.' ? 
                     `${siteBaseUrl}/${page.relUrl}/` : `${siteBaseUrl}/`;
-                doc.font(DEFAULT_FONT_NAME);
+                doc.font('DefaultLanguageFont');
                 doc.fontSize(SMALL_FONT_SIZE);
                 doc.text(`Source: ${pageAbsoluteUrl}`).moveDown();
 
