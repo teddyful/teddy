@@ -18,6 +18,7 @@ Teddy is an opinionated open-source content management system (CMS) and static s
 * Collaboratively manage content using version-controlled [markdown](https://www.markdownguide.org/) files.
 * Host your static websites for free by automatically deploying to JAMstack platforms such as [Cloudflare Workers (Static Assets)](https://developers.cloudflare.com/workers/static-assets/).
 * Edit and build your websites entirely within [VS Code](https://code.visualstudio.com/) using the custom Teddy markdown editor and website builder VS Code extension.
+* Easily generate a PDF version of your site to enhance Large Language Models (LLMs) through [Retrieval-Augmented Generation (RAG)](https://research.ibm.com/blog/retrieval-augmented-generation-RAG).
 * Free, open-source, easily extensible and feature-rich, including custom themes and multilingual websites.
 * Small code footprint, quick and efficient - no databases required.
 
