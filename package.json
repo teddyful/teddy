@@ -1,6 +1,6 @@
 {
     "name": "teddy",
-    "version": "0.0.13",
+    "version": "0.0.14",
     "description": "Opinionated open-source content management system (CMS) and static site generator (SSG) that focuses on simplicity and easy content management.",
     "main": "build.js",
     "private": true,
@@ -20,21 +20,21 @@
     },
     "homepage": "https://github.com/teddyful/teddy#readme",
     "devDependencies": {
-        "ajv": "8.17.1",
-        "commander": "14.0.2",
+        "ajv": "8.18.0",
+        "commander": "14.0.3",
         "del": "8.0.1",
         "flexsearch": "0.7.43",
         "gulp": "5.0.1",
         "gulp-mustache": "5.0.0",
-        "minify": "14.1.0",
+        "minify": "15.0.1",
         "pdfkit": "0.17.2", 
         "showdown": "2.1.0",
-        "string-strip-html": "13.5.0",
-        "try-to-catch": "3.0.1",
-        "vite": "6.4.1",
-        "vitest": "4.0.16",
+        "string-strip-html": "13.5.3",
+        "try-to-catch": "4.0.5",
+        "vite": "7.3.1",
+        "vitest": "4.0.18",
         "winston": "3.19.0",
         "winston-daily-rotate-file": "5.0.0",
-        "wrangler": "^4.54.0"
+        "wrangler": "^4.66.0"
     }
 }

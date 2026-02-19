@@ -9,7 +9,7 @@ import fs from 'fs';
 import mustache from 'mustache';
 import path from 'path';
 import showdown from 'showdown';
-import tryToCatch from 'try-to-catch';
+import { tryToCatch } from 'try-to-catch';
 import UrlBuilder from './url-builder.js';
 import { minify } from 'minify';
 

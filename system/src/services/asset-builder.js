@@ -6,7 +6,7 @@
  */
 
 import path from 'path';
-import tryToCatch from 'try-to-catch';
+import { tryToCatch } from 'try-to-catch';
 import { minify } from 'minify';
 
 import { copyDir, copyFile, createDirectory, hasFileExtension, pathExists, 
@@ -125,6 +125,19 @@ class AssetBuilder {
             if ( assetsDirAbsPath ) {
                 const targetDirAbsPath = 
                     `${this.config.build.distDirs.assets}/images`;
+                this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
+            }
+        }
+    }
+
+    deployAudioAssets(sourceType) {
+        if ( !this.config.build.opts.ignoreAssets && 
+                !this.config.build.opts.ignoreAudio ) {
+            const assetsDirAbsPath = 
+                this.#ascertainPathToAssets(sourceType, 'audio');
+            if ( assetsDirAbsPath ) {
+                const targetDirAbsPath = 
+                    `${this.config.build.distDirs.assets}/audio`;
                 this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
             }
         }
