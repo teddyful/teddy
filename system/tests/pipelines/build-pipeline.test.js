@@ -18,6 +18,7 @@ const opts = {
     customJsOnly: false,
     generateDsPdf: false,
     ignoreAssets: false,
+    ignoreAudio: false,
     ignoreCollection: false,
     ignoreCss: false,
     ignoreData: false,

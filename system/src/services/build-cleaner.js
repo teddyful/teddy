@@ -20,6 +20,7 @@ class BuildCleaner {
         if ( this.config.build.opts.customCssOnly || 
                 this.config.build.opts.customJsOnly || 
                 this.config.build.opts.ignoreAssets || 
+                this.config.build.opts.ignoreAudio || 
                 this.config.build.opts.ignoreCss || 
                 this.config.build.opts.ignoreData || 
                 this.config.build.opts.ignoreFonts || 
