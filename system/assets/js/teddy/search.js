@@ -7,11 +7,36 @@
 
 class Search {
 
+    static UNICODE_QUERY_FILTER_REGEX = /[^\p{Letter}\p{Number}_\-\s]/gu;
+    static LEGACY_QUERY_FILTER_REGEX = /[^a-zA-Z0-9_\-\s\u0100-\u024f\u4e00-\u9fff\u30a0-\u30ff\u3040-\u309f\uac00-\ud7af\u0370-\u03ff\u0400-\u04ff\u0600-\u06ff\u0e00-\u0e7f\u0900-\u097f\u0980-\u09ff\u0b80-\u0bff\u0a80-\u0aff\u0590-\u05ff\u0f00-\u0fff\u1800-\u18af]/gi;
+    static WHITESPACE_REGEX = /\s+/g;
+    static INDEX_KEY_REGEX = /^[a-zA-Z0-9_.-]+$/;
+    static LANGUAGE_KEY_REGEX = /^[a-zA-Z0-9_-]+$/;
+    static MAX_MIN_SEARCH_QUERY_LENGTH = 20;
+    static MAX_SEARCH_QUERY_LENGTH = 200;
+    static MAX_SEARCH_LIMIT = 100;
+    static MAX_TAG_COUNT = 30;
+    static MAX_INDEX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
+
+    constructor() {
+        this.index = null;
+        this.collectionSize = 0;
+        this.loaded = false;
+    }
+
+    #assertIndexLoaded() {
+        if ( !this.loaded || this.index === null ) {
+            throw new Error('Search index has not been loaded.');
+        }
+    }
+
     static sanitizeQuery(query, unicodeProperties = true) {
+        const normalizedQuery = String(query ?? '')
+            .slice(0, Search.MAX_SEARCH_QUERY_LENGTH);
         const filteredQuery = unicodeProperties ? 
             
             // Using Unicode properties.
-            query.replace(/[^\p{Letter}\p{Number}_\-\s]/gu, '') : 
+            normalizedQuery.replace(Search.UNICODE_QUERY_FILTER_REGEX, '') : 
 
             // Without using Unicode properties (legacy systems).
             // Keep the following character sets:
@@ -33,58 +58,193 @@ class Search {
             // Hebrew                                                   \u0590-\u05ff
             // Tibetan                                                  \u0f00-\u0fff
             // Mongolian                                                \u1800-\u18af
-            query.replace(/[^a-zA-Z0-9_\-\s\u0100-\u024f\u4e00-\u9fff\u30a0-\u30ff\u3040-\u309f\uac00-\ud7af\u0370-\u03ff\u0400-\u04ff\u0600-\u06ff\u0e00-\u0e7f\u0900-\u097f\u0980-\u09ff\u0b80-\u0bff\u0a80-\u0aff\u0590-\u05ff\u0f00-\u0fff\u1800-\u18af]/gi, '');
+            normalizedQuery.replace(Search.LEGACY_QUERY_FILTER_REGEX, '');
 
         // Clean and standardise whitespace characters.
         return filteredQuery
-                .replace(/\s\s+/g, ' ')
-                .replace(/\s/g, ' ')
+                .replace(Search.WHITESPACE_REGEX, ' ')
                 .trim();
 
     }
 
+    static normalizeMinSearchQueryLength(minSearchQueryLength = 2) {
+        const normalizedMinSearchQueryLength = Math.floor(
+            Number(minSearchQueryLength) || 0
+        );
+        return Math.min(
+            Math.max(0, normalizedMinSearchQueryLength),
+            Search.MAX_MIN_SEARCH_QUERY_LENGTH
+        );
+    }
+
+    static normalizeEnrich(enrich = true) {
+        return enrich === true;
+    }
+
+    static normalizeTags(tags) {
+        const normalizedTags = Array.isArray(tags) ? tags : [tags];
+        return normalizedTags
+            .filter(function(tag) {
+                return ['string', 'number'].includes(typeof tag) &&
+                    String(tag).trim().length > 0;
+            })
+            .slice(0, Search.MAX_TAG_COUNT);
+    }
+
+    static normalizePagination(offset = 0, limit = 10) {
+        const normalizedOffset = Math.floor(Number(offset) || 0);
+        const normalizedLimit = Math.floor(Number(limit) || 0);
+        return {
+            offset: Math.max(0, normalizedOffset),
+            limit: Math.min(
+                Math.max(0, normalizedLimit),
+                Search.MAX_SEARCH_LIMIT
+            )
+        };
+    }
+
+    static normalizeIndexKey(key) {
+        const normalizedKey = String(key ?? '').trim();
+        if ( !Search.INDEX_KEY_REGEX.test(normalizedKey) ) {
+            throw new Error('Invalid search index key.');
+        }
+        return normalizedKey;
+    }
+
+    static normalizeLanguageKey(language) {
+        const normalizedLanguage = String(language ?? '').trim();
+        if ( !Search.LANGUAGE_KEY_REGEX.test(normalizedLanguage) ) {
+            throw new Error('Invalid search language key.');
+        }
+        return normalizedLanguage;
+    }
+
+    static normalizeIndexBaseUrl(url) {
+        const normalizedUrl = String(url ?? '').trim();
+        if ( normalizedUrl.length === 0 ) {
+            throw new Error('Invalid search index base URL.');
+        }
+        const parsedUrl = new URL(normalizedUrl, window.location.origin);
+        if ( !['http:', 'https:'].includes(parsedUrl.protocol) ) {
+            throw new Error('Invalid search index base URL.');
+        }
+        if ( parsedUrl.origin !== window.location.origin ) {
+            throw new Error(
+                'Search index base URL must use the current origin.');
+        }
+        return parsedUrl.href.replace(/\/$/, '');
+    }
+
+    static normalizeDocumentId(id) {
+        return Math.max(0, Math.floor(Number(id) || 0));
+    }
+
+    static async fetchIndexData(key) {
+        const normalizedKey = Search.normalizeIndexKey(key);
+        const normalizedLanguage = Search.normalizeLanguageKey(PAGE_LANGUAGE);
+        const normalizedIndexBaseUrl = Search.normalizeIndexBaseUrl(
+            COLLECTION_INDEX_BASE_URL
+        );
+        const indexDataUrl =`${normalizedIndexBaseUrl}/` + 
+            `${normalizedLanguage}/${normalizedKey}.json`;
+        const response = await fetch(indexDataUrl);
+        if ( !response.ok ) {
+            throw new Error(
+                `Failed to load search index '${normalizedKey}': ` +
+                `${response.status} ${response.statusText}`
+            );
+        }
+        const contentLength = Number(
+            response.headers.get('Content-Length') || 0);
+        if ( contentLength > Search.MAX_INDEX_FILE_SIZE_BYTES ) {
+            throw new Error(
+                `Search index '${normalizedKey}' exceeds the ` + 
+                `maximum file size.`);
+        }
+        const data = await response.text();
+        const dataSize = new TextEncoder().encode(data).length;
+        if ( dataSize > Search.MAX_INDEX_FILE_SIZE_BYTES ) {
+            throw new Error(
+                `Search index '${normalizedKey}' exceeds the ` + 
+                `maximum file size.`);
+        }
+        return { key: normalizedKey, data };
+    }
+
     async loadIndex() {
 
-        // Regenerate the index configuration.
-        let indexConfig = structuredClone(INDEX_DOCUMENT_STORE_CONFIG);
-        indexConfig.language = PAGE_LANGUAGE in ISO_639_3166_LOOKUP ? 
-            ISO_639_3166_LOOKUP[PAGE_LANGUAGE] : PAGE_LANGUAGE;
-        if ( CJK_ISO_3166.includes(indexConfig.language) ) {
-            indexConfig.encode = cjkTokenizer;
+        this.loaded = false;
+        this.index = null;
+        this.collectionSize = 0;
+
+        try {
+
+            // Regenerate the index configuration.
+            const normalizedLanguage = Search.normalizeLanguageKey(
+                PAGE_LANGUAGE);
+            let indexConfig = structuredClone(INDEX_DOCUMENT_STORE_CONFIG);
+            indexConfig.language = normalizedLanguage in ISO_639_3166_LOOKUP ? 
+                ISO_639_3166_LOOKUP[normalizedLanguage] : normalizedLanguage;
+            if ( CJK_ISO_3166.includes(indexConfig.language) ) {
+                indexConfig.encode = cjkTokenizer;
+            }
+
+            // Create an empty index using the same build-time index config.
+            this.index = new FlexSearch.Document(indexConfig);
+            const indexKeys = normalizedLanguage in LANGUAGE_INDEX_KEYS ? 
+                LANGUAGE_INDEX_KEYS[normalizedLanguage] : [];
+
+            // Fetch all index files concurrently.
+            const indexData = await Promise.all(indexKeys.map(
+                function(key) {
+                    return Search.fetchIndexData(key);
+                }
+            ));
+
+            // Import each index key using the fetched data.
+            for ( const { key, data } of indexData ) {
+                try {
+                    await this.index.import(key, data ?? null);
+                } catch (error) {
+                    throw new Error(
+                        `Failed to import search index '${key}'.`, 
+                        { cause: error });
+                }
+            }
+
+            // Set the collection size.
+            this.collectionSize = normalizedLanguage in COLLECTION_SIZES ? 
+                COLLECTION_SIZES[normalizedLanguage] : 0;
+            this.loaded = true;
+
+        } catch (error) {
+            this.loaded = false;
+            this.index = null;
+            this.collectionSize = 0;
+            throw error;
         }
-
-        // Create an empty index using the same build-time index configuration.
-        this.index = new FlexSearch.Document(indexConfig);
-        const indexKeys = PAGE_LANGUAGE in LANGUAGE_INDEX_KEYS ? 
-            LANGUAGE_INDEX_KEYS[PAGE_LANGUAGE] : [];
-
-        // Define the HTTP headers for the Fetch API.
-        let headers = new Headers();
-        headers.append('Content-Type','application/json; charset=UTF-8');
-
-        // Iterate over all index keys and import their data into the index.
-        for ( const key of indexKeys ) {
-            const indexDataUrl = 
-                `${COLLECTION_INDEX_BASE_URL}/${PAGE_LANGUAGE}/${key}.json`;
-            const response = await fetch(indexDataUrl, { headers });
-            const data = await response.text();
-            await this.index.import(key, data ?? null);
-        }
-
-        // Set the collection size.
-        this.collectionSize = PAGE_LANGUAGE in COLLECTION_SIZES ? 
-            COLLECTION_SIZES[PAGE_LANGUAGE] : 0;
 
     }
 
-    async getDocument(id) {
-        return await this.index.get(id);
+    getDocument(id) {
+        this.#assertIndexLoaded();
+        const normalizedId = Search.normalizeDocumentId(id);
+        if ( normalizedId >= this.collectionSize ) {
+            return null;
+        }
+        return this.index.get(normalizedId);
     }
 
-    async getDocuments(offset = 0, limit = 10) {
+    getDocuments(offset = 0, limit = 10) {
+        this.#assertIndexLoaded();
+        const {
+            offset: paginationOffset,
+            limit: paginationLimit
+        } = Search.normalizePagination(offset, limit);
         let documents = [];
-        for (let i = offset; i < (offset + limit); i++) {
-            const document = await this.index.get(i);
+        for (let i = paginationOffset; i < (
+            paginationOffset + paginationLimit); i++) {
+            const document = this.index.get(i);
             if ( typeof document !== 'undefined' && document !== null ) {
                 documents.push(document);
             }
@@ -93,80 +253,109 @@ class Search {
     }
 
     async getDocumentsByTags(tags, offset = 0, limit = 10, enrich = true) {
+        this.#assertIndexLoaded();
+        const normalizedTags = Search.normalizeTags(tags);
+        if ( normalizedTags.length === 0 ) {
+            return [];
+        }
+        const {
+            offset: paginationOffset,
+            limit: paginationLimit
+        } = Search.normalizePagination(offset, limit);
+        const normalizedEnrich = Search.normalizeEnrich(enrich);
         return this.#deduplicateHits(await this.index.searchAsync({
             tag: {
                 field: "tags", 
-                tag: tags
+                tag: normalizedTags
             }, 
-            offset: offset, 
-            limit: limit, 
-            enrich: enrich
-        }));
+            offset: paginationOffset, 
+            limit: paginationLimit, 
+            enrich: normalizedEnrich
+        }), paginationLimit);
     }
 
-    async query(searchQuery, offset = 0, limit = 10, 
-        enrich = true, minSearchQueryLength = 2) {
+    async query(searchQuery, options = {}) {
+        this.#assertIndexLoaded();
+        const {
+            enrich = true,
+            minSearchQueryLength = 2
+        } = options;
+        const {
+            offset: paginationOffset,
+            limit: paginationLimit
+        } = Search.normalizePagination(options.offset, options.limit);
         const sanitizedSearchQuery = Search.sanitizeQuery(searchQuery);
-        if ( sanitizedSearchQuery.length >= minSearchQueryLength ) {
-            return this.#deduplicateHits(await this.index.searchAsync(
-                sanitizedSearchQuery, {
-                    offset: offset, 
-                    limit: limit, 
-                    enrich: enrich
-                }));
+        const minQueryLength = Search.normalizeMinSearchQueryLength(
+            minSearchQueryLength
+        );
+        const normalizedEnrich = Search.normalizeEnrich(enrich);
+        if ( sanitizedSearchQuery.length < minQueryLength ) {
+            return [];
         }
-        return [];
+        return this.#deduplicateHits(await this.index.searchAsync(
+            sanitizedSearchQuery, {
+                offset: paginationOffset,
+                limit: paginationLimit,
+                enrich: normalizedEnrich
+            }), paginationLimit);
     }
 
-    // Exists a bug in Flexsearch where performing a query and tag-based filter
-    // together does not return any documents outside of the strict range 
-    // [offset, limit] (unlike query or tag-based filters when applied
-    // individually). The temporary fix applied below is to incrementally 
-    // increase the offset until it reaches the size of the collection, or
-    // the number of hits equals the requested limit - whichever comes first.
-    async queryAndFilterByTags(searchQuery, tags, 
-        offset = 0, limit = 10, enrich = true, minSearchQueryLength = 2) {
+    async queryAndFilterByTags(searchQuery, tags, options = {}) {
+        this.#assertIndexLoaded();
+        const {
+            enrich = true,
+            minSearchQueryLength = 2
+        } = options;
+        const {
+            offset: paginationOffset,
+            limit: paginationLimit
+        } = Search.normalizePagination(options.offset, options.limit);
         const sanitizedSearchQuery = Search.sanitizeQuery(searchQuery);
-        if ( sanitizedSearchQuery.length >= minSearchQueryLength ) {
-            let docs = new Map();
-            let liveOffset = offset;
-            while ( liveOffset < this.collectionSize ) {
-                const hits = await this.index.searchAsync(sanitizedSearchQuery, 
-                    {
-                        tag: {
-                            field: "tags", 
-                            tag: tags
-                        }, 
-                        offset: liveOffset, 
-                        limit: limit, 
-                        enrich: enrich
-                    });
-                for ( const hit of hits ) {
-                    for ( const result of hit.result ) {
-                        if ( !docs.has(result.doc.id) && docs.size < limit ) {
-                            docs.set(result.doc.id, result.doc);
-                        }
-                    }
-                }
-                if ( docs.size == limit )
-                    break;
-                liveOffset += limit;
-            }
-            return [...docs.values()];
+        const minQueryLength = Search.normalizeMinSearchQueryLength(
+            minSearchQueryLength
+        );
+        const normalizedTags = Search.normalizeTags(tags);
+        const normalizedEnrich = Search.normalizeEnrich(enrich);
+        if ( sanitizedSearchQuery.length < minQueryLength || 
+            normalizedTags.length === 0 ) {
+            return [];
         }
-        return [];
+        return this.#deduplicateHits(await this.index.searchAsync(
+            sanitizedSearchQuery, {
+                tag: {
+                    field: "tags",
+                    tag: normalizedTags
+                },
+                offset: paginationOffset,
+                limit: paginationLimit,
+                enrich: normalizedEnrich
+            }), paginationLimit);
     }
 
-    #deduplicateHits(hits) {
+    #deduplicateHits(hits, limit = Infinity) {
         let docs = new Map();
+        let results = [];
+        if ( !Array.isArray(hits) ) {
+            return results;
+        }
         for ( const hit of hits ) {
+            if ( !hit || !Array.isArray(hit.result) ) {
+                continue;
+            }
             for ( const result of hit.result ) {
-                if ( !docs.has(result.doc.id) ) {
-                    docs.set(result.doc.id, result.doc);
+                const doc = result && result.doc;
+                if ( !doc || typeof doc.id === 'undefined' ||
+                    docs.has(doc.id) ) {
+                    continue;
+                }
+                docs.set(doc.id, true);
+                results.push(doc);
+                if ( results.length >= limit ) {
+                    return results;
                 }
             }
         }
-        return [...docs.values()];
+        return results;
     }
 
 }

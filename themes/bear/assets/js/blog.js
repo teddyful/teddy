@@ -51,16 +51,21 @@ async function doSearch(loadMore = false) {
 
     // Search query with no category filter.
     else if ( searchQuery && !categoryFilter ) {
-        searchResultsDelta = await search.query(searchQuery, 
-            searchResults.length, COLLECTION_PAGINATION_SIZE, 
-            MIN_SEARCH_QUERY_LENGTH);
+        searchResultsDelta = await search.query(searchQuery, {
+            offset: searchResults.length,
+            limit: COLLECTION_PAGINATION_SIZE,
+            minSearchQueryLength: MIN_SEARCH_QUERY_LENGTH
+        });
     }
 
     // Search query with category filter.
     else if ( searchQuery && categoryFilter ) {
-        searchResultsDelta = await search.queryAndFilterByTags(searchQuery, 
-            categoryFilter, searchResults.length, COLLECTION_PAGINATION_SIZE, 
-            MIN_SEARCH_QUERY_LENGTH);
+        searchResultsDelta = await search.queryAndFilterByTags(
+            searchQuery, categoryFilter, {
+            offset: searchResults.length,
+            limit: COLLECTION_PAGINATION_SIZE,
+            minSearchQueryLength: MIN_SEARCH_QUERY_LENGTH
+        });
     }
 
     // Category filter with no search query.
@@ -129,15 +134,15 @@ function generateBlogListingPost(doc) {
     postImage.setAttribute('alt', doc.name);
     let postTitle = post.getElementsByClassName('blog-post-title')[0];
     postTitle.setAttribute('href', doc.relUrl);
-    postTitle.innerHTML = doc.name;
+    postTitle.textContent = doc.name;
     let postAuthor = post.getElementsByClassName('blog-post-author')[0];
     postAuthor.setAttribute('href', doc.authorUrl);
-    postAuthor.innerHTML = doc.author;
+    postAuthor.textContent = doc.author;
     let postDate = post.getElementsByClassName('blog-post-date')[0];
-    postDate.innerHTML = doc.displayDate;
+    postDate.textContent = doc.displayDate;
     let postDescription = post.getElementsByClassName(
         'blog-post-description')[0];
-    postDescription.innerHTML = doc.description;
+    postDescription.textContent = doc.description;
     let postReadMore = post.getElementsByClassName(
         'blog-post-read-more')[0];
     postReadMore.setAttribute('href', doc.relUrl);
@@ -147,7 +152,7 @@ function generateBlogListingPost(doc) {
     }
     let postCategories = post.getElementsByClassName(
         'blog-post-categories')[0];
-    postCategories.innerHTML = categories;
+    postCategories.textContent = categories;
     return post.outerHTML;
 }
 
