@@ -61,6 +61,15 @@ program.name(packageConfig.name)
     .option('--version-collection-site-number', 'Version the collection directory with the site version number', false)
     .option('--version-site-config-build-id', 'Version the site JavaScript assets directory with the build ID', false)
     .option('--version-site-config-site-number', 'Version the site JavaScript assets directory with the site version number', false)
+    program.addHelpText('after', `
+Examples:
+  $ npm run build --site-name travelbook --theme-name bear
+  $ npm run build --site-name travelbook --theme-name bear --env production
+  $ npm run build --site-name travelbook --theme-name bear --minify-css --minify-js --minify-html
+
+Documentation:
+  https://teddyful.com
+    `)
     .action(async function(opts) {
         logger.info('Started the Teddy static website builder ' + 
             `(v${packageConfig.version}).`);
@@ -72,4 +81,6 @@ program.name(packageConfig.name)
             process.exit(buildPipeline.statusCode);
         }, 2000);
     })
-program.parse();
+    .showHelpAfterError()
+    .showSuggestionAfterError();
+await program.parseAsync();
