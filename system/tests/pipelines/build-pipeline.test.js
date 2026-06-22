@@ -110,7 +110,7 @@ const publicResources = [
     `assets/js/site/config.js`, 
     `assets/js/site/site.js`, 
     `assets/js/vendors/bootstrap/5.3.3/bootstrap.bundle.min.js`, 
-    `assets/js/vendors/flexsearch/0.7.43/flexsearch.bundle.min.js`, 
+    `assets/js/vendors/flexsearch/0.8.212/flexsearch.bundle.min.js`, 
     `assets/js/vendors/mithril/2.3.8/mithril.min.js`, 
     `assets/js/vendors/teddy/${packageVersion}/lang.js`, 
     `assets/js/vendors/teddy/${packageVersion}/search.js`, 

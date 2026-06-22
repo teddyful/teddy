@@ -23,7 +23,7 @@
         "ajv": "8.20.0",
         "commander": "15.0.0",
         "del": "8.0.1",
-        "flexsearch": "0.7.43",
+        "flexsearch": "0.8.212",
         "gulp": "5.0.1",
         "gulp-mustache": "5.0.0",
         "minify": "15.3.1",

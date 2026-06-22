@@ -35,7 +35,7 @@
                     "vendors/teddy/{package.version}/search.js"
                 ], 
                 "vendors": [
-                    "vendors/flexsearch/0.7.43/flexsearch.bundle.min.js"
+                    "vendors/flexsearch/0.8.212/flexsearch.bundle.min.js"
                 ]
             }
         }

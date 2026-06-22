@@ -46,7 +46,7 @@ class Search {
     async loadIndex() {
 
         // Regenerate the index configuration.
-        let indexConfig = INDEX_DOCUMENT_STORE_CONFIG;
+        let indexConfig = structuredClone(INDEX_DOCUMENT_STORE_CONFIG);
         indexConfig.language = PAGE_LANGUAGE in ISO_639_3166_LOOKUP ? 
             ISO_639_3166_LOOKUP[PAGE_LANGUAGE] : PAGE_LANGUAGE;
         if ( CJK_ISO_3166.includes(indexConfig.language) ) {
@@ -66,9 +66,9 @@ class Search {
         for ( const key of indexKeys ) {
             const indexDataUrl = 
                 `${COLLECTION_INDEX_BASE_URL}/${PAGE_LANGUAGE}/${key}.json`;
-            const response = await fetch(indexDataUrl, headers);
-            const json = await response.json();
-            await this.index.import(key, json ?? null);
+            const response = await fetch(indexDataUrl, { headers });
+            const data = await response.text();
+            await this.index.import(key, data ?? null);
         }
 
         // Set the collection size.
@@ -85,7 +85,7 @@ class Search {
         let documents = [];
         for (let i = offset; i < (offset + limit); i++) {
             const document = await this.index.get(i);
-            if ( typeof document !== 'undefined' ) {
+            if ( typeof document !== 'undefined' && document !== null ) {
                 documents.push(document);
             }
         }
@@ -94,7 +94,10 @@ class Search {
 
     async getDocumentsByTags(tags, offset = 0, limit = 10, enrich = true) {
         return this.#deduplicateHits(await this.index.searchAsync({
-            tag: tags, 
+            tag: {
+                field: "tags", 
+                tag: tags
+            }, 
             offset: offset, 
             limit: limit, 
             enrich: enrich
@@ -130,7 +133,10 @@ class Search {
             while ( liveOffset < this.collectionSize ) {
                 const hits = await this.index.searchAsync(sanitizedSearchQuery, 
                     {
-                        tag: tags, 
+                        tag: {
+                            field: "tags", 
+                            tag: tags
+                        }, 
                         offset: liveOffset, 
                         limit: limit, 
                         enrich: enrich
