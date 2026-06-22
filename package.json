@@ -2,12 +2,17 @@
     "name": "teddy",
     "version": "0.0.15",
     "description": "Opinionated open-source content management system (CMS) and static site generator (SSG) that focuses on simplicity and easy content management.",
+    "engines": {
+        "node": ">=24.11.1"
+    }, 
     "main": "build.js",
     "private": true,
     "type": "module",
     "scripts": {
         "build": "node build.js",
-        "test": "vitest run --config ./system/tests/vitest.config.js"
+        "build:demo": "node build.js --site-name travelbook --theme-name bear",
+        "test": "vitest run --config ./system/tests/vitest.config.js", 
+        "test:watch": "vitest --config ./system/tests/vitest.config.js"
     },
     "repository": {
         "type": "git",
@@ -18,7 +23,7 @@
     "bugs": {
         "url": "https://github.com/teddyful/teddy/issues"
     },
-    "homepage": "https://github.com/teddyful/teddy#readme",
+    "homepage": "https://teddyful.com",
     "devDependencies": {
         "ajv": "8.20.0",
         "commander": "15.0.0",
