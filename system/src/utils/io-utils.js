@@ -71,6 +71,11 @@ function pathExists(sourcePath) {
     return fs.existsSync(sourcePath);
 }
 
+// Convert a string to a relative path.
+function toRelativePath(sourcePath) {
+    return sourcePath.replace(/^\/+/, '');
+}
+
 // Write a JSON object to file.
 function writeJsonToFile(json, targetFilePath) {
     fs.writeFileSync(targetFilePath, JSON.stringify(json, null, 4), 'utf-8');
@@ -83,5 +88,5 @@ function writeStringToFile(str, targetFilePath) {
 
 export { copyDir, copyFile, createDirectory, getFiles, 
     hasFileExtension, hasFileExtensions, 
-    keepFilesThatExist, loadFile, loadJsonFile, pathExists, 
+    keepFilesThatExist, loadFile, loadJsonFile, pathExists, toRelativePath, 
     writeJsonToFile, writeStringToFile };
