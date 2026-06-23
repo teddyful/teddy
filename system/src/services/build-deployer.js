@@ -6,10 +6,23 @@
  */
 
 import path from 'path';
+import logger from '../middleware/logger.js';
 import hosts from '../enums/hosts.js';
-import { copyDir, copyFile, pathExists, writeJsonToFile } from 
-    '../utils/io-utils.js';
+import { copyDir, copyFile, pathExists, 
+    writeJsonToFile } from '../utils/io-utils.js';
 
+const BUILD_CONFIG_FILE = 'config.json';
+const BUILD_METADATA_FILE = 'build.json';
+const BUILD_ERROR_FILE = 'build-error.html';
+const INDEX_FILE = 'index.html';
+const ROBOTS_FILE = 'robots.txt';
+const SITEMAP_FILE = 'sitemap.xml';
+const DIR_CONFIG = 'config';
+const DIR_HTML = 'html';
+const DIR_HOSTS = 'hosts';
+const DIR_LANGUAGES = 'languages';
+const DIR_ROBOTS = 'robots';
+const DIR_SITEMAP = 'sitemap';
 
 class BuildDeployer {
 
@@ -17,9 +30,22 @@ class BuildDeployer {
         this.config = config;
     }
 
+    #copyFileIfExists(sourceFilePath, targetFilePath, label = 'file') {
+        if ( sourceFilePath && pathExists(sourceFilePath) && targetFilePath ) {
+            copyFile(sourceFilePath, targetFilePath);
+            return true;
+        }
+        logger.debug(`Build Deployer - Skipping optional ${label}; ` +
+            `source file does not exist: '${sourceFilePath}'.`);
+        return false;
+    }
+
     deployBuildConfig() {
-        writeJsonToFile(this.config, 
-            `${this.config.build.distDirs.build}/config/config.json`);
+        writeJsonToFile(this.config, path.join(
+            this.config.build.distDirs.build, 
+            DIR_CONFIG, 
+            BUILD_CONFIG_FILE)
+        );
     }
 
     deployBuildMetadata() {
@@ -31,78 +57,113 @@ class BuildDeployer {
                 version: this.config.site.version
             }
         };
-        writeJsonToFile(buildMetadata, 
-            `${this.config.build.distDirs.base}/build.json`);
+        writeJsonToFile(buildMetadata, path.join(
+            this.config.build.distDirs.base, 
+            BUILD_METADATA_FILE)
+        );
     }
 
     deployLanguages() {
         for ( const language of this.config.site.languages.enabled ) {
             writeJsonToFile(this.config.site.languages.data[language], 
-                `${this.config.build.distDirs.build}/languages/` + 
-                    `${language}.json`);
+                path.join(
+                    this.config.build.distDirs.build, 
+                    DIR_LANGUAGES, 
+                    `${language}.json`)
+            );
         }
     }
 
     deployDefaultLanguagePages() {
         if ( !this.config.build.opts.ignoreHtml ) {
-            const defaultLanguage = this.config.site.languages.enabled[0];
-            const defaultLanguageDir = this.config.build.distDirs.base + 
-                `/${defaultLanguage}/`;
-            copyDir(defaultLanguageDir, this.config.build.distDirs.base);
+            const defaultLanguage = this.config.site.languages.default ??
+                this.config.site.languages.enabled[0];
+            const defaultLanguageDir = path.join(
+                this.config.build.distDirs.base, 
+                defaultLanguage);
+            if ( pathExists(defaultLanguageDir) ) {
+                copyDir(defaultLanguageDir, this.config.build.distDirs.base);
+                return;
+            }
+            logger.debug('Build Deployer - Skipping default language page ' +
+                'deployment; directory does not exist: ' + 
+                `'${defaultLanguageDir}'.`);
         }
     }
 
     deployWebConfig() {
-        if ( !this.config.build.opts.ignoreWebConfig) {
+        if ( !this.config.build.opts.ignoreWebConfig ) {
             const env = this.config.build.env;
-            const webConfigBaseDirPath = 
-                this.config.system.build.siteDirs.web + '/hosts/';
             const webHost = this.config.site.web[env].host;
             if ( webHost in hosts ) {
                 const webConfigFiles = hosts[webHost];
-                for (const webConfigFile of webConfigFiles) {
-                    const filepath = webConfigBaseDirPath + webConfigFile;
-                    if ( filepath && pathExists(filepath) ) {
-                        const filename = path.basename(filepath);
-                        copyFile(filepath, 
-                            `${this.config.build.distDirs.base}/${filename}`);
-                    }
+                for ( const webConfigFile of webConfigFiles ) {
+                    const sourceFilePath = path.join(
+                        this.config.system.build.siteDirs.web,
+                        DIR_HOSTS,
+                        webConfigFile
+                    );
+                    const targetFilePath = path.join(
+                        this.config.build.distDirs.base,
+                        path.basename(webConfigFile)
+                    );
+                    this.#copyFileIfExists(
+                        sourceFilePath, 
+                        targetFilePath, 
+                        `web host config ${webConfigFile}`);
                 }
             }
         }
     }
 
     deployRobots() {
-        if ( !this.config.build.opts.ignoreRobots) {
-            const filepath = this.config.system.build.siteDirs.web + 
-                '/robots/robots.txt';
-            if ( pathExists(filepath) ) {
-                const filename = path.basename(filepath);
-                copyFile(filepath, 
-                    `${this.config.build.distDirs.base}/${filename}`);
-            }
+        if ( !this.config.build.opts.ignoreRobots ) {
+            this.#copyFileIfExists(
+                path.join(
+                    this.config.system.build.siteDirs.web,
+                    DIR_ROBOTS,
+                    ROBOTS_FILE
+                ),
+                path.join(
+                    this.config.build.distDirs.base,
+                    ROBOTS_FILE
+                ), 
+                ROBOTS_FILE
+            );
         }
     }
 
     deploySitemap() {
-        if ( !this.config.build.opts.ignoreSitemap) {
-            const filepath = this.config.system.build.siteDirs.web + 
-                '/sitemap/sitemap.xml';
-            if ( pathExists(filepath) ) {
-                const filename = path.basename(filepath);
-                copyFile(filepath, 
-                    `${this.config.build.distDirs.base}/${filename}`);
-            }
+        if ( !this.config.build.opts.ignoreSitemap ) {
+            this.#copyFileIfExists(
+                path.join(
+                    this.config.system.build.siteDirs.web,
+                    DIR_SITEMAP,
+                    SITEMAP_FILE
+                ),
+                path.join(
+                    this.config.build.distDirs.base,
+                    SITEMAP_FILE
+                ), 
+                SITEMAP_FILE
+            );
         }
     }
 
     deployBuildErrorPage() {
-        const filepath = this.config.system.assets.dir + 
-            '/html/build-error.html';
-        if ( pathExists(filepath) && 
-            pathExists(this.config.build.distDirs.base) ) {
-            copyFile(filepath, 
-                `${this.config.build.distDirs.base}/index.html`);
+        if ( pathExists(this.config.build.distDirs.base) ) {
+            this.#copyFileIfExists(
+                path.join(
+                    this.config.system.assets.dir,
+                    DIR_HTML,
+                    BUILD_ERROR_FILE
+                ),
+                path.join(
+                    this.config.build.distDirs.base,
+                    INDEX_FILE
+                ), 
+                BUILD_ERROR_FILE
+            );
         }
     }
 
