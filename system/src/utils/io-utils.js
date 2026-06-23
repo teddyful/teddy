@@ -8,6 +8,16 @@
 import fs from 'fs';
 import path from 'path';
 
+// GLOB pattern - all files in a given directory path.
+function allFilesGlob(dirPath) {
+    return `${dirPath}/**`;
+}
+
+// GLOB pattern - negated directory path.
+function negatedGlob(dirPath) {
+    return `!${dirPath}`;
+}
+
 // Copy a given directory to a given target directory.
 function copyDir(sourceDirPath, targetDirPath, recursive = true) {
     fs.cpSync(sourceDirPath, targetDirPath, { recursive: recursive });
@@ -28,6 +38,20 @@ function createDirectory(dirPath, recursive = true) {
     if ( !fs.existsSync(dirPath) ) {
         fs.mkdirSync(dirPath, { recursive: recursive });
     }
+}
+
+// Assert that the given directory is safe to delete.
+function assertSafeDeleteDir(dirPath, label) {
+    if ( typeof dirPath !== 'string' || dirPath.trim().length === 0 ) {
+        throw new Error(`Cannot delete ${label}: directory path is empty.`);
+    }
+    const normalizedPath = dirPath.trim();
+    if ( normalizedPath === '/' || normalizedPath === '.' ) {
+        throw new Error(
+            `Cannot delete ${label}: unsafe directory path ` + 
+                `'${normalizedPath}'.`);
+    }
+    return normalizedPath;
 }
 
 // Get a list of all files in a given directory.
@@ -86,7 +110,7 @@ function writeStringToFile(str, targetFilePath) {
     fs.writeFileSync(targetFilePath, str, {encoding: 'utf8'});
 }
 
-export { copyDir, copyFile, createDirectory, getFiles, 
-    hasFileExtension, hasFileExtensions, 
+export { allFilesGlob, negatedGlob, copyDir, copyFile, createDirectory, 
+    assertSafeDeleteDir, getFiles, hasFileExtension, hasFileExtensions, 
     keepFilesThatExist, loadFile, loadJsonFile, pathExists, toRelativePath, 
     writeJsonToFile, writeStringToFile };
