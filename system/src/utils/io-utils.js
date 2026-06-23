@@ -33,6 +33,13 @@ function copyFile(sourceFilePath, targetDirPath, includesFilename = true) {
     }
 }
 
+// Copy a given file if it exists.
+function copyFileIfExists(sourceFilePath, targetFilePath) {
+    if ( sourceFilePath && pathExists(sourceFilePath) && targetFilePath ) {
+        copyFile(sourceFilePath, targetFilePath);
+    }
+}
+
 // Create a directory.
 function createDirectory(dirPath, recursive = true) {
     if ( !fs.existsSync(dirPath) ) {
@@ -110,7 +117,7 @@ function writeStringToFile(str, targetFilePath) {
     fs.writeFileSync(targetFilePath, str, {encoding: 'utf8'});
 }
 
-export { allFilesGlob, negatedGlob, copyDir, copyFile, createDirectory, 
-    assertSafeDeleteDir, getFiles, hasFileExtension, hasFileExtensions, 
-    keepFilesThatExist, loadFile, loadJsonFile, pathExists, toRelativePath, 
-    writeJsonToFile, writeStringToFile };
+export { allFilesGlob, negatedGlob, copyDir, copyFile, copyFileIfExists, 
+    createDirectory, assertSafeDeleteDir, getFiles, hasFileExtension, 
+    hasFileExtensions, keepFilesThatExist, loadFile, loadJsonFile, pathExists, 
+    toRelativePath, writeJsonToFile, writeStringToFile };
