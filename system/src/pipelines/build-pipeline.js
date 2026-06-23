@@ -36,52 +36,93 @@ class BuildPipeline {
         this.pdfBuilder = null;
     }
 
+    static STAGES = [
+        {
+            label: 'Validating configuration',
+            run: async pipeline => pipeline.#validateConfig()
+        },
+        {
+            label: 'Aggregating configuration',
+            run: async pipeline => pipeline.#buildConfig()
+        },
+        {
+            label: 'Pre-build cleaning',
+            run: async pipeline => pipeline.#cleanPreBuild()
+        },
+        {
+            label: 'Setting up the build environment',
+            run: async pipeline => pipeline.#setup()
+        },
+        {
+            label: 'Deploying static artifacts',
+            run: async pipeline => pipeline.#deployArtifacts()
+        },
+        {
+            label: 'Indexing the collection',
+            run: async pipeline => pipeline.#indexCollection()
+        },
+        {
+            label: 'Building templates',
+            run: async pipeline => pipeline.#buildTemplates()
+        },
+        {
+            label: 'Building pages',
+            run: async pipeline => pipeline.#buildPages()
+        },
+        {
+            label: 'Building custom assets',
+            run: async pipeline => pipeline.#buildCustomAssets()
+        },
+        {
+            label: 'Building system assets',
+            run: async pipeline => pipeline.#buildSystemAssets()
+        },
+        {
+            label: 'Deploying assets',
+            run: async pipeline => pipeline.#deployAssets()
+        },
+        {
+            label: 'Building data sources',
+            run: async pipeline => pipeline.#buildDataSources()
+        },
+        {
+            label: 'Post-build cleaning',
+            run: async pipeline => pipeline.#cleanPostBuild()
+        }
+    ];
+
+    async #runStage(stage, totalStages, stageConfig) {
+        logger.info(`Stage ${stage} of ${totalStages} - ` + 
+            `${stageConfig.label}...`);
+        return await stageConfig.run(this);
+    }
+
     async build() {
         try {
 
-            const numberStages = 13;
             const startTime = performance.now();
             logger.info('Building the static site...');
             logger.info(`Site name: ${this.opts.siteName}`);
             logger.info(`Theme name: ${this.opts.themeName}`);
             logger.info(`Environment name: ${this.opts.env}`);
-            logger.info(`Stage 1 of ${numberStages} - Validating configuration...`);
-            this.#validateConfig();
-            logger.info(`Stage 2 of ${numberStages} - Aggregating configuration...`);
-            this.#buildConfig();
-            logger.info(`Stage 3 of ${numberStages} - Pre-build cleaning...`);
-            this.#cleanPreBuild();
-            logger.info(`Stage 4 of ${numberStages} - Setting up the build environment...`);
-            this.#setup();
-            logger.info(`Stage 5 of ${numberStages} - Deploying static artifacts...`);
-            await this.#deployArtifacts();
-            logger.info(`Stage 6 of ${numberStages} - Indexing the collection...`);
-            await this.#indexCollection();
-            logger.info(`Stage 7 of ${numberStages} - Building templates...`);
-            await this.#buildTemplates();
-            logger.info(`Stage 8 of ${numberStages} - Building pages...`);
-            await this.#buildPages();
-            logger.info(`Stage 9 of ${numberStages} - Building custom assets...`);
-            await this.#buildCustomAssets();
-            logger.info(`Stage 10 of ${numberStages} - Building system assets...`);
-            this.#buildSystemAssets();
-            logger.info(`Stage 11 of ${numberStages} - Deploying assets...`);
-            this.#deployAssets();
-            logger.info(`Stage 12 of ${numberStages} - Building data sources...`);
-            this.#buildDataSources();
-            logger.info(`Stage 13 of ${numberStages} - Post-build cleaning...`);
-            this.#cleanPostBuild();
+            for ( const [idx, stageConfig] of BuildPipeline.STAGES.entries() ) {
+                await this.#runStage(
+                    idx + 1,
+                    BuildPipeline.STAGES.length,
+                    stageConfig
+                );
+            }
             logger.info('Successfully finished building the static site!');
-            logger.info(`Build directory: ${systemConfig.system.sites}` + 
-                `/${this.opts.siteName}/public/${this.opts.env}`);
+            logger.info(`Build directory: ${this.config.build.distDirs.base}`);
             const buildDuration = performance.now() - startTime;
             logger.info(`Build duration: ${buildDuration.toFixed(3)}ms`);
             this.statusCode = 0;
 
         } catch (err) {
+            this.statusCode = 1;
             logger.error('An error was encountered whilst running the build ' + 
                 'pipeline. Please consult the log files for further details.');
-            logger.error(err.stack);
+            logger.error(err && err.stack ? err.stack : String(err));
             logger.info('Processing the build directory post-error...');
             this.#processBuildError();
         }
@@ -97,7 +138,8 @@ class BuildPipeline {
     #buildConfig() {
 
         // Configuration builder.
-        this.configBuilder = new ConfigBuilder(packageConfig, systemConfig, this.opts);
+        this.configBuilder = new ConfigBuilder(packageConfig, 
+            systemConfig, this.opts);
         this.config = this.configBuilder.build();
 
         // Collection builder.
@@ -131,13 +173,13 @@ class BuildPipeline {
     }
 
     async #buildTemplates() {
-        const templateBuilder = new TemplateBuilder(this.config);
-        await templateBuilder.translateTemplates();
+        this.templateBuilder = new TemplateBuilder(this.config);
+        await this.templateBuilder.translateTemplates();
     }
 
     async #buildPages() {
-        const pageBuilder = new PageBuilder(this.config);
-        await pageBuilder.translatePages();
+        this.pageBuilder = new PageBuilder(this.config);
+        await this.pageBuilder.translatePages();
         this.buildDeployer.deployDefaultLanguagePages();
     }
 
@@ -187,7 +229,8 @@ class BuildPipeline {
     #processBuildError() {
         try {
             if ( this.isValidConfig ) {
-                this.configBuilder = new ConfigBuilder(systemConfig, this.opts);
+                this.configBuilder = new ConfigBuilder(packageConfig, 
+                    systemConfig, this.opts);
                 this.config = this.configBuilder.build(true);
                 this.buildCleaner = new BuildCleaner(this.config);
                 this.buildSetup = new BuildSetup(this.config);
