@@ -5,48 +5,98 @@
  * @since  0.0.1
  */
 
+import path from 'path';
 import logger from '../middleware/logger.js';
 import LanguageBuilder from './language-builder.js';
 import UrlBuilder from './url-builder.js';
-import { loadJsonFile } from '../utils/io-utils.js';
+import { loadJsonFile, toRelativePath } from '../utils/io-utils.js';
+
+const SITE_CONFIG_FILE = 'site.json';
+const THEME_CONFIG_FILE = 'theme.json';
+const DIR_ASSETS = 'assets';
+const DIR_BUILD = 'build';
+const DIR_COLLECTION = 'collection';
+const DIR_JS = 'js';
+const DIR_LANGUAGES = 'languages';
+const DIR_PAGES = 'pages';
+const DIR_PUBLIC = 'public';
+const DIR_SITE = 'site';
+const DIR_WEB = 'web';
 
 
 class ConfigBuilder {
 
     constructor(packageConfig, systemConfig, opts) {
         this.packageConfig = {
-            package: packageConfig
+            package: structuredClone(packageConfig)
         };
-        this.systemConfig = systemConfig;
-        this.opts = opts;
+        this.systemConfig = structuredClone(systemConfig);
+        this.opts = structuredClone(opts);
+    }
+
+    #buildVersionedDirBase(basePath, siteNumberFlag, buildIdFlag) {
+        if ( siteNumberFlag && !buildIdFlag ) {
+            return `${basePath}/${this.config.site.version}`;
+        }
+        if ( buildIdFlag && !siteNumberFlag ) {
+            return `${basePath}/${this.config.build.id}`;
+        }
+        if ( siteNumberFlag && buildIdFlag ) {
+            return `${basePath}/${this.config.site.version}` + 
+                `/${this.config.build.date}`;
+        }
+        return basePath;
+    }
+
+    #normalizeCollectionPagesDir(collectionPagesDir) {
+        return String(collectionPagesDir ?? '')
+            .replace(/\s+/g, '-')
+            .replace(/[^A-Za-z0-9\-_.\\\/]/g, '')
+            .toLowerCase()
+            .trim();
     }
 
     build(error = false) {
 
         // Load the site configuration.
-        const siteDirPath = this.systemConfig.system.sites + 
-            '/' + this.opts.siteName;
-        const siteConfigFilePath = siteDirPath + '/site.json';
+        const siteDirPath = path.join(
+            this.systemConfig.system.sites, this.opts.siteName);
+        const siteConfigFilePath = path.join(siteDirPath , SITE_CONFIG_FILE);
         this.siteConfig = loadJsonFile(siteConfigFilePath);
 
         // Generate the base configuration.
-        this.config = Object.assign({}, this.packageConfig, this.systemConfig, this.siteConfig);
+        this.config = {
+            ...structuredClone(this.packageConfig),
+            ...structuredClone(this.systemConfig),
+            ...structuredClone(this.siteConfig)
+        };
+
+        // Ensure site URLs exist even when omitted from site.json.
+        this.config.site.urls = this.config.site.urls ?? {};
+
+        // Identify the default language.
+        const defaultLanguage = this.config.site.languages.enabled[0];
+        this.config.site.languages.default = defaultLanguage;
 
         // Update the system configuration with site directory structure.
         this.config.system.build = {
             siteDirs: {
-                assets: siteDirPath + '/assets', 
-                languages: siteDirPath + '/languages', 
-                pages: siteDirPath + '/pages', 
-                web: siteDirPath + '/web', 
+                assets: path.join(siteDirPath, DIR_ASSETS), 
+                languages: path.join(siteDirPath, DIR_LANGUAGES), 
+                pages: path.join(siteDirPath, DIR_PAGES), 
+                web: path.join(siteDirPath, DIR_WEB), 
             }, 
-            siteDistDir: siteDirPath + '/public'
+            siteDistDir: path.join(siteDirPath, DIR_PUBLIC)
         }
 
         // Update the site configuration with the theme name.
-        this.config.site.theme = {
-            name: this.opts.themeName
-        }
+        const themeName = this.opts.themeName;
+        const themeConfigFileAbsPath = path.join(
+            this.config.system.themes, 
+            themeName, 
+            THEME_CONFIG_FILE);
+        const themeConfig = loadJsonFile(themeConfigFileAbsPath);
+        this.config.site.theme = themeConfig.theme;
 
         // Build metadata and user options.
         const buildDate = new Date().toISOString()
@@ -60,55 +110,53 @@ class ConfigBuilder {
         }
 
         // Base distribution directory path.
-        const distDirBase = 
-            `${this.config.system.build.siteDistDir}/${this.config.build.env}`;
+        const distDirBase = path.join(
+            this.config.system.build.siteDistDir, 
+            this.config.build.env);
 
         // Build distribution directory path.
-        let buildDirBase = siteDirPath + 
-                `/build/${this.config.build.env}/${this.config.site.version}`;
+        let buildDirBase = path.join(
+            siteDirPath, 
+            DIR_BUILD, 
+            this.config.build.env, 
+            this.config.site.version);
         if ( this.opts.versionBuildDate ) {
-            buildDirBase = `${buildDirBase}/${this.config.build.date}`;
+            buildDirBase = path.join(
+                buildDirBase, 
+                this.config.build.date);
         }
 
         // Assets distribution directory path.
-        let assetsDirBase = '/assets';
-        if ( this.opts.versionAssetsSiteNumber && !this.opts.versionAssetsBuildId ) {
-            assetsDirBase = `/assets/${this.config.site.version}`;
-        } else if ( this.opts.versionAssetsBuildId && !this.opts.versionAssetsSiteNumber ) {
-            assetsDirBase = `/assets/${this.config.build.id}`;
-        } else if ( this.opts.versionAssetsSiteNumber && this.opts.versionAssetsBuildId ) {
-            assetsDirBase = `/assets/${this.config.site.version}/${this.config.build.date}`;
-        }
+        const assetsDirBase = this.#buildVersionedDirBase(
+            `/${DIR_ASSETS}`,
+            this.opts.versionAssetsSiteNumber,
+            this.opts.versionAssetsBuildId
+        );
 
         // Collection distribution directory path.
-        let collectionDirBase = '/collection';
-        if ( this.opts.versionCollectionSiteNumber && !this.opts.versionCollectionBuildId ) {
-            collectionDirBase = `/collection/${this.config.site.version}`;
-        } else if ( this.opts.versionCollectionBuildId && !this.opts.versionCollectionSiteNumber ) {
-            collectionDirBase = `/collection/${this.config.build.id}`;
-        } else if ( this.opts.versionCollectionSiteNumber && this.opts.versionCollectionBuildId ) {
-            collectionDirBase = `/collection/${this.config.site.version}/${this.config.build.date}`;
-        }
-        collectionDirBase = `${assetsDirBase}${collectionDirBase}`;
+        const collectionDirBase = assetsDirBase + this.#buildVersionedDirBase(
+            `/${DIR_COLLECTION}`,
+            this.opts.versionCollectionSiteNumber,
+            this.opts.versionCollectionBuildId
+        );
 
         // Site JavaScript assets distribution directory path.
-        let siteConfigDirBase = '/js/site';
-        if ( this.opts.versionSiteConfigSiteNumber && !this.opts.versionSiteConfigBuildId ) {
-            siteConfigDirBase = `/js/site/${this.config.site.version}`;
-        } else if ( this.opts.versionSiteConfigBuildId && !this.opts.versionSiteConfigSiteNumber ) {
-            siteConfigDirBase = `/js/site/${this.config.build.id}`;
-        } else if ( this.opts.versionSiteConfigSiteNumber && this.opts.versionSiteConfigBuildId ) {
-            siteConfigDirBase = `/js/site/${this.config.site.version}/${this.config.build.date}`;
-        }
-        siteConfigDirBase = `${assetsDirBase}${siteConfigDirBase}`;
+        const siteConfigDirBase = assetsDirBase + this.#buildVersionedDirBase(
+            `/${DIR_JS}/${DIR_SITE}`,
+            this.opts.versionSiteConfigSiteNumber,
+            this.opts.versionSiteConfigBuildId
+        );
 
         // Distribution directory paths.
         this.config.build.distDirs = {
             base: distDirBase, 
             build: buildDirBase, 
-            assets: `${distDirBase}${assetsDirBase}`, 
-            collection: `${distDirBase}${collectionDirBase}`, 
-            siteConfig: `${distDirBase}${siteConfigDirBase}`, 
+            assets: path.join(distDirBase, 
+                toRelativePath(assetsDirBase)), 
+            collection: path.join(distDirBase, 
+                toRelativePath(collectionDirBase)), 
+            siteConfig: path.join(distDirBase, 
+                toRelativePath(siteConfigDirBase)) 
         }
         logger.debug('Config Builder - Build configuration: ');
         logger.debug(JSON.stringify(this.config.build, null, 4));
@@ -117,10 +165,16 @@ class ConfigBuilder {
         }
 
         // Collection pages directory name.
-        const collectionPagesDir = this.config.site.collection.pagesDir
-            .replace(/\s+/g, '-')
-            .replace(/[^A-Za-z0-9\-_.\\\/]/g, '')
-            .toLowerCase().trim();
+        const collectionEnabled = this.config.site.collection.enabled;
+        let collectionPagesDir = null;
+        if ( collectionEnabled ) {
+            collectionPagesDir = this.#normalizeCollectionPagesDir(
+                this.config.site.collection.pagesDir
+            );
+            if ( collectionPagesDir.length === 0 ) {
+                throw new Error('Collection pages directory cannot be empty.');
+            }
+        }
 
         // Language data and localized URLs.
         const languageBuilder = new LanguageBuilder(this.config);
@@ -129,15 +183,16 @@ class ConfigBuilder {
 
             // Aggregate language data.
             let languageData = languageBuilder.aggregateLanguageData(language);
-            languageData.urls = 'urls' in this.config.site ? 
-                structuredClone(this.config.site.urls) : {};
+            languageData.urls = structuredClone(this.config.site.urls);
             this.config.site.languages.data[language] = languageData;
 
             // Generate localized URLs for user-defined URLs.
-            this.config.site.languages.data[language].urls.collection = 
-                `/${collectionPagesDir}`;
+            if ( collectionEnabled ) {
+                this.config.site.languages.data[language].urls.collection = 
+                    `/${collectionPagesDir}`;
+            }
             UrlBuilder.localizeUrls(language, 
-                this.config.site.languages.enabled[0], 
+                defaultLanguage, 
                 this.config.site.languages.data[language].urls);
             this.config.site.languages.data[language].urls.assets = 
                 assetsDirBase;
@@ -172,20 +227,15 @@ class ConfigBuilder {
         this.config.site.web.baseUrl = baseUrl;
 
         // Collection configuration.
-        this.config.site.urls.collection = `/${collectionPagesDir}`;
-        if ( this.config.site.collection.index.content && 
-            !this.config.site.collection.index.documentStore.document.index
-                .includes('content') ) {
-            this.config.site.collection.index.documentStore.document.index
-                .push('content');
+        if ( collectionEnabled ) {
+            this.config.site.urls.collection = `/${collectionPagesDir}`;
+            if ( this.config.site.collection.index.content && 
+                !this.config.site.collection.index.documentStore.document.index
+                    .includes('content') ) {
+                this.config.site.collection.index.documentStore.document.index
+                    .push('content');
+            }
         }
-
-        // Theme configuration.
-        const themeConfigFileAbsPath = 
-            this.config.system.themes + '/' 
-                + `${this.config.site.theme.name}/theme.json`;
-        const themeConfig = loadJsonFile(themeConfigFileAbsPath);
-        this.config.site.theme = themeConfig.theme;
         
         return this.config;
 
