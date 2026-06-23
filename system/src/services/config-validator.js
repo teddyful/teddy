@@ -30,7 +30,7 @@ class ConfigValidator {
         this.opts = opts;
         this.siteConfigFileName = 'site.json';
         this.themeConfigFileName = 'theme.json';
-        this.ajv = new Ajv();
+        this.ajv = new Ajv({ allErrors: true });
     }
 
     validate() {
@@ -42,12 +42,18 @@ class ConfigValidator {
 
     }
 
+    #validateSchema(schema, data, label) {
+        if ( !this.ajv.validate(schema, data) ) {
+            throw new Error(`${label} schema error:\n` +
+                JSON.stringify(this.ajv.errors, null, 4));
+        }
+    }
+
     #validateSystemConfig() {
 
         // Validate the system configuration against its schema.
-        if ( !this.ajv.validate(systemConfigSchema, this.systemConfig) )
-            throw new Error('System configuration schema error: \n' + 
-                JSON.stringify(this.ajv.errors, null, 4));
+        this.#validateSchema(systemConfigSchema, this.systemConfig, 
+            'System configuration');
 
         // Validate that the required system directories exist.
         this.#validateResourceExists(this.systemConfig, ['system', 'sites']);
@@ -58,12 +64,12 @@ class ConfigValidator {
         // Validate that the required files exist.
         this.#validateResourceExists(this.systemConfig, 
             ['system', 'assets', 'js', 'vendors'], 
-            this.systemConfig.system.assets.dir + '/js');
+            path.join(this.systemConfig.system.assets.dir, 'js'));
         for ( const key of Object.keys(
             this.systemConfig.system.assets.fonts) ) {
             this.#validateResourceExists(this.systemConfig, 
                 ['system', 'assets', 'fonts', key], 
-                this.systemConfig.system.assets.dir + '/fonts');
+                path.join(this.systemConfig.system.assets.dir, 'fonts'));
         }
 
     }
@@ -78,10 +84,12 @@ class ConfigValidator {
         }
 
         // Validate that the specified site directory and config file exist.
-        this.siteDirPath = this.systemConfig.system.sites + 
-            '/' + this.opts.siteName;
-        this.siteConfigFilePath = this.siteDirPath + 
-            '/' + this.siteConfigFileName;
+        this.siteDirPath = path.join(
+            this.systemConfig.system.sites,
+            this.opts.siteName);
+        this.siteConfigFilePath = path.join(
+            this.siteDirPath,
+            this.siteConfigFileName);
         this.#validateDirExists(this.siteDirPath);
         this.#validateFileExists(this.siteDirPath, this.siteConfigFileName);
 
@@ -93,10 +101,12 @@ class ConfigValidator {
         }
 
         // Validate that the specified theme directory and config file exist.
-        this.themeDirPath = this.systemConfig.system.themes + 
-            '/' + this.opts.themeName;
-        this.themeConfigFilePath = this.themeDirPath + 
-            '/' + this.themeConfigFileName;
+        this.themeDirPath = path.join(
+            this.systemConfig.system.themes,
+            this.opts.themeName);
+        this.themeConfigFilePath = path.join(
+            this.themeDirPath,
+            this.themeConfigFileName);
         this.#validateDirExists(this.themeDirPath);
         this.#validateFileExists(this.themeDirPath, this.themeConfigFileName);
 
@@ -109,7 +119,6 @@ class ConfigValidator {
 
     }
 
-
     #validateSiteConfig() {
 
         // Load the site config.
@@ -118,20 +127,19 @@ class ConfigValidator {
         // Update the system config with site directory dependencies.
         this.systemConfig.system.build = {
             siteDirs: {
-                assets: this.siteDirPath + '/assets', 
-                languages: this.siteDirPath + '/languages', 
-                pages: this.siteDirPath + '/pages', 
-                web: this.siteDirPath + '/web', 
+                assets: path.join(this.siteDirPath, 'assets'), 
+                languages: path.join(this.siteDirPath, 'languages'), 
+                pages: path.join(this.siteDirPath, 'pages'), 
+                web: path.join(this.siteDirPath, 'web'), 
             }
         }
 
         // Validate the site configuration against its schema.
-        if ( !this.ajv.validate(siteConfigSchema, this.siteConfig) )
-            throw new Error('Site configuration schema error: \n' + 
-                JSON.stringify(this.ajv.errors, null, 4));
+        this.#validateSchema(siteConfigSchema, this.siteConfig, 
+            'Site configuration');
 
         // Validate the site name against the site name command line argument.
-        if ( this.siteConfig.site.name != this.opts.siteName ) {
+        if ( this.siteConfig.site.name !== this.opts.siteName ) {
             throw new Error('The site name provided as a command line ' + 
                 `argument ('${this.opts.siteName}') does not exactly ` + 
                 'match the site name in the site configuration file ' + 
@@ -161,25 +169,22 @@ class ConfigValidator {
         for ( const language of this.siteConfig.site.languages.enabled ) {
             
             // metadata.json
-            const siteLanguageDirPath = 
-                this.systemConfig.system.build.siteDirs.languages + 
-                    `/${language}`;
+            const siteLanguageDirPath = path.join(
+                this.systemConfig.system.build.siteDirs.languages, language);
             const metadataFileName = 'metadata.json';
             this.#validateFileExists(siteLanguageDirPath, metadataFileName);
             const metadata = loadJsonFile(
-                `${siteLanguageDirPath}/${metadataFileName}`);
-            if ( !this.ajv.validate(siteMetadataSchema, metadata) )
-                throw new Error(`Site metadata schema (${language}) ` + 
-                    'error: \n' + JSON.stringify(this.ajv.errors, null, 4));
+                path.join(siteLanguageDirPath, metadataFileName));
+            this.#validateSchema(siteMetadataSchema, metadata, 
+                `Site metadata (${language})`);
 
             // contributors.json
             const contributorsFileName = 'contributors.json';
             this.#validateFileExists(siteLanguageDirPath, contributorsFileName);
             const contributors = loadJsonFile(
-                `${siteLanguageDirPath}/${contributorsFileName}`);
-            if ( !this.ajv.validate(siteContributorsSchema, contributors) )
-                throw new Error(`Site contributors schema (${language}) ` + 
-                    'error: \n' + JSON.stringify(this.ajv.errors, null, 4));
+                path.join(siteLanguageDirPath, contributorsFileName));
+            this.#validateSchema(siteContributorsSchema, contributors, 
+                `Site contributors (${language})`);
 
             // taxonomy.json
             if ( this.siteConfig.site.collection.enabled && 
@@ -188,10 +193,9 @@ class ConfigValidator {
                 const taxonomyFileName = 'taxonomy.json';
                 this.#validateFileExists(siteLanguageDirPath, taxonomyFileName);
                 const taxonomy = loadJsonFile(
-                    `${siteLanguageDirPath}/${taxonomyFileName}`);
-                if ( !this.ajv.validate(siteTaxonomySchema, taxonomy) )
-                    throw new Error(`Site taxonomy schema (${language}) ` + 
-                        'error: \n' + JSON.stringify(this.ajv.errors, null, 4));
+                    path.join(siteLanguageDirPath, taxonomyFileName));
+                this.#validateSchema(siteTaxonomySchema, taxonomy, 
+                    `Site taxonomy (${language})`);
             }
 
         }
@@ -201,25 +205,25 @@ class ConfigValidator {
             if ( 'css' in this.siteConfig.site.assets.custom ) {
                 this.#validateResourceExists(this.siteConfig, 
                     ['site', 'assets', 'custom', 'css'], 
-                    this.siteDirPath + '/assets/css');
+                    path.join(this.siteDirPath, 'assets', 'css'));
             }
             if ( 'js' in this.siteConfig.site.assets.custom ) {
                 this.#validateResourceExists(this.siteConfig, 
                     ['site', 'assets', 'custom', 'js'], 
-                    this.siteDirPath + '/assets/js');
+                    path.join(this.siteDirPath, 'assets', 'js'));
             }
             if ( 'images' in this.siteConfig.site.assets.custom ) {
                 if ( 'favicon' in this.siteConfig.site.assets.custom.images && 
                     'ico' in this.siteConfig.site.assets.custom.images.favicon ) {
                     this.#validateResourceExists(this.siteConfig, 
                         ['site', 'assets', 'custom', 'images', 'favicon', 'ico'], 
-                        this.siteDirPath + '/assets/images');
+                        path.join(this.siteDirPath, 'assets', 'images'));
                 }
                 if ( 'og' in this.siteConfig.site.assets.custom.images && 
                     'default' in this.siteConfig.site.assets.custom.images.og ) {
                     this.#validateResourceExists(this.siteConfig, 
                         ['site', 'assets', 'custom', 'images', 'og', 'default'], 
-                        this.siteDirPath + '/assets/images');
+                        path.join(this.siteDirPath, 'assets', 'images'));
                 }
             }
         }
@@ -237,12 +241,11 @@ class ConfigValidator {
 
         // Validate the theme configuration against its schema.
         this.themeConfig = loadJsonFile(this.themeConfigFilePath);
-        if ( !this.ajv.validate(themeConfigSchema, this.themeConfig) )
-            throw new Error('Theme configuration schema error: \n' + 
-                JSON.stringify(this.ajv.errors, null, 4));
+        this.#validateSchema(themeConfigSchema, this.themeConfig, 
+            'Theme configuration');
 
         // Validate the theme name against the theme name command line argument.
-        if ( this.themeConfig.theme.name != this.opts.themeName ) {
+        if ( this.themeConfig.theme.name !== this.opts.themeName ) {
             throw new Error('The theme name provided as a command line ' + 
                 `argument ('${this.opts.themeName}') does not ` +  
                 'exactly match the theme name in the theme configuration ' + 
@@ -259,14 +262,14 @@ class ConfigValidator {
         }
 
         // Validate that the required directories exist.
-        this.themeTemplatesDirPath = this.themeDirPath + '/templates'
+        this.themeTemplatesDirPath = path.join(this.themeDirPath, 'templates');
         this.#validateDirExists(this.themeTemplatesDirPath);
 
         // Validate that at least one theme template exists.
         const templateFiles = getFiles(this.themeTemplatesDirPath, false);
         const templateHtmlFiles = templateFiles.filter(
             filename => hasFileExtension(filename, 'html'));
-        if ( templateHtmlFiles.length == 0 ) {
+        if ( templateHtmlFiles.length === 0 ) {
             throw new Error('No templates files found in' + 
                 `'${this.themeTemplatesDirPath}'.`);
         }
@@ -289,25 +292,25 @@ class ConfigValidator {
             if ( 'css' in this.themeConfig.theme.assets.custom ) {
                 this.#validateResourceExists(this.themeConfig, 
                     ['theme', 'assets', 'custom', 'css'], 
-                    this.themeDirPath + '/assets/css');
+                    path.join(this.themeDirPath, 'assets', 'css'));
             }
             if ( 'js' in this.themeConfig.theme.assets.custom ) {
                 this.#validateResourceExists(this.themeConfig, 
                     ['theme', 'assets', 'custom', 'js'], 
-                    this.themeDirPath + '/assets/js');
+                    path.join(this.themeDirPath, 'assets', 'js'));
             }
             if ( 'images' in this.themeConfig.theme.assets.custom ) {
                 if ( 'favicon' in this.themeConfig.theme.assets.custom.images && 
                     'ico' in this.themeConfig.theme.assets.custom.images.favicon ) {
                     this.#validateResourceExists(this.themeConfig, 
                         ['theme', 'assets', 'custom', 'images', 'favicon', 'ico'], 
-                        this.themeDirPath + '/assets/images');
+                        path.join(this.themeDirPath, 'assets', 'images'));
                 }
                 if ( 'og' in this.themeConfig.theme.assets.custom.images && 
                     'default' in this.themeConfig.theme.assets.custom.images.og ) {
                     this.#validateResourceExists(this.themeConfig, 
                         ['theme', 'assets', 'custom', 'images', 'og', 'default'], 
-                        this.themeDirPath + '/assets/images');
+                        path.join(this.themeDirPath, 'assets', 'images'));
                 }
             }
         }
@@ -315,19 +318,21 @@ class ConfigValidator {
     }
 
     #validateResourceExists(config, keys, parentPath = null) {
-        let path = getValue(config, keys);
-        if ( Array.isArray(path) ) {
-            for ( const p of path ) {
-                const ppath = parentPath ? `${parentPath}/${p}` : p;
-                if ( !pathExists(ppath) )
-                    throw new Error(`The resource '${ppath}' defined in ` + 
-                        `'${keys.join('.')}' does not exist.`);
+        const resourcePath = getValue(config, keys);
+        if ( Array.isArray(resourcePath) ) {
+            for ( const itemPath of resourcePath ) {
+                const resolvedPath = parentPath ? 
+                    path.join(parentPath, itemPath) : itemPath;
+                if ( !pathExists(resolvedPath) )
+                    throw new Error(`The resource '${resolvedPath}' defined ` + 
+                        `in '${keys.join('.')}' does not exist.`);
             }
         } else {
-            path = parentPath ? `${parentPath}/${path}` : path;
-            if ( !pathExists(path) )
-                throw new Error(`The resource '${path}' defined in ` + 
-                    `'${keys.join('.')}' does not exist.`);
+            const resolvedPath = parentPath ? 
+                path.join(parentPath, resourcePath) : resourcePath;
+            if ( !pathExists(resolvedPath) )
+                throw new Error(`The resource '${resolvedPath}' defined ` + 
+                    `in '${keys.join('.')}' does not exist.`);
         }
     }
 
@@ -338,8 +343,8 @@ class ConfigValidator {
     }
 
     #validateFileExists(dirPath, fileName) {
-        const path = `${dirPath}/${fileName}`;
-        if ( !pathExists(path) )
+        const filePath = path.join(dirPath, fileName);
+        if ( !pathExists(filePath) )
             throw new Error(`The required file '${fileName}' does not exist ` + 
                 `in the directory '${dirPath}'.`);
     }
@@ -356,7 +361,7 @@ class ConfigValidator {
             this.systemConfig.system.build.siteDirs.pages);
         const pageMdFiles = pageFiles.filter(
             filename => hasFileExtension(filename, 'md'));
-        if ( pageMdFiles.length == 0 ) {
+        if ( pageMdFiles.length === 0 ) {
             throw new Error('No markdown files found in' + 
                 `'${this.systemConfig.system.build.siteDirs.pages}'.`);
         }
@@ -382,7 +387,7 @@ class ConfigValidator {
             }
 
             // Validate that the page filename contains its language code.
-            if ( (fileName.match(/\./g) || []).length != 2 ) {
+            if ( (fileName.match(/\./g) || []).length !== 2 ) {
                 throw new Error(`The page markdown file '${pageMdFile}' ` +  
                     'must contain exactly two period characters in its ' + 
                     'filename which are used to separate the language code ' + 
