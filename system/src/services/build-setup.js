@@ -5,8 +5,12 @@
  * @since  0.0.1
  */
 
+import path from 'path';
 import { createDirectory } from '../utils/io-utils.js';
 
+const DIR_CONFIG = 'config';
+const DIR_LANGUAGES = 'languages';
+const DIR_TEMPLATES = 'templates';
 
 class BuildSetup {
 
@@ -17,11 +21,11 @@ class BuildSetup {
     createDistDirectoryStructure() {
         createDirectory(this.config.build.distDirs.base);
         createDirectory(this.config.build.distDirs.build);
-        createDirectory(this.config.build.distDirs.build + '/config');
-        createDirectory(this.config.build.distDirs.build + '/languages');
-        createDirectory(this.config.build.distDirs.build + '/templates');
+        createDirectory(path.join(this.config.build.distDirs.build, DIR_CONFIG));
+        createDirectory(path.join(this.config.build.distDirs.build, DIR_LANGUAGES));
+        createDirectory(path.join(this.config.build.distDirs.build, DIR_TEMPLATES));
         createDirectory(this.config.build.distDirs.assets);
-        createDirectory(this.config.build.distDirs.assets + '/collection');
+        createDirectory(this.config.build.distDirs.collection);
     }
 
     createBaseDistDirectory() {
