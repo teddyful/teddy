@@ -22,7 +22,6 @@ import { getValue } from '../utils/json-utils.js';
 // Semantic versioning 2.0.0 regex - see https://semver.org
 const SEMANTIC_VERSIONING_REGEX = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
 
-
 class ConfigValidator {
 
     constructor(systemConfig, opts) {

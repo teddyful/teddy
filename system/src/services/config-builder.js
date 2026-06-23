@@ -23,7 +23,6 @@ const DIR_PUBLIC = 'public';
 const DIR_SITE = 'site';
 const DIR_WEB = 'web';
 
-
 class ConfigBuilder {
 
     constructor(packageConfig, systemConfig, opts) {
