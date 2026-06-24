@@ -217,9 +217,9 @@ class BuildPipeline {
         this.assetBuilder.deploySystemJsAssets();
     }
 
-    #buildDataSources() {
+    async #buildDataSources() {
         this.pdfBuilder = new PdfBuilder(this.config);
-        this.pdfBuilder.build();
+        await this.pdfBuilder.build();
     }
 
     #cleanPostBuild() {
