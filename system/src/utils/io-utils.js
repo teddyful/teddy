@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 
 // GLOB pattern - all files in a given directory path.
-function allFilesGlob(dirPath) {
+function allDescendantsGlob(dirPath) {
     return `${dirPath}/**`;
 }
 
@@ -24,12 +24,13 @@ function copyDir(sourceDirPath, targetDirPath, recursive = true) {
 }
 
 // Copy a given file to a given target directory.
-function copyFile(sourceFilePath, targetDirPath, includesFilename = true) {
-    if ( includesFilename ) {
+function copyFile(sourceFilePath, targetDirPath, 
+    targetPathIncludesFilename = true) {
+    if ( targetPathIncludesFilename ) {
         fs.copyFileSync(sourceFilePath, targetDirPath);
     } else {
         const filename = path.basename(sourceFilePath);
-        fs.copyFileSync(sourceFilePath, targetDirPath + '/' + filename);
+        fs.copyFileSync(sourceFilePath, path.join(targetDirPath, filename));
     }
 }
 
@@ -52,11 +53,18 @@ function assertSafeDeleteDir(dirPath, label) {
     if ( typeof dirPath !== 'string' || dirPath.trim().length === 0 ) {
         throw new Error(`Cannot delete ${label}: directory path is empty.`);
     }
-    const normalizedPath = dirPath.trim();
-    if ( normalizedPath === '/' || normalizedPath === '.' ) {
+    const normalizedPath = path.normalize(dirPath.trim());
+    if ( ['/', '.', '..'].includes(normalizedPath) ) {
         throw new Error(
-            `Cannot delete ${label}: unsafe directory path ` + 
-                `'${normalizedPath}'.`);
+            `Cannot delete ${label}: unsafe directory path ` +
+            `'${normalizedPath}'.`
+        );
+    }
+    if ( normalizedPath.endsWith(`${path.sep}..`) ) {
+        throw new Error(
+            `Cannot delete ${label}: unsafe directory path ` +
+            `'${normalizedPath}'.`
+        );
     }
     return normalizedPath;
 }
@@ -69,17 +77,24 @@ function getFiles(dirPath, recursive = true) {
         const stats = fs.statSync(itemPath);
         return stats.isFile();
     });
-    return files;
+    return files.sort();
 }
 
 // Test whether a given filename has a given extension.
 function hasFileExtension(filename, extension) {
-    return filename.split('.').pop().toLowerCase() == extension.toLowerCase();
+    return filename.split('.').pop().toLowerCase() === extension.toLowerCase();
 }
 
 // Test whether a given filename has an extension from a list of extensions.
 function hasFileExtensions(filename, extensions) {
-    return extensions.includes(filename.split('.').pop().toLowerCase());
+    if ( !Array.isArray(extensions) ) {
+        return false;
+    }
+    const normalizedExtensions = extensions.map(extension =>
+        String(extension).toLowerCase().trim()
+    );
+    return normalizedExtensions.includes(
+        filename.split('.').pop().toLowerCase().trim());
 }
 
 // Keep only those files that exist given a list of file paths.
@@ -94,7 +109,23 @@ function loadFile(sourceFilePath) {
 
 // Load and parse a JSON file from the local filesystem.
 function loadJsonFile(sourceFilePath) {
-    return JSON.parse(fs.readFileSync(sourceFilePath, 'utf8'));
+    let fileContent;
+    try {
+        fileContent = fs.readFileSync(sourceFilePath, 'utf8');
+    } catch (error) {
+        throw new Error(
+            `Failed to read JSON file '${sourceFilePath}'.`,
+            { cause: error }
+        );
+    }
+    try {
+        return JSON.parse(fileContent);
+    } catch (error) {
+        throw new Error(
+            `Failed to parse JSON file '${sourceFilePath}'.`,
+            { cause: error }
+        );
+    }
 }
 
 // Test whether a given path exists.
@@ -104,20 +135,22 @@ function pathExists(sourcePath) {
 
 // Convert a string to a relative path.
 function toRelativePath(sourcePath) {
-    return sourcePath.replace(/^\/+/, '');
+    return String(sourcePath ?? '').replace(/^\/+/, '');
 }
 
 // Write a JSON object to file.
 function writeJsonToFile(json, targetFilePath) {
+    createDirectory(path.dirname(targetFilePath));
     fs.writeFileSync(targetFilePath, JSON.stringify(json, null, 4), 'utf-8');
 }
 
 // Write a string object to file.
 function writeStringToFile(str, targetFilePath) {
+    createDirectory(path.dirname(targetFilePath));
     fs.writeFileSync(targetFilePath, str, {encoding: 'utf8'});
 }
 
-export { allFilesGlob, negatedGlob, copyDir, copyFile, copyFileIfExists, 
+export { allDescendantsGlob, negatedGlob, copyDir, copyFile, copyFileIfExists, 
     createDirectory, assertSafeDeleteDir, getFiles, hasFileExtension, 
     hasFileExtensions, keepFilesThatExist, loadFile, loadJsonFile, pathExists, 
     toRelativePath, writeJsonToFile, writeStringToFile };

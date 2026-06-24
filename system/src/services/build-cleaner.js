@@ -6,7 +6,7 @@
  */
 
 import { deleteSync } from 'del';
-import { allFilesGlob, negatedGlob, assertSafeDeleteDir, 
+import { allDescendantsGlob, negatedGlob, assertSafeDeleteDir, 
     pathExists } from '../utils/io-utils.js';
 
 const DELETE_OPTIONS = {
@@ -37,7 +37,7 @@ class BuildCleaner {
         const safeDirPath = assertSafeDeleteDir(dirPath, label);
         if ( pathExists(safeDirPath) ) {
             return deleteSync([
-                allFilesGlob(safeDirPath)
+                allDescendantsGlob(safeDirPath)
             ], DELETE_OPTIONS);
         }
         return [];
@@ -56,18 +56,18 @@ class BuildCleaner {
     
                 // Delete everything except the assets directory.
                 return deleteSync([
-                    allFilesGlob(buildDir), 
-                    allFilesGlob(baseDir), 
+                    allDescendantsGlob(buildDir), 
+                    allDescendantsGlob(baseDir), 
                     negatedGlob(assetsDir), 
-                    negatedGlob(allFilesGlob(assetsDir))
+                    negatedGlob(allDescendantsGlob(assetsDir))
                 ], DELETE_OPTIONS);
     
         } else {
     
             // Delete everything.
             return deleteSync([
-                allFilesGlob(buildDir), 
-                allFilesGlob(baseDir)
+                allDescendantsGlob(buildDir), 
+                allDescendantsGlob(baseDir)
             ], DELETE_OPTIONS);
     
         }
@@ -80,7 +80,7 @@ class BuildCleaner {
         if ( !this.config.build.opts.skipPostBuildCleanup && 
                 !this.config.build.opts.generateDsPdf ) {
             return deleteSync([
-                allFilesGlob(buildDir)
+                allDescendantsGlob(buildDir)
             ], DELETE_OPTIONS);
         }
     }
