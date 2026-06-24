@@ -251,8 +251,7 @@ class CollectionBuilder {
                 const index = new FlexSearch.Document(documentStoreConfig);
 
                 // Get the language pages.
-                const pages = this.collection.getLanguagePages().get(
-                    language) ?? [];
+                const pages = this.collection.getPages(language) ?? [];
                 
                 // Index each page in the language.
                 for (const page of pages) {

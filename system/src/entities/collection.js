@@ -7,17 +7,32 @@
 
 class Collection {
 
-    constructor(languagePages, languageMetadata) {
-        this.languagePages = languagePages;
-        this.languageMetadata = languageMetadata;
+    #languagePages;
+    #languageMetadata;
+
+    constructor(languagePages = new Map(), languageMetadata = new Map()) {
+        this.#languagePages = languagePages;
+        this.#languageMetadata = languageMetadata;
     }
 
     getLanguagePages() {
-        return this.languagePages;
+        return new Map(this.#languagePages);
     }
 
     getLanguageMetadata() {
-        return this.languageMetadata;
+        return new Map(this.#languageMetadata);
+    }
+
+    getPages(language) {
+        return this.#languagePages.get(language) ?? [];
+    }
+
+    getMetadata(language) {
+        return this.#languageMetadata.get(language) ?? null;
+    }
+
+    hasLanguage(language) {
+        return this.#languagePages.has(language);
     }
 
 }
