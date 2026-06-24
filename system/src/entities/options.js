@@ -1,10 +1,16 @@
 /**
  * Build options class.
  *
+ * @deprecated This class is currently unused. The CLI passes Commander option
+ * objects directly to BuildPipeline.
+ * 
  * @author jillurquddus
  * @since  0.0.1
  */
 
+/**
+ * @deprecated Use the Commander options object passed by build.js instead.
+ */
 class Options {
 
     constructor() {
