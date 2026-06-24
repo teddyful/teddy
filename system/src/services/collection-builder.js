@@ -6,6 +6,7 @@
  */
 
 import fs from 'fs';
+import path from 'path';
 import FlexSearch from 'flexsearch';
 import showdown from 'showdown';
 import { stripHtml } from "string-strip-html";
@@ -13,18 +14,57 @@ import { stripHtml } from "string-strip-html";
 import logger from '../middleware/logger.js';
 import Collection from '../entities/collection.js';
 import Page from '../entities/page.js';
-import { createDirectory, getFiles, hasFileExtension } from 
+import { createDirectory, getFiles, hasFileExtension, writeStringToFile } from 
     '../utils/io-utils.js';
 import { sort } from '../utils/json-utils.js';
 import { ISO_639_3166_LOOKUP, CJK_ISO_3166, cjkTokenizer } from 
     '../utils/lang-utils.js';
 
+const FILE_EXT_MARKDOWN = 'md';
+const INDEX_FIELD_CONTENT = 'content';
+const METADATA_ENABLED = 'enabled';
+const METADATA_INDEX = 'index';
+const METADATA_NAME = 'name';
+const METADATA_VALUE_TRUE = 'true';
+const SORT_ASC = 'asc';
+const INDEX_KEY_REGEX = /^[a-zA-Z0-9_.-]+$/;
 
 class CollectionBuilder {
 
     constructor(config) {
         this.config = config;
         this.languageIndexKeys = {};
+    }
+
+    #shouldBuildCollection() {
+        return this.config.site.collection.enabled &&
+            !this.config.build.opts.ignoreCollection;
+    }
+
+    #shouldIndexPage(pageMetadata) {
+        return METADATA_NAME in pageMetadata && 
+            pageMetadata.name && 
+            METADATA_ENABLED in pageMetadata && 
+            pageMetadata.enabled === METADATA_VALUE_TRUE && 
+            ( !(METADATA_INDEX in pageMetadata) || 
+                ( METADATA_INDEX in pageMetadata && 
+                    pageMetadata.index === METADATA_VALUE_TRUE ) ); 
+    }
+
+    #normalizePageContent(pageHtml) {
+        return stripHtml(pageHtml).result
+            .replace(/[\r\n]+/g, ' ')
+            .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,' ')
+            .replace(/\s\s+/g, ' ')
+            .trim();
+    }
+
+    #normalizeIndexKey(key) {
+        const normalizedKey = String(key ?? '').trim();
+        if ( !INDEX_KEY_REGEX.test(normalizedKey) ) {
+            throw new Error(`Invalid collection index key '${normalizedKey}'.`);
+        }
+        return normalizedKey;
     }
 
     build() {
@@ -36,12 +76,12 @@ class CollectionBuilder {
         // Initialise an object to store language-specific collection sizes.
         this.config.site.collection.sizes = {};
 
-        if ( this.config.site.collection.enabled && 
-            !this.config.build.opts.ignoreCollection ) {
+        if ( this.#shouldBuildCollection() ) {
 
             // Get all files in the designated collection directory.
-            const collectionDirPath = this.config.system.build.siteDirs.pages + 
-                '/' + this.config.site.collection.pagesDir;
+            const collectionDirPath = path.join(
+                this.config.system.build.siteDirs.pages, 
+                this.config.site.collection.pagesDir);
             const collectionPagesFilePaths = getFiles(collectionDirPath);
 
             // Iterate across all languages.
@@ -61,16 +101,19 @@ class CollectionBuilder {
                 // associated with the current language.
                 const collectionLanguageMdFilePaths = 
                     collectionPagesFilePaths.filter(
-                        filename => hasFileExtension(filename, 'md') &&
-                            filename.toLowerCase().endsWith(`.${language}.md`)
+                        filename => hasFileExtension(
+                            filename, FILE_EXT_MARKDOWN) &&
+                            filename.toLowerCase().endsWith(
+                                `.${language}.${FILE_EXT_MARKDOWN}`)
                 );
 
                 // Iterate across all filtered collection pages.
                 for (const pageMdRelFilePath of collectionLanguageMdFilePaths) {
 
                     // Identify the absolute path to the page MD file.
-                    const pageMdAbsFilePath = 
-                        `${collectionDirPath}/${pageMdRelFilePath}`;
+                    const pageMdAbsFilePath = path.join(
+                        collectionDirPath, 
+                        pageMdRelFilePath);
 
                     // Read the contents of the page MD file.
                     const pageMd = fs.readFileSync(
@@ -89,11 +132,7 @@ class CollectionBuilder {
                     // metadata. Pages must be explicitly enabled in the 
                     // markdown frontmatter and have the mandatory metadata 
                     // defined in order to be built.
-                    if ( 'name' in pageMetadata && pageMetadata.name && 
-                        'enabled' in pageMetadata && pageMetadata.enabled == 'true' && 
-                        ( !('index' in pageMetadata) || 
-                            ( 'index' in pageMetadata && pageMetadata.index == 'true' ) ) 
-                    ) {
+                    if ( this.#shouldIndexPage(pageMetadata)) {
 
                         // Create a new page object.
                         let page = new Page(-1, 
@@ -102,11 +141,8 @@ class CollectionBuilder {
 
                         // Parse the page content if configured.
                         if ( this.config.site.collection.index.content ) {
-                            page.setContent(stripHtml(pageHtml).result
-                                .replace(/[\r\n]+/g, ' ')
-                                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,' ')
-                                .replace(/\s\s+/g, ' ')
-                                .trim());
+                            page.setContent(
+                                this.#normalizePageContent(pageHtml));
                         }
 
                         // Add the page to the list of pages.
@@ -155,7 +191,7 @@ class CollectionBuilder {
 
                 // Sort the language-specific categories.
                 if ( categories.length > 0 ) {
-                    categories = sort(categories, 'name', 'asc');
+                    categories = sort(categories, METADATA_NAME, SORT_ASC);
                 }
 
                 // Generate the collection metadata for the current language.
@@ -192,15 +228,14 @@ class CollectionBuilder {
     }
 
     async index() {
-        if ( this.config.site.collection.enabled && 
-            !this.config.build.opts.ignoreCollection ) {
-
-            // Create a clone of the document store configuration.
-            let documentStoreConfig = structuredClone(
-                this.config.site.collection.index.documentStore);
+        if ( this.#shouldBuildCollection() ) {
 
             // Iterate across all languages.
             for ( const language of this.config.site.languages.enabled ) {
+
+                // Create a clone of the document store configuration.
+                let documentStoreConfig = structuredClone(
+                    this.config.site.collection.index.documentStore);
 
                 // Lookup the ISO 3166 country code.
                 documentStoreConfig.language = language in ISO_639_3166_LOOKUP ? 
@@ -216,7 +251,8 @@ class CollectionBuilder {
                 const index = new FlexSearch.Document(documentStoreConfig);
 
                 // Get the language pages.
-                const pages = this.collection.getLanguagePages().get(language);
+                const pages = this.collection.getLanguagePages().get(
+                    language) ?? [];
                 
                 // Index each page in the language.
                 for (const page of pages) {
@@ -226,16 +262,20 @@ class CollectionBuilder {
                 // Export the index.
                 let keys = [];
                 const indexDirBaseAbsPath = this.config.build.distDirs.collection;
-                await index.export(function(key, data) { 
-                    keys.push(key);
-                    const indexDirAbsPath = indexDirBaseAbsPath + `/${language}`;
+                await index.export((key, data) => { 
+                    const normalizedKey = this.#normalizeIndexKey(key);
+                    keys.push(normalizedKey);
+                    const indexDirAbsPath = path.join(
+                        indexDirBaseAbsPath, 
+                        language);
                     createDirectory(indexDirAbsPath);
-                    fs.writeFileSync(`${indexDirAbsPath}/${key}.json`, 
-                        data !== undefined ? data : '');
+                    writeStringToFile(
+                        data !== undefined ? data : '', 
+                        path.join(indexDirAbsPath, `${normalizedKey}.json`));
                 });
 
                 // Update the language index keys.
-                this.languageIndexKeys[language] = keys;
+                this.languageIndexKeys[language] = keys.sort();
 
             }
 
