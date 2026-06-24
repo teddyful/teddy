@@ -14,21 +14,29 @@ import UrlBuilder from './url-builder.js';
 import { minify } from 'minify';
 
 import logger from '../middleware/logger.js';
-import { createDirectory, copyFile, getFiles, 
-    hasFileExtension, hasFileExtensions, writeStringToFile } from 
+import { createDirectory, copyFile, getFiles, hasFileExtension, 
+    hasFileExtensions, loadFile, loadJsonFile, pathExists, 
+    writeStringToFile } from 
         '../utils/io-utils.js';
 import { exists } from '../utils/json-utils.js';
 import { getVarPlaceholders, getNestedKeysFromVarPlaceholder } from 
     '../utils/regex-utils.js';
+import { escapeHtml } from '../utils/string-utils.js';
 
-
+const FILE_EXT_MARKDOWN = 'md';
+const FILE_EXT_HTML = 'html';
+const FILE_INDEX_HTML = 'index.html';
+const DIR_LANGUAGES = 'languages';
+const DIR_TEMPLATES = 'templates';
+const DIR_JS = 'js';
+const METADATA_ENABLED = 'enabled';
+const METADATA_VALUE_TRUE = 'true';
 const PAGE_METADATA_NAMESPACE = 'page.metadata';
 const PAGE_METADATA_KNOWN_KEYS = [
     'article', 'authorId', 'categories', 'cover', 'datasource', 'date', 
     'description', 'enabled', 'hero', 'image', 'index', 'tags', 'language', 
     'name', 'title', 'type'
 ];
-
 
 class PageBuilder {
 
@@ -41,11 +49,105 @@ class PageBuilder {
             this.config.system.build.siteDirs.pages);
         for ( const language of this.config.site.languages.enabled ) {
             this.languagePages[language] = pageFilePaths.filter(
-                filename => hasFileExtension(filename, 'md') &&
-                    filename.toLowerCase().endsWith(`.${language}.md`)
+                filename => hasFileExtension(filename, FILE_EXT_MARKDOWN) &&
+                    filename.toLowerCase().endsWith(
+                        `.${language}.${FILE_EXT_MARKDOWN}`)
             );
         }
 
+    }
+
+    #getLanguageDataFilePath(language) {
+        return path.join(
+            this.config.build.distDirs.build,
+            DIR_LANGUAGES,
+            `${language}.json`
+        );
+    }
+
+    #getTranslatedTemplateFilePath(language, templateFileName) {
+        return path.join(
+            this.config.build.distDirs.build,
+            DIR_TEMPLATES,
+            language,
+            templateFileName
+        );
+    }
+
+    #getPageOutputFilePath(pageDestAbsDirPath) {
+        return path.join(
+            pageDestAbsDirPath,
+            FILE_INDEX_HTML
+        );
+    }
+
+    #getPageSourceFilePath(pageMdRelFilePath) {
+        return path.join(
+            this.config.system.build.siteDirs.pages,
+            pageMdRelFilePath
+        );
+    }
+
+    #getPageDestinationFilePath(language, pageMdRelFilePathClean) {
+        return path.join(
+            this.config.build.distDirs.base,
+            language,
+            pageMdRelFilePathClean.replace(
+                `.${language}.${FILE_EXT_MARKDOWN}`,
+                `.${FILE_EXT_HTML}`
+            )
+        );
+    }
+
+    #normalizeResourceFilePath(resourceFilePath) {
+        return resourceFilePath
+            .replace(/\s+/g, '-')
+            .replace(/[^A-Za-z0-9\-_.\\\/]/g, '')
+            .toLowerCase()
+            .trim();
+    }
+
+    #shouldBuildPage(pageMetadata) {
+        return METADATA_ENABLED in pageMetadata && 
+            pageMetadata.enabled === METADATA_VALUE_TRUE;
+    }
+
+    #getAllowedPageAssetExtensions() {
+        if ( exists(this.config, 'site', 'collection', 
+                'assets', 'extensions', 'allowed') ) {
+            return this.config.site.collection.assets.extensions.allowed;
+        }
+        return [];
+    }
+
+    #copyPageAssets(pageMdAbsDirPath, pageDestAbsDirPath) {
+        const allowedExtensions = this.#getAllowedPageAssetExtensions();
+        if ( allowedExtensions.length === 0 ) {
+            return;
+        }
+        const assetFiles = getFiles(pageMdAbsDirPath, true);
+        const filteredAssetFiles = assetFiles.filter(filename => 
+            hasFileExtensions(filename, allowedExtensions));
+        for (const assetFile of filteredAssetFiles) {
+            const clnAssetFilePath = this.#normalizeResourceFilePath(assetFile);
+            const assetSourceFilePath = path.join(pageMdAbsDirPath, assetFile);
+            const assetTargetFilePath = path.join(
+                pageDestAbsDirPath, clnAssetFilePath);
+            const assetTargetDirPath = path.dirname(assetTargetFilePath);
+            createDirectory(assetTargetDirPath);
+            copyFile(assetSourceFilePath, assetTargetFilePath);
+        }
+    }
+
+    #isCollectionPage(pageResourceUrl) {
+        if ( !exists(this.config, 'site', 'collection', 'enabled') ||
+                !this.config.site.collection.enabled ||
+                !exists(this.config, 'site', 'collection', 'pagesDir') ) {
+            return false;
+        }
+        return pageResourceUrl.startsWith(
+            `/${this.config.site.collection.pagesDir}/`
+        );
     }
 
     async translatePages() {
@@ -55,7 +157,7 @@ class PageBuilder {
             this.systemAssetsHtml = this.#generateSystemAssetsHtml();
 
             // HTML minifier options.
-            const miniferOptions = {
+            const minifierOptions = {
                 html: {
                     collapseBooleanAttributes: false, 
                     removeAttributeQuotes: false, 
@@ -72,40 +174,34 @@ class PageBuilder {
             for ( const language of this.config.site.languages.enabled ) {
 
                 // Read the contents of the language data.
-                const languageData = JSON.parse(fs.readFileSync(
-                    this.config.build.distDirs.build + 
-                        `/languages/${language}.json`, 'utf-8'));
+                const languageData = loadJsonFile(
+                    this.#getLanguageDataFilePath(language));
 
                 // Iterate across all page markdown files for this language.
                 let numPagesProcessed = 0;
                 for (const pageMdRelFilePath of this.languagePages[language]) {
 
                     // Identify source, dependency and target paths.
-                    const pageMdAbsFilePath = 
-                        this.config.system.build.siteDirs.pages + 
-                            `/${pageMdRelFilePath}`;
+                    const pageMdAbsFilePath = this.#getPageSourceFilePath(
+                        pageMdRelFilePath);
                     const pageMdAbsDirPath = path.dirname(pageMdAbsFilePath);
-                    const pageMdRelFilePathClean = pageMdRelFilePath
-                        .replace(/\s+/g, '-')
-                        .replace(/[^A-Za-z0-9\-_.\\\/]/g, '')
-                        .toLowerCase().trim();
+                    const pageMdRelFilePathClean = 
+                        this.#normalizeResourceFilePath(pageMdRelFilePath);
                     const pageDestAbsFilePath = 
-                        this.config.build.distDirs.base + `/${language}/` + 
-                            pageMdRelFilePathClean.replace(
-                                `.${language}.md`, '.html');
+                        this.#getPageDestinationFilePath(
+                            language, pageMdRelFilePathClean);
                     const pageDestAbsDirPath = 
                         path.dirname(pageDestAbsFilePath);
                     const templateFileName = path.basename(pageDestAbsFilePath);
                     const translatedTemplateAbsFilePath = 
-                        this.config.build.distDirs.build + 
-                            `/templates/${language}/${templateFileName}`;
+                        this.#getTranslatedTemplateFilePath(
+                            language, templateFileName);
 
                     // Check that the translated template exists.
-                    if ( fs.existsSync(translatedTemplateAbsFilePath) ) {
+                    if ( pathExists(translatedTemplateAbsFilePath) ) {
 
                         // Read the contents of the page markdown file.
-                        const pageMd = fs.readFileSync(
-                            pageMdAbsFilePath, 'utf8');
+                        const pageMd = loadFile(pageMdAbsFilePath);
 
                         // Instantiate the Markdown to HTML converter.
                         let converter = new showdown.Converter({
@@ -120,12 +216,11 @@ class PageBuilder {
                         // Check that the page is enabled. Pages must be 
                         // explicitly enabled in the markdown frontmatter 
                         // in order to be built.
-                        if ( 'enabled' in pageMetadata && 
-                            pageMetadata.enabled == 'true' ) {
+                        if ( this.#shouldBuildPage(pageMetadata) ) {
 
-                            // Read the contents of the translated template file.
-                            const translatedTemplateHtml = fs.readFileSync(
-                                `${translatedTemplateAbsFilePath}`, 'utf8');
+                            // Read contents of the translated template file.
+                            const translatedTemplateHtml = loadFile(
+                                translatedTemplateAbsFilePath);
 
                             // Resolve the page HTML.
                             const pageHtml = this.#resolvePageHtml(
@@ -138,42 +233,29 @@ class PageBuilder {
 
                             // Write the page HTML to the target page HTML file.
                             const pageHtmlAbsFilePath = 
-                                `${pageDestAbsDirPath}/index.html`;
+                                this.#getPageOutputFilePath(pageDestAbsDirPath);
                             writeStringToFile(pageHtml, pageHtmlAbsFilePath);
 
                             // Minify the HTML if configured.
                             if ( this.config.build.opts.minifyHtml ) {
                                 const [error, minifiedHtml] = await tryToCatch(
-                                    minify, pageHtmlAbsFilePath, 
-                                    miniferOptions);
-                                    if (error)
-                                        return console.error(error.message);
-                                    writeStringToFile(minifiedHtml, 
-                                        pageHtmlAbsFilePath);
+                                    minify, 
+                                    pageHtmlAbsFilePath, 
+                                    minifierOptions);
+                                if ( error ) {
+                                    throw new Error(
+                                        `Failed to minify HTML page ` + 
+                                            `'${pageHtmlAbsFilePath}'.`,
+                                        { cause: error }
+                                    );
+                                }
+                                writeStringToFile(minifiedHtml, 
+                                    pageHtmlAbsFilePath);
                             }
 
                             // Copy all static assets to the target directory.
-                            const assetFiles = getFiles(
-                                pageMdAbsDirPath, true);
-                            const filteredAssetFiles = assetFiles.filter(
-                                filename => hasFileExtensions(filename, 
-                                    this.config.site.collection.assets.extensions.allowed
-                                )
-                            );
-                            for (const assetFile of filteredAssetFiles) {
-                                let clnAssetFilePath = assetFile
-                                    .replace(/\s+/g, '-')
-                                    .replace(/[^A-Za-z0-9\-_.\\\/]/g, '')
-                                    .toLowerCase().trim();
-                                const assetTargetFilePath = 
-                                    `${pageDestAbsDirPath}/${clnAssetFilePath}`;
-                                const assetTargetDirPath = path.dirname(
-                                    assetTargetFilePath);
-                                createDirectory(assetTargetDirPath);
-                                copyFile(`${pageMdAbsDirPath}/${assetFile}`, 
-                                    assetTargetFilePath
-                                );
-                            }
+                            this.#copyPageAssets(
+                                pageMdAbsDirPath, pageDestAbsDirPath);
                             numPagesProcessed += 1;
 
                         } else {
@@ -200,8 +282,8 @@ class PageBuilder {
         }
     }
 
-    #resolvePageHtml(templateHtml, pageMdAbsFilePath, pageMdRelFilePathClean, 
-        pageContentHtml, pageMetadata, language, languageData) {
+    #resolvePageMetadata(pageMdAbsFilePath, pageMdRelFilePathClean, 
+        pageMetadata, language, languageData) {
 
         // Parse the page title. The 'name' property is optional in 
         // the page markdown frontmatter, but highly recommended.
@@ -219,7 +301,7 @@ class PageBuilder {
         // Parse the page enabled. The 'enabled' property is optional in
         // the page markdown frontmatter, but highy recommended as it will
         // default to false and hence the page will not be built.
-        const pageEnabled = 'enabled' in pageMetadata ? 
+        const pageEnabled = METADATA_ENABLED in pageMetadata ? 
             pageMetadata.enabled : false;
 
         // Parse the page description. The 'description' property is optional
@@ -354,57 +436,92 @@ class PageBuilder {
 
         // Generate the page type to use that will be used, for example, 
         // as the OG type.
-        const pageIsArticle = pageResourceUrl.startsWith(
-            '/' + this.config.site.collection.pagesDir + '/');
+        const pageIsArticle = this.#isCollectionPage(pageResourceUrl);
         const pageType = pageIsArticle ? 
             'article' : 'website';
+
+        return {
+            pageAuthorAvatar,
+            pageAuthorDescription,
+            pageAuthorName,
+            pageAuthorRole,
+            pageAuthorUrl,
+            pageCategories,
+            pageCover,
+            pageDate,
+            pageDescription,
+            pageDisplayDate,
+            pageEnabled,
+            pageHero,
+            pageImage,
+            pageIsArticle,
+            pageKeywords,
+            pageName,
+            pageTitle,
+            pageType,
+            pageUrl
+        };
+
+    }
+
+    #resolvePageHtml(templateHtml, pageMdAbsFilePath, pageMdRelFilePathClean, 
+        pageContentHtml, pageMetadata, language, languageData) {
+
+        // Resolve page metadata.
+        const metadata = this.#resolvePageMetadata(
+            pageMdAbsFilePath,
+            pageMdRelFilePathClean,
+            pageMetadata,
+            language,
+            languageData
+        );
 
         // Inject the markdown HTML into the template.
         let pageHtml = templateHtml
             .replaceAll('${page.metadata.author.name}', 
-                pageAuthorName)
+                metadata.pageAuthorName)
             .replaceAll('${page.metadata.author.url}', 
-                pageAuthorUrl)
+                metadata.pageAuthorUrl)
             .replaceAll('${page.metadata.author.role}', 
-                pageAuthorRole)
+                metadata.pageAuthorRole)
             .replaceAll('${page.metadata.author.description}', 
-                pageAuthorDescription)
+                metadata.pageAuthorDescription)
             .replaceAll('${page.metadata.author.avatar}', 
-                pageAuthorAvatar)
+                metadata.pageAuthorAvatar)
             .replaceAll('${page.metadata.categories}', 
-                pageCategories.join(', '))
+                metadata.pageCategories.join(', '))
             .replaceAll('${page.metadata.cover}', 
-                pageCover)
+                metadata.pageCover)
             .replaceAll('${page.metadata.date}', 
-                pageDisplayDate)
+                metadata.pageDisplayDate)
             .replaceAll('${page.metadata.description}', 
-                pageDescription)
+                metadata.pageDescription)
             .replaceAll('${page.metadata.enabled}', 
-                pageEnabled)
+                metadata.pageEnabled)
             .replaceAll('${page.metadata.hero}', 
-                pageHero)
+                metadata.pageHero)
             .replaceAll('${page.metadata.image}', 
-                pageImage)
+                metadata.pageImage)
             .replaceAll('${page.metadata.keywords}', 
-                pageKeywords)
+                metadata.pageKeywords)
             .replaceAll('${page.metadata.language}', 
                 language)
             .replaceAll('${page.metadata.name}', 
-                pageName)
+                metadata.pageName)
             .replaceAll('${page.metadata.tags}', 
-                pageKeywords)
+                metadata.pageKeywords)
             .replaceAll('${page.metadata.title}', 
-                pageTitle)
+                metadata.pageTitle)
             .replaceAll('${page.metadata.type}', 
-                pageType)
+                metadata.pageType)
             .replaceAll('${page.metadata.url}', 
-                pageUrl)
+                metadata.pageUrl)
             .replaceAll('${page.content}', 
                 pageContentHtml);
 
         // Resolve page URLs.
         pageHtml = UrlBuilder.resolveUrlPlaceholders(language, 
-            this.config.site.languages.enabled[0], pageHtml);
+            this.config.site.languages.default, pageHtml);
 
         // Inject any custom metadata from the markdown
         // frontmatter e.g. page.metadata.flags etc.
@@ -422,43 +539,43 @@ class PageBuilder {
         }
 
         // Generate the page metadata.
-        const siteName = languageData.metadata.applicationName;
+        const siteName = escapeHtml(languageData.metadata.applicationName);
         const pageMetaAuthor = 
-            `<meta name="author" content="${pageAuthorName}">`;
+            `<meta name="author" content="${escapeHtml(metadata.pageAuthorName)}">`;
         const pageMetaDescription = 
-            `<meta name="description" content="${pageDescription}"/>`;
+            `<meta name="description" content="${escapeHtml(metadata.pageDescription)}"/>`;
         const pageMetaKeywords = 
-            `<meta name="keywords" content="${pageKeywords}"/>`;
+            `<meta name="keywords" content="${escapeHtml(metadata.pageKeywords)}"/>`;
         const pageMetaOgSiteName = 
             `<meta property="og:site_name" content="${siteName}"/>`;
         const pageMetaOgTitle = 
-            `<meta property="og:title" content="${pageName}"/>`;
+            `<meta property="og:title" content="${escapeHtml(metadata.pageName)}"/>`;
         const pageMetaOgDescription = 
-            `<meta property="og:description" content="${pageDescription}"/>`;
+            `<meta property="og:description" content="${escapeHtml(metadata.pageDescription)}"/>`;
         const pageMetaOgImage = 
-            `<meta property="og:image" content="${pageImage}"/>`;
+            `<meta property="og:image" content="${escapeHtml(metadata.pageImage)}"/>`;
         const pageMetaOgUrl = 
-            `<meta property="og:url" content="${pageUrl}"/>`;
+            `<meta property="og:url" content="${escapeHtml(metadata.pageUrl)}"/>`;
         const pageMetaOgType = 
-            `<meta property="og:type" content="${pageType}"/>`;
+            `<meta property="og:type" content="${escapeHtml(metadata.pageType)}"/>`;
 
         // Generate the page OG article metadata if this page is a document
         // in the collection defined in config.js.
         let pageMetaOgArticle = '';
-        if ( pageIsArticle ) {
+        if ( metadata.pageIsArticle ) {
             pageMetaOgArticle = pageMetaOgArticle + 
-                `<meta property="article:modified_time" content="${pageDate}" />` + 
-                `<meta property="article:author" content="${pageAuthorName}" />`;
-            if ( pageCategories.length > 0 ) {
+                `<meta property="article:modified_time" content="${escapeHtml(metadata.pageDate)}" />` + 
+                `<meta property="article:author" content="${escapeHtml(metadata.pageAuthorName)}" />`;
+            if ( metadata.pageCategories.length > 0 ) {
                 pageMetaOgArticle = pageMetaOgArticle + 
-                    `<meta property="article:section" content="${pageCategories[0]}" />`;
+                    `<meta property="article:section" content="${escapeHtml(metadata.pageCategories[0])}" />`;
             }
             if ( 'tags' in pageMetadata ) {
                 const keywords = pageMetadata.tags.
                     split(',').map(item => item.trim());
                 for ( const keyword of keywords ) {
                     pageMetaOgArticle = pageMetaOgArticle + 
-                        `<meta property="article:tag" content="${keyword}" />`;
+                        `<meta property="article:tag" content="${escapeHtml(keyword)}" />`;
                 }
             }
         }
@@ -501,9 +618,10 @@ class PageBuilder {
             .concat(this.config.system.assets.js.teddy);
         for ( const jsAsset of jsAssets ) {
             const resolvedJsAsset = jsAsset
-                .replace('{package.version}', this.config.package.version);
+                .replace('{package.version}', 
+                    this.config.package.version);
             html = `${html}<script src="${this.config.site.urls.assets}` + 
-                `/js/${resolvedJsAsset}"></script>\n`;
+                `/${DIR_JS}/${resolvedJsAsset}"></script>\n`;
         }
 
         // Site configuration JavaScript assets.
