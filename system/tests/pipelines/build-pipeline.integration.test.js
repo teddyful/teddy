@@ -1,5 +1,5 @@
 /**
- * Build pipeline tests.
+ * Build pipeline integration tests.
  *
  * @author jillurquddus
  * @copyright Copyright (C) 2025 Jillur Quddus

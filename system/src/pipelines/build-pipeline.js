@@ -21,7 +21,6 @@ import PageBuilder from '../services/page-builder.js';
 import PdfBuilder from '../services/pdf-builder.js';
 import TemplateBuilder from '../services/template-builder.js';
 
-
 class BuildPipeline {
 
     constructor(opts) {
