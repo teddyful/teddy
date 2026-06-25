@@ -119,6 +119,21 @@ class ConfigValidator {
 
     }
 
+    #validateTaxonomyCompleteness(categoryIds, taxonomy, language) {
+        const translatedCategories = taxonomy.taxonomy?.categories ?? {};
+        for ( const categoryId of categoryIds ) {
+            if ( !Object.hasOwn(translatedCategories, categoryId) ) {
+                throw new Error(
+                    `The taxonomy file for language '${language}' is missing ` +
+                    `a translation for the category '${categoryId}'. ` +
+                    `All categories listed in ` +
+                    `'site.collection.taxonomy.categories' must be defined ` +
+                    `in each enabled language's taxonomy.json file.`
+                );
+            }
+        }
+    }
+
     #validateSiteConfig() {
 
         // Load the site config.
@@ -166,6 +181,7 @@ class ConfigValidator {
         }
 
         // Validate that the required site files exist.
+        const categoryIds = this.siteConfig.site.collection.taxonomy.categories;
         for ( const language of this.siteConfig.site.languages.enabled ) {
             
             // metadata.json
@@ -196,6 +212,8 @@ class ConfigValidator {
                     path.join(siteLanguageDirPath, taxonomyFileName));
                 this.#validateSchema(siteTaxonomySchema, taxonomy, 
                     `Site taxonomy (${language})`);
+                this.#validateTaxonomyCompleteness(
+                    categoryIds, taxonomy, language);
             }
 
         }
