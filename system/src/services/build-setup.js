@@ -20,44 +20,52 @@ class BuildSetup {
         this.config = config;
     }
 
-    #assertDirectoryPath(dirPath, label) {
-        resolvePathInsideBase(
-            path.basename(dirPath),
-            path.dirname(dirPath),
+    #assertDirectoryInsideBase(dirPath, baseDirPath, label) {
+        return resolvePathInsideBase(
+            path.relative(baseDirPath, dirPath),
+            baseDirPath,
             label
         );
     }
 
     createDistDirectoryStructure() {
-        this.#assertDirectoryPath(
+        const buildRoot = path.dirname(this.config.build.distDirs.build);
+        const baseRoot = path.dirname(this.config.build.distDirs.base);
+        const assetsRoot = path.dirname(this.config.build.distDirs.assets);
+        const collectionRoot = path.dirname(this.config.build.distDirs.collection);
+        this.#assertDirectoryInsideBase(
             this.config.build.distDirs.base,
+            baseRoot,
             'base distribution directory'
         );
-        this.#assertDirectoryPath(
+        this.#assertDirectoryInsideBase(
             this.config.build.distDirs.build,
+            buildRoot,
             'build distribution directory'
         );
-        resolvePathInsideBase(
-            DIR_CONFIG,
+        this.#assertDirectoryInsideBase(
+            path.join(this.config.build.distDirs.build, DIR_CONFIG),
             this.config.build.distDirs.build,
             'build config directory'
         );
-        resolvePathInsideBase(
-            DIR_LANGUAGES,
+        this.#assertDirectoryInsideBase(
+            path.join(this.config.build.distDirs.build, DIR_LANGUAGES),
             this.config.build.distDirs.build,
             'build languages directory'
         );
-        resolvePathInsideBase(
-            DIR_TEMPLATES,
+        this.#assertDirectoryInsideBase(
+            path.join(this.config.build.distDirs.build, DIR_TEMPLATES),
             this.config.build.distDirs.build,
             'build templates directory'
         );
-        this.#assertDirectoryPath(
+        this.#assertDirectoryInsideBase(
             this.config.build.distDirs.assets,
+            assetsRoot,
             'assets distribution directory'
         );
-        this.#assertDirectoryPath(
+        this.#assertDirectoryInsideBase(
             this.config.build.distDirs.collection,
+            collectionRoot,
             'collection distribution directory'
         );
         createDirectory(this.config.build.distDirs.base);
@@ -70,8 +78,10 @@ class BuildSetup {
     }
 
     createBaseDistDirectory() {
-        this.#assertDirectoryPath(
+        const baseRoot = path.dirname(this.config.build.distDirs.base);
+        this.#assertDirectoryInsideBase(
             this.config.build.distDirs.base,
+            baseRoot,
             'base distribution directory'
         );
         createDirectory(this.config.build.distDirs.base);
