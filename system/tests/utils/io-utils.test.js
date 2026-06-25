@@ -238,3 +238,173 @@ test('string written to file and parent directories created', () => {
     writeStringToFile('content', targetFilePath);
     expect(fs.readFileSync(targetFilePath, 'utf8')).toBe('content');
 });
+
+test('all descendants glob preserves trailing slash if supplied', () => {
+    expect(allDescendantsGlob('dist/assets/')).toBe('dist/assets//**');
+});
+
+test('negated glob preserves trailing slash if supplied', () => {
+    expect(negatedGlob('dist/assets/')).toBe('!dist/assets/');
+});
+
+test('non-recursive directory copy rejects nested source content', () => {
+    const sourceDirPath = path.join(TEST_DIR, 'source');
+    const nestedDirPath = path.join(sourceDirPath, 'nested');
+    const targetDirPath = path.join(TEST_DIR, 'target');
+    fs.mkdirSync(nestedDirPath, { recursive: true });
+    fs.writeFileSync(path.join(nestedDirPath, 'child.txt'), 'child');
+    expect(() => copyDir(sourceDirPath, targetDirPath, false)).toThrow();
+});
+
+test('copyFileIfExists does nothing when source path is empty', () => {
+    const targetFilePath = path.join(TEST_DIR, 'target.txt');
+    expect(() => copyFileIfExists('', targetFilePath)).not.toThrow();
+    expect(fs.existsSync(targetFilePath)).toBe(false);
+});
+
+test('copyFileIfExists does nothing when target path is empty', () => {
+    const sourceFilePath = path.join(TEST_DIR, 'source.txt');
+    fs.writeFileSync(sourceFilePath, 'content');
+    expect(() => copyFileIfExists(sourceFilePath, '')).not.toThrow();
+});
+
+test('non-recursive createDirectory rejects missing parent directories', () => {
+    const dirPath = path.join(TEST_DIR, 'one', 'two');
+    expect(() => createDirectory(dirPath, false)).toThrow();
+});
+
+test('non-string delete directory path rejected', () => {
+    expect(() => assertSafeDeleteDir(null, 'test directory'))
+        .toThrow('directory path is empty');
+});
+
+test('whitespace-only delete directory path rejected', () => {
+    expect(() => assertSafeDeleteDir('   ', 'test directory'))
+        .toThrow('directory path is empty');
+});
+
+test('safe delete directory path is trimmed before normalization', () => {
+    const dirPath = path.join(TEST_DIR, 'safe');
+    expect(assertSafeDeleteDir(` ${dirPath} `, 'test directory'))
+        .toBe(path.normalize(dirPath));
+});
+
+test('file listing ignores directories', () => {
+    fs.mkdirSync(path.join(TEST_DIR, 'directory'));
+    fs.writeFileSync(path.join(TEST_DIR, 'file.txt'), 'content');
+    expect(getFiles(TEST_DIR, false)).toEqual(['file.txt']);
+});
+
+test('empty directory file listing returns empty array', () => {
+    expect(getFiles(TEST_DIR)).toEqual([]);
+});
+
+test('missing directory file listing throws', () => {
+    expect(() => getFiles(path.join(TEST_DIR, 'missing'))).toThrow();
+});
+
+test('file extension detected for multi-dot filename', () => {
+    expect(hasFileExtension('archive.tar.gz', 'gz')).toBe(true);
+    expect(hasFileExtension('archive.tar.gz', 'tar')).toBe(false);
+});
+
+test('file extension detection treats extension with leading dot literally', () => {
+    expect(hasFileExtension('page.md', '.md')).toBe(false);
+});
+
+test('file extension detection handles filenames without periods', () => {
+    expect(hasFileExtension('README', 'md')).toBe(false);
+    expect(hasFileExtension('README', 'readme')).toBe(true);
+});
+
+test('file extension detected from list with non-string extensions', () => {
+    expect(hasFileExtensions('file.123', [123])).toBe(true);
+});
+
+test('file extension list returns false for empty extension list', () => {
+    expect(hasFileExtensions('page.md', [])).toBe(false);
+});
+
+test('keepFilesThatExist preserves input order', () => {
+    const firstFilePath = path.join(TEST_DIR, 'first.txt');
+    const secondFilePath = path.join(TEST_DIR, 'second.txt');
+    fs.writeFileSync(firstFilePath, 'first');
+    fs.writeFileSync(secondFilePath, 'second');
+    expect(keepFilesThatExist([
+        secondFilePath,
+        path.join(TEST_DIR, 'missing.txt'),
+        firstFilePath
+    ])).toEqual([
+        secondFilePath,
+        firstFilePath
+    ]);
+});
+
+test('keepFilesThatExist keeps existing directories too', () => {
+    const dirPath = path.join(TEST_DIR, 'directory');
+    fs.mkdirSync(dirPath);
+    expect(keepFilesThatExist([dirPath])).toEqual([dirPath]);
+});
+
+test('empty file list returns empty array', () => {
+    expect(keepFilesThatExist([])).toEqual([]);
+});
+
+test('missing file load throws', () => {
+    expect(() => loadFile(path.join(TEST_DIR, 'missing.txt'))).toThrow();
+});
+
+test('JSON array file loaded and parsed', () => {
+    const filePath = path.join(TEST_DIR, 'data.json');
+    fs.writeFileSync(filePath, JSON.stringify(['one', 'two']));
+    expect(loadJsonFile(filePath)).toEqual(['one', 'two']);
+});
+
+test('JSON null file loaded and parsed', () => {
+    const filePath = path.join(TEST_DIR, 'data.json');
+    fs.writeFileSync(filePath, 'null');
+    expect(loadJsonFile(filePath)).toBe(null);
+});
+
+test('directory path existence detected', () => {
+    const dirPath = path.join(TEST_DIR, 'directory');
+    fs.mkdirSync(dirPath);
+    expect(pathExists(dirPath)).toBe(true);
+});
+
+test('source path with multiple leading slashes converted to relative path', () => {
+    expect(toRelativePath('///assets/css')).toBe('assets/css');
+});
+
+test('undefined source path converted to empty relative path', () => {
+    expect(toRelativePath(undefined)).toBe('');
+});
+
+test('numeric source path converted to string relative path', () => {
+    expect(toRelativePath(123)).toBe('123');
+});
+
+test('JSON written with four-space indentation', () => {
+    const targetFilePath = path.join(TEST_DIR, 'data.json');
+    writeJsonToFile({ site: { name: 'Teddy' } }, targetFilePath);
+    expect(fs.readFileSync(targetFilePath, 'utf8')).toBe(
+        '{\n' +
+        '    "site": {\n' +
+        '        "name": "Teddy"\n' +
+        '    }\n' +
+        '}'
+    );
+});
+
+test('array JSON written to file', () => {
+    const targetFilePath = path.join(TEST_DIR, 'data.json');
+    writeJsonToFile(['one', 'two'], targetFilePath);
+    expect(JSON.parse(fs.readFileSync(targetFilePath, 'utf8')))
+        .toEqual(['one', 'two']);
+});
+
+test('empty string written to file', () => {
+    const targetFilePath = path.join(TEST_DIR, 'empty.txt');
+    writeStringToFile('', targetFilePath);
+    expect(fs.readFileSync(targetFilePath, 'utf8')).toBe('');
+});
