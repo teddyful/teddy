@@ -16,6 +16,24 @@ const TEDDY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)), 
     '../../..');
 
+// List of file patterns to exclude from copy functions.
+const DEFAULT_EXCLUDED_COPY_PATTERNS = [
+    /(^|[/\\])\.[^/\\]+/,
+    /(^|[/\\])\.env(\..*)?$/i,
+    /(^|[/\\])env(\..*)?$/i,
+    /(^|[/\\])credentials?(\..*)?$/i,
+    /(^|[/\\])secrets?(\..*)?$/i,
+    /(^|[/\\])private[-_]?.*$/i,
+    /(^|[/\\])id_rsa(\..*)?$/i,
+    /(^|[/\\])id_dsa(\..*)?$/i,
+    /(^|[/\\])id_ecdsa(\..*)?$/i,
+    /(^|[/\\])id_ed25519(\..*)?$/i,
+    /(^|[/\\]).*\.pem$/i,
+    /(^|[/\\]).*\.key$/i,
+    /(^|[/\\]).*\.p12$/i,
+    /(^|[/\\]).*\.pfx$/i
+];
+
 // Test whether a given path exists.
 function pathExists(sourcePath) {
     return fs.existsSync(sourcePath);
@@ -117,9 +135,33 @@ function negatedGlob(dirPath) {
     return `!${dirPath}`;
 }
 
+// Identify whether a given copy source path is excluded by the default
+// copy file patterns.
+function isExcludedCopyPath(sourcePath, 
+    patterns = DEFAULT_EXCLUDED_COPY_PATTERNS) {
+    const normalizedPath = String(sourcePath ?? '').replace(/\\/g, '/');
+    return patterns.some(pattern => pattern.test(normalizedPath));
+}
+
+// Generate a copy filter function considering copy file pattern exclusions.
+function getCopyFilter(sourceRootPath, 
+    excludedPatterns = DEFAULT_EXCLUDED_COPY_PATTERNS) {
+    return function(sourcePath) {
+        const relativePath = path.relative(sourceRootPath, sourcePath);
+        if (relativePath === '') {
+            return true;
+        }
+        return !isExcludedCopyPath(relativePath, excludedPatterns);
+    };
+}
+
 // Copy a given directory to a given target directory.
-function copyDir(sourceDirPath, targetDirPath, recursive = true) {
-    fs.cpSync(sourceDirPath, targetDirPath, { recursive: recursive });
+function copyDir(sourceDirPath, targetDirPath, recursive = true, 
+    excludedPatterns = DEFAULT_EXCLUDED_COPY_PATTERNS) {
+    fs.cpSync(sourceDirPath, targetDirPath, { 
+        recursive: recursive, 
+        filter: getCopyFilter(sourceDirPath, excludedPatterns) 
+    });
 }
 
 // Copy a given file to a given target directory.
@@ -263,9 +305,12 @@ export {
     copyFile, 
     copyFileIfExists, 
     createDirectory, 
+    DEFAULT_EXCLUDED_COPY_PATTERNS, 
+    getCopyFilter, 
     getFiles, 
     hasFileExtension, 
     hasFileExtensions, 
+    isExcludedCopyPath, 
     keepFilesThatExist, 
     loadFile, 
     loadJsonFile, 
