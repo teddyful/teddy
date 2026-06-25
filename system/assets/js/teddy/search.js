@@ -10,7 +10,7 @@
 class Search {
 
     static UNICODE_QUERY_FILTER_REGEX = /[^\p{Letter}\p{Number}_\-\s]/gu;
-    static LEGACY_QUERY_FILTER_REGEX = /[^a-zA-Z0-9_\-\s\u0100-\u024f\u4e00-\u9fff\u30a0-\u30ff\u3040-\u309f\uac00-\ud7af\u0370-\u03ff\u0400-\u04ff\u0600-\u06ff\u0e00-\u0e7f\u0900-\u097f\u0980-\u09ff\u0b80-\u0bff\u0a80-\u0aff\u0590-\u05ff\u0f00-\u0fff\u1800-\u18af]/gi;
+    static LEGACY_QUERY_FILTER_REGEX = /[^a-zA-Z0-9_\-\s\u00c0-\u024f\u4e00-\u9fff\u30a0-\u30ff\u3040-\u309f\uac00-\ud7af\u0370-\u03ff\u0400-\u04ff\u0600-\u06ff\u0e00-\u0e7f\u0900-\u097f\u0980-\u09ff\u0b80-\u0bff\u0a80-\u0aff\u0590-\u05ff\u0f00-\u0fff\u1800-\u18af]/gi;
     static WHITESPACE_REGEX = /\s+/g;
     static INDEX_KEY_REGEX = /^[a-zA-Z0-9_.-]+$/;
     static LANGUAGE_KEY_REGEX = /^[a-zA-Z0-9_-]+$/;
@@ -44,7 +44,7 @@ class Search {
             // Keep the following character sets:
             // Alphanumeric                                             a-zA-Z0-9
             // Underscore, hyphen and whitespace                        _\-\s
-            // Extended Latin (incl. characters for Vietnamese)         \u0100-\u024f
+            // Extended Latin (incl. characters for Vietnamese)         \u00c0-\u024f
             // Chinese characters (CJK unified ideographs)              \u4e00-\u9fff
             // Japanese Hiragana                                        \u3040-\u309f
             // Japanese Katakana                                        \u30a0-\u30ff
