@@ -15,6 +15,7 @@ import logger from '../middleware/logger.js';
 import { copyDir, copyFile, createDirectory, hasFileExtension, pathExists, 
     resolvePathInsideBase, writeStringToFile } from '../utils/io-utils.js';
 import { exists } from '../utils/json-utils.js';
+import { redactSecretLookingKeys } from '../utils/string-utils.js';
 
 const SOURCE_SITE = 'site';
 const SOURCE_THEME = 'theme';
@@ -387,7 +388,8 @@ class AssetBuilder {
             CONFIG_JS_FILE
         );
         createDirectory(targetDirAbsPath);
-        const configData = this.#generateBuildConfigData(languageIndexKeys);
+        const configData = redactSecretLookingKeys(
+            this.#generateBuildConfigData(languageIndexKeys));
         const js = Object.entries(configData)
             .map(function([key, value]) {
                 return `const ${key} = ${JSON.stringify(value)};`;
@@ -411,7 +413,8 @@ class AssetBuilder {
             content[language] = structuredClone(
                 this.config.site.languages.data[language]);
         }
-        content = this.#stripHeavyRuntimeContent(content);
+        content = redactSecretLookingKeys(
+            this.#stripHeavyRuntimeContent(content));
         const targetDirAbsPath = this.config.build.distDirs.siteConfig;
         const siteJsFilePath = resolvePathInsideBase(
             SITE_JS_FILE,

@@ -8,7 +8,7 @@
  */
 
 import { expect, test } from 'vitest';
-import { escapeHtml, parseCommaSeparatedList }
+import { escapeHtml, parseCommaSeparatedList, redactSecretLookingKeys }
     from '../../src/utils/string-utils.js';
 
 test('HTML ampersand escaped', () => {
@@ -169,4 +169,99 @@ test('comma separated list preserves internal spaces', () => {
 test('comma separated list does not split on semicolons', () => {
     expect(parseCommaSeparatedList('africa;asia,europe'))
         .toEqual(['africa;asia', 'europe']);
+});
+
+test('secret looking keys are redacted from nested objects', () => {
+    expect(redactSecretLookingKeys({
+        metadata: {
+            title: 'Teddy',
+            password: 'do-not-publish',
+            auth_token: 'do-not-publish'
+        },
+        config: {
+            nested: {
+                client_secret: 'do-not-publish',
+                safeValue: 'public'
+            }
+        }
+    })).toEqual({
+        metadata: {
+            title: 'Teddy',
+            password: '[REDACTED]',
+            auth_token: '[REDACTED]'
+        },
+        config: {
+            nested: {
+                client_secret: '[REDACTED]',
+                safeValue: 'public'
+            }
+        }
+    });
+});
+
+test('secret looking keys are redacted from arrays', () => {
+    expect(redactSecretLookingKeys([
+        {
+            name: 'public',
+            access_token: 'do-not-publish'
+        },
+        {
+            items: [
+                {
+                    private_key: 'do-not-publish',
+                    label: 'safe'
+                }
+            ]
+        }
+    ])).toEqual([
+        {
+            name: 'public',
+            access_token: '[REDACTED]'
+        },
+        {
+            items: [
+                {
+                    private_key: '[REDACTED]',
+                    label: 'safe'
+                }
+            ]
+        }
+    ]);
+});
+
+test('secret redaction does not mutate source values', () => {
+    const source = {
+        api_key: 'do-not-publish',
+        nested: {
+            token: 'do-not-publish'
+        },
+        items: [
+            {
+                secret: 'do-not-publish'
+            }
+        ]
+    };
+    const redacted = redactSecretLookingKeys(source);
+    expect(redacted).toEqual({
+        api_key: '[REDACTED]',
+        nested: {
+            token: '[REDACTED]'
+        },
+        items: [
+            {
+                secret: '[REDACTED]'
+            }
+        ]
+    });
+    expect(source).toEqual({
+        api_key: 'do-not-publish',
+        nested: {
+            token: 'do-not-publish'
+        },
+        items: [
+            {
+                secret: 'do-not-publish'
+            }
+        ]
+    });
 });

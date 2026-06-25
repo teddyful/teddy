@@ -489,6 +489,22 @@ test('build config JavaScript is generated for disabled collection', () => {
     ].join('\n'));
 });
 
+test('build config JavaScript redacts secret looking keys', () => {
+    const config = createConfig();
+    config.site.collection.index.documentStore.document.api_key =
+        'do-not-publish';
+    config.site.collection.index.documentStore.document.nested = {
+        private_key: 'do-not-publish',
+        safeValue: 'public'
+    };
+    new AssetBuilder(config).generateBuildConfigJs();
+    const js = readFile(path.join(DIST_SITE_CONFIG_DIR, 'config.js'));
+    expect(js).not.toContain('do-not-publish');
+    expect(js).toContain('"api_key":"[REDACTED]"');
+    expect(js).toContain('"private_key":"[REDACTED]"');
+    expect(js).toContain('"safeValue":"public"');
+});
+
 test('content JavaScript is generated without heavy collection pages', () => {
     const config = createConfig();
     new AssetBuilder(config).generateContentJs();
@@ -538,4 +554,25 @@ test('content JavaScript handles languages without collection pages', () => {
     new AssetBuilder(config).generateContentJs();
     expect(readFile(path.join(DIST_SITE_CONFIG_DIR, 'site.js')))
         .toContain('"en":{"metadata":{"title":"English"}}');
+});
+
+test('content JavaScript redacts secret looking keys', () => {
+    const config = createConfig();
+    config.site.languages.data.en.metadata.password = 'do-not-publish';
+    config.site.languages.data.en.metadata.nested = {
+        client_secret: 'do-not-publish',
+        safeValue: 'public'
+    };
+    config.site.languages.data.en.metadata.items = [
+        {
+            access_token: 'do-not-publish'
+        }
+    ];
+    new AssetBuilder(config).generateContentJs();
+    const js = readFile(path.join(DIST_SITE_CONFIG_DIR, 'site.js'));
+    expect(js).not.toContain('do-not-publish');
+    expect(js).toContain('"password":"[REDACTED]"');
+    expect(js).toContain('"client_secret":"[REDACTED]"');
+    expect(js).toContain('"access_token":"[REDACTED]"');
+    expect(js).toContain('"safeValue":"public"');
 });
