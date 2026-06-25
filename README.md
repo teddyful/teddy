@@ -8,7 +8,8 @@
 ## Table of Contents  
 [1. Introduction](#introduction)<br/>
 [2. Documentation](#documentation)<br/>
-[3. Credits](#credits)<br/>
+[3. Developer Guide](#developer)<br/>
+[4. Credits](#credits)<br/>
 <br/>
 
 ## <a name="introduction"></a>1. Introduction
@@ -32,7 +33,13 @@ The official Teddy website, <a href="https://teddyful.com" target="_blank">teddy
 
 <p align="right"><a href="#readme-top">Back to Top &#9650;</a></p>
 
-## <a name="credits"></a>3. Credits
+## <a name="developer"></a>3. Developer Guide
+
+For a detailed overview of Teddy’s source code architecture, build pipeline, services, entities, utilities, client-side runtime, tests, and extension points, see the [Teddy Source Code Specification](docs/specs/SOURCE_CODE_SPEC.md).
+
+<p align="right"><a href="#readme-top">Back to Top &#9650;</a></p>
+
+## <a name="credits"></a>4. Credits
 
 ### Team Teddy
 
