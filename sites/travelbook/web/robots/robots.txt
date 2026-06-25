@@ -2,4 +2,13 @@ User-agent: *
 Allow: /assets/images/favicon/
 Allow: /assets/images/opengraph/
 Disallow: /assets/
+Disallow: /blog/*/assets/
+Disallow: /blog/*/*/assets/
+Disallow: /en/blog/*/assets/
+Disallow: /en/blog/*/*/assets/
+Disallow: /ja/blog/*/assets/
+Disallow: /ja/blog/*/*/assets/
+Disallow: /zh-tw/blog/*/assets/
+Disallow: /zh-tw/blog/*/*/assets/
+Disallow: /build.json
 Sitemap: https://demo.teddyful.com/sitemap.xml
