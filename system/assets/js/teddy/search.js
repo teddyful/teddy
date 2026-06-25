@@ -13,7 +13,6 @@ class Search {
     static LEGACY_QUERY_FILTER_REGEX = /[^a-zA-Z0-9_\-\s\u00c0-\u024f\u4e00-\u9fff\u30a0-\u30ff\u3040-\u309f\uac00-\ud7af\u0370-\u03ff\u0400-\u04ff\u0600-\u06ff\u0e00-\u0e7f\u0900-\u097f\u0980-\u09ff\u0b80-\u0bff\u0a80-\u0aff\u0590-\u05ff\u0f00-\u0fff\u1800-\u18af]/gi;
     static WHITESPACE_REGEX = /\s+/g;
     static INDEX_KEY_REGEX = /^[a-zA-Z0-9_.-]+$/;
-    static LANGUAGE_KEY_REGEX = /^[a-zA-Z0-9_-]+$/;
     static MAX_MIN_SEARCH_QUERY_LENGTH = 20;
     static MAX_SEARCH_QUERY_LENGTH = 200;
     static MAX_SEARCH_LIMIT = 100;
@@ -113,14 +112,6 @@ class Search {
         return normalizedKey;
     }
 
-    static normalizeLanguageKey(language) {
-        const normalizedLanguage = String(language ?? '').trim();
-        if ( !Search.LANGUAGE_KEY_REGEX.test(normalizedLanguage) ) {
-            throw new Error('Invalid search language key.');
-        }
-        return normalizedLanguage;
-    }
-
     static normalizeIndexBaseUrl(url) {
         const normalizedUrl = String(url ?? '').trim();
         if ( normalizedUrl.length === 0 ) {
@@ -141,9 +132,9 @@ class Search {
         return Math.max(0, Math.floor(Number(id) || 0));
     }
 
-    static async fetchIndexData(key) {
+    static async fetchIndexData(key, language = getPageLanguage()) {
         const normalizedKey = Search.normalizeIndexKey(key);
-        const normalizedLanguage = Search.normalizeLanguageKey(PAGE_LANGUAGE);
+        const normalizedLanguage = normalizeLanguageKey(language);
         const normalizedIndexBaseUrl = Search.normalizeIndexBaseUrl(
             COLLECTION_INDEX_BASE_URL
         );
@@ -182,8 +173,7 @@ class Search {
         try {
 
             // Regenerate the index configuration.
-            const normalizedLanguage = Search.normalizeLanguageKey(
-                PAGE_LANGUAGE);
+            const normalizedLanguage = getPageLanguage();
             let indexConfig = structuredClone(INDEX_DOCUMENT_STORE_CONFIG);
             indexConfig.language = normalizedLanguage in ISO_639_3166_LOOKUP ? 
                 ISO_639_3166_LOOKUP[normalizedLanguage] : normalizedLanguage;
@@ -199,7 +189,7 @@ class Search {
             // Fetch all index files concurrently.
             const indexData = await Promise.all(indexKeys.map(
                 function(key) {
-                    return Search.fetchIndexData(key);
+                    return Search.fetchIndexData(key, normalizedLanguage);
                 }
             ));
 

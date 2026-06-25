@@ -39,6 +39,7 @@ const PAGE_METADATA_KNOWN_KEYS = [
     'description', 'enabled', 'hero', 'image', 'index', 'tags', 'language', 
     'name', 'title', 'type'
 ];
+const BUILD_YEAR = String(new Date().getFullYear());
 
 class PageBuilder {
 
@@ -526,6 +527,7 @@ class PageBuilder {
 
         // Inject the markdown HTML into the template.
         let pageHtml = templateHtml
+            .replaceAll('${build.year}', BUILD_YEAR)
             .replaceAll('${page.metadata.author.name}', 
                 metadata.pageAuthorName)
             .replaceAll('${page.metadata.author.url}', 
@@ -638,11 +640,6 @@ class PageBuilder {
                 `${pageMeta}</head>`);
         }
 
-        // Inject the page language.
-        const pageLangHtml = 
-            `<script>const PAGE_LANGUAGE = '${language}';</script>`;
-        pageHtml = pageHtml.replace('</head>', `${pageLangHtml}</head>`);
-
         // Inject system assets if enabled.
         if ( this.config.site.html.inject.systemAssets ) {
             pageHtml = pageHtml.replace('</head>', 
@@ -661,6 +658,13 @@ class PageBuilder {
         
         let html = '';
 
+        // Site configuration JavaScript assets.
+        const siteConfigJsAssets = this.config.system.assets.js.site;
+        for ( const siteConfigJsAsset of siteConfigJsAssets ) {
+            html = `${html}<script src="${this.config.site.urls.siteConfig}` + 
+                `/${siteConfigJsAsset}"></script>\n`;
+        }
+
         // System JavaScript assets.
         const jsAssets = this.config.system.assets.js.vendors
             .concat(this.config.system.assets.js.teddy);
@@ -670,13 +674,6 @@ class PageBuilder {
                     this.config.package.version);
             html = `${html}<script src="${this.config.site.urls.assets}` + 
                 `/${DIR_JS}/${resolvedJsAsset}"></script>\n`;
-        }
-
-        // Site configuration JavaScript assets.
-        const siteConfigJsAssets = this.config.system.assets.js.site;
-        for ( const siteConfigJsAsset of siteConfigJsAssets ) {
-            html = `${html}<script src="${this.config.site.urls.siteConfig}` + 
-                `/${siteConfigJsAsset}"></script>\n`;
         }
 
         return html;

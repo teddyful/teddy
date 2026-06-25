@@ -7,6 +7,24 @@
  * @since 0.0.1
  */
 
+// Valid language key.
+const LANGUAGE_KEY_REGEX = /^[a-zA-Z0-9_-]+$/;
+
+// Normalise a given language key.
+function normalizeLanguageKey(language) {
+    const normalizedLanguage = String(language ?? '').trim();
+    if ( !LANGUAGE_KEY_REGEX.test(normalizedLanguage) ) {
+        throw new Error('Invalid search language key.');
+    }
+    return normalizedLanguage;
+}
+
+// Get the current page language.
+function getPageLanguage(defaultLanguage = DEFAULT_LANGUAGE) {
+    const pageLanguage = document.documentElement.getAttribute('lang');
+    return normalizeLanguageKey(pageLanguage || defaultLanguage);
+}
+
 // ISO 639 to ISO 3166 lookup.
 const ISO_639_3166_LOOKUP = {
     "en": "en", 

@@ -16,7 +16,7 @@ import siteTaxonomySchema from '../schema/config-site-taxonomy.js';
 import systemConfigSchema from '../schema/config-system.js';
 import themeConfigSchema from '../schema/config-theme.js';
 
-import { getFiles, hasFileExtension, loadJsonFile, pathExists,
+import { getFiles, hasFileExtension, loadFile, loadJsonFile, pathExists,
     resolveConfiguredRootPath, resolvePathInsideBase } from 
     '../utils/io-utils.js';
 import { exists } from '../utils/json-utils.js';
@@ -25,6 +25,12 @@ import { getValue } from '../utils/json-utils.js';
 // Semantic versioning 2.0.0 regex - see https://semver.org
 const SEMANTIC_VERSIONING_REGEX = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
 const FILE_EXT_MARKDOWN = 'md';
+
+// HTML tag and document language.
+const HTML_OPEN_TAG_REGEX = /<html(?:\s|>)/i;
+const HTML_LANG_PLACEHOLDER_REGEX =
+    /<html(?=[^>]*\slang=(["'])\$\{page\.metadata\.language\}\1)(?=[^>]*>)[^>]*>/i;
+const HTML_LANG_PLACEHOLDER = 'lang="${page.metadata.language}"';
 
 class ConfigValidator {
 
@@ -334,6 +340,31 @@ class ConfigValidator {
 
     }
 
+    #validateThemeTemplateLanguagePlaceholders(templateHtmlFiles) {
+        for ( const templateHtmlFile of templateHtmlFiles ) {
+            const templateHtmlFilePath = resolvePathInsideBase(
+                templateHtmlFile,
+                this.themeTemplatesDirPath,
+                'theme template file'
+            );
+            const templateHtml = loadFile(templateHtmlFilePath);
+            if ( !HTML_OPEN_TAG_REGEX.test(templateHtml) ) {
+                continue;
+            }
+            if ( !HTML_LANG_PLACEHOLDER_REGEX.test(templateHtml) ) {
+                throw new Error(
+                    `The theme template file '${templateHtmlFilePath}' ` + 
+                    'contains a <html> tag, but does not define the required ' +
+                    `language placeholder '${HTML_LANG_PLACEHOLDER}'. ` +
+                    'Templates with a <html> tag must include a lang ' +
+                    'attribute whose value is exactly ' +
+                    '"${page.metadata.language}", using either single ' + 
+                    'or double quotes.'
+                );
+            }
+        }
+    }
+
     #validateThemeConfig() {
 
         // Validate the theme configuration against its schema.
@@ -387,6 +418,9 @@ class ConfigValidator {
                     'file names.'); 
             }
         }
+
+        // Validate that page templates expose the generated page language.
+        this.#validateThemeTemplateLanguagePlaceholders(templateHtmlFiles);
 
         // Validate that the specified asset files exist.
         if ( exists(this.themeConfig, 'theme', 'assets', 'custom') ) {

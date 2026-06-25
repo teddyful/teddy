@@ -11,6 +11,7 @@
  * ELEMENTS
  * ---------------------------------------------------------------------------*/
 
+const PAGE_LANGUAGE = getPageLanguage();
 const elements = {
     blog: {
         listing: {
