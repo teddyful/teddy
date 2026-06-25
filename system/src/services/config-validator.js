@@ -16,7 +16,8 @@ import siteTaxonomySchema from '../schema/config-site-taxonomy.js';
 import systemConfigSchema from '../schema/config-system.js';
 import themeConfigSchema from '../schema/config-theme.js';
 
-import { getFiles, hasFileExtension, loadJsonFile, pathExists } from 
+import { getFiles, hasFileExtension, loadJsonFile, pathExists,
+    resolveConfiguredRootPath, resolvePathInsideBase } from 
     '../utils/io-utils.js';
 import { exists } from '../utils/json-utils.js';
 import { getValue } from '../utils/json-utils.js';
@@ -32,6 +33,11 @@ class ConfigValidator {
         this.opts = opts;
         this.siteConfigFileName = 'site.json';
         this.themeConfigFileName = 'theme.json';
+        this.systemSitesRootPath = null;
+        this.systemThemesRootPath = null;
+        this.systemAssetsRootPath = null;
+        this.siteDirResolvedPath = null;
+        this.themeDirResolvedPath = null;
         this.ajv = new Ajv({ allErrors: true });
     }
 
@@ -57,21 +63,44 @@ class ConfigValidator {
         this.#validateSchema(systemConfigSchema, this.systemConfig, 
             'System configuration');
 
+        // Resolve configurable system roots. These may intentionally live
+        // outside the Teddy repository root.
+        this.systemSitesRootPath = resolveConfiguredRootPath(
+            this.systemConfig.system.sites,
+            'system.sites'
+        );
+        this.systemThemesRootPath = resolveConfiguredRootPath(
+            this.systemConfig.system.themes,
+            'system.themes'
+        );
+        this.systemAssetsRootPath = resolveConfiguredRootPath(
+            this.systemConfig.system.assets.dir,
+            'system.assets.dir'
+        );
+
         // Validate that the required system directories exist.
-        this.#validateResourceExists(this.systemConfig, ['system', 'sites']);
-        this.#validateResourceExists(this.systemConfig, ['system', 'themes']);
-        this.#validateResourceExists(this.systemConfig, 
-            ['system', 'assets', 'dir']);
+        this.#validateDirExists(this.systemSitesRootPath);
+        this.#validateDirExists(this.systemThemesRootPath);
+        this.#validateDirExists(this.systemAssetsRootPath);
 
         // Validate that the required files exist.
         this.#validateResourceExists(this.systemConfig, 
             ['system', 'assets', 'js', 'vendors'], 
-            path.join(this.systemConfig.system.assets.dir, 'js'));
+            resolvePathInsideBase(
+                'js',
+                this.systemAssetsRootPath,
+                'system assets JavaScript directory'
+            ));
+        const systemFontsDirPath = resolvePathInsideBase(
+            'fonts',
+            this.systemAssetsRootPath,
+            'system assets fonts directory'
+        );
         for ( const key of Object.keys(
             this.systemConfig.system.assets.fonts) ) {
             this.#validateResourceExists(this.systemConfig, 
                 ['system', 'assets', 'fonts', key], 
-                path.join(this.systemConfig.system.assets.dir, 'fonts'));
+                systemFontsDirPath);
         }
 
     }
@@ -89,9 +118,17 @@ class ConfigValidator {
         this.siteDirPath = path.join(
             this.systemConfig.system.sites,
             this.opts.siteName);
+        this.siteDirResolvedPath = resolvePathInsideBase(
+            this.opts.siteName,
+            this.systemSitesRootPath,
+            'site directory');
         this.siteConfigFilePath = path.join(
             this.siteDirPath,
             this.siteConfigFileName);
+        resolvePathInsideBase(
+            this.siteConfigFileName,
+            this.siteDirResolvedPath,
+            'site configuration file');
         this.#validateDirExists(this.siteDirPath);
         this.#validateFileExists(this.siteDirPath, this.siteConfigFileName);
 
@@ -106,9 +143,17 @@ class ConfigValidator {
         this.themeDirPath = path.join(
             this.systemConfig.system.themes,
             this.opts.themeName);
+        this.themeDirResolvedPath = resolvePathInsideBase(
+            this.opts.themeName,
+            this.systemThemesRootPath,
+            'theme directory');
         this.themeConfigFilePath = path.join(
             this.themeDirPath,
             this.themeConfigFileName);
+        resolvePathInsideBase(
+            this.themeConfigFileName,
+            this.themeDirResolvedPath,
+            'theme configuration file');
         this.#validateDirExists(this.themeDirPath);
         this.#validateFileExists(this.themeDirPath, this.themeConfigFileName);
 
@@ -150,6 +195,22 @@ class ConfigValidator {
                 web: path.join(this.siteDirPath, 'web'), 
             }
         }
+        resolvePathInsideBase(
+            'assets',
+            this.siteDirResolvedPath,
+            'site assets directory');
+        resolvePathInsideBase(
+            'languages',
+            this.siteDirResolvedPath,
+            'site languages directory');
+        resolvePathInsideBase(
+            'pages',
+            this.siteDirResolvedPath,
+            'site pages directory');
+        resolvePathInsideBase(
+            'web',
+            this.siteDirResolvedPath,
+            'site web directory');
 
         // Validate the site configuration against its schema.
         this.#validateSchema(siteConfigSchema, this.siteConfig, 
@@ -189,18 +250,22 @@ class ConfigValidator {
             // metadata.json
             const siteLanguageDirPath = path.join(
                 this.systemConfig.system.build.siteDirs.languages, language);
+            resolvePathInsideBase(
+                language,
+                this.systemConfig.system.build.siteDirs.languages,
+                `site language directory (${language})`);
             const metadataFileName = 'metadata.json';
-            this.#validateFileExists(siteLanguageDirPath, metadataFileName);
-            const metadata = loadJsonFile(
-                path.join(siteLanguageDirPath, metadataFileName));
+            const metadataFilePath = this.#validateFileExists(
+                siteLanguageDirPath, metadataFileName);
+            const metadata = loadJsonFile(metadataFilePath);
             this.#validateSchema(siteMetadataSchema, metadata, 
                 `Site metadata (${language})`);
 
             // contributors.json
             const contributorsFileName = 'contributors.json';
-            this.#validateFileExists(siteLanguageDirPath, contributorsFileName);
-            const contributors = loadJsonFile(
-                path.join(siteLanguageDirPath, contributorsFileName));
+            const contributorsFilePath = this.#validateFileExists(
+                siteLanguageDirPath, contributorsFileName);
+            const contributors = loadJsonFile(contributorsFilePath);
             this.#validateSchema(siteContributorsSchema, contributors, 
                 `Site contributors (${language})`);
 
@@ -209,9 +274,9 @@ class ConfigValidator {
                 this.siteConfig.site.collection.taxonomy.categories.length > 0 
             ) {
                 const taxonomyFileName = 'taxonomy.json';
-                this.#validateFileExists(siteLanguageDirPath, taxonomyFileName);
-                const taxonomy = loadJsonFile(
-                    path.join(siteLanguageDirPath, taxonomyFileName));
+                const taxonomyFilePath = this.#validateFileExists(
+                    siteLanguageDirPath, taxonomyFileName);
+                const taxonomy = loadJsonFile(taxonomyFilePath);
                 this.#validateSchema(siteTaxonomySchema, taxonomy, 
                     `Site taxonomy (${language})`);
                 this.#validateTaxonomyCompleteness(
@@ -222,28 +287,40 @@ class ConfigValidator {
 
         // Validate that the specified asset files exist.
         if ( exists(this.siteConfig, 'site', 'assets', 'custom') ) {
+            const siteCssDirPath = resolvePathInsideBase(
+                'css',
+                this.systemConfig.system.build.siteDirs.assets,
+                'site CSS assets directory');
+            const siteJsDirPath = resolvePathInsideBase(
+                'js',
+                this.systemConfig.system.build.siteDirs.assets,
+                'site JavaScript assets directory');
+            const siteImagesDirPath = resolvePathInsideBase(
+                'images',
+                this.systemConfig.system.build.siteDirs.assets,
+                'site image assets directory');
             if ( 'css' in this.siteConfig.site.assets.custom ) {
                 this.#validateResourceExists(this.siteConfig, 
                     ['site', 'assets', 'custom', 'css'], 
-                    path.join(this.siteDirPath, 'assets', 'css'));
+                    siteCssDirPath);
             }
             if ( 'js' in this.siteConfig.site.assets.custom ) {
                 this.#validateResourceExists(this.siteConfig, 
                     ['site', 'assets', 'custom', 'js'], 
-                    path.join(this.siteDirPath, 'assets', 'js'));
+                    siteJsDirPath);
             }
             if ( 'images' in this.siteConfig.site.assets.custom ) {
                 if ( 'favicon' in this.siteConfig.site.assets.custom.images && 
                     'ico' in this.siteConfig.site.assets.custom.images.favicon ) {
                     this.#validateResourceExists(this.siteConfig, 
                         ['site', 'assets', 'custom', 'images', 'favicon', 'ico'], 
-                        path.join(this.siteDirPath, 'assets', 'images'));
+                        siteImagesDirPath);
                 }
                 if ( 'og' in this.siteConfig.site.assets.custom.images && 
                     'default' in this.siteConfig.site.assets.custom.images.og ) {
                     this.#validateResourceExists(this.siteConfig, 
                         ['site', 'assets', 'custom', 'images', 'og', 'default'], 
-                        path.join(this.siteDirPath, 'assets', 'images'));
+                        siteImagesDirPath);
                 }
             }
         }
@@ -283,6 +360,10 @@ class ConfigValidator {
 
         // Validate that the required directories exist.
         this.themeTemplatesDirPath = path.join(this.themeDirPath, 'templates');
+        resolvePathInsideBase(
+            'templates',
+            this.themeDirResolvedPath,
+            'theme templates directory');
         this.#validateDirExists(this.themeTemplatesDirPath);
 
         // Validate that at least one theme template exists.
@@ -309,28 +390,44 @@ class ConfigValidator {
 
         // Validate that the specified asset files exist.
         if ( exists(this.themeConfig, 'theme', 'assets', 'custom') ) {
+            const themeAssetsDirPath = resolvePathInsideBase(
+                'assets',
+                this.themeDirResolvedPath,
+                'theme assets directory');
+            const themeCssDirPath = resolvePathInsideBase(
+                'css',
+                themeAssetsDirPath,
+                'theme CSS assets directory');
+            const themeJsDirPath = resolvePathInsideBase(
+                'js',
+                themeAssetsDirPath,
+                'theme JavaScript assets directory');
+            const themeImagesDirPath = resolvePathInsideBase(
+                'images',
+                themeAssetsDirPath,
+                'theme image assets directory');
             if ( 'css' in this.themeConfig.theme.assets.custom ) {
                 this.#validateResourceExists(this.themeConfig, 
                     ['theme', 'assets', 'custom', 'css'], 
-                    path.join(this.themeDirPath, 'assets', 'css'));
+                    themeCssDirPath);
             }
             if ( 'js' in this.themeConfig.theme.assets.custom ) {
                 this.#validateResourceExists(this.themeConfig, 
                     ['theme', 'assets', 'custom', 'js'], 
-                    path.join(this.themeDirPath, 'assets', 'js'));
+                    themeJsDirPath);
             }
             if ( 'images' in this.themeConfig.theme.assets.custom ) {
                 if ( 'favicon' in this.themeConfig.theme.assets.custom.images && 
                     'ico' in this.themeConfig.theme.assets.custom.images.favicon ) {
                     this.#validateResourceExists(this.themeConfig, 
                         ['theme', 'assets', 'custom', 'images', 'favicon', 'ico'], 
-                        path.join(this.themeDirPath, 'assets', 'images'));
+                        themeImagesDirPath);
                 }
                 if ( 'og' in this.themeConfig.theme.assets.custom.images && 
                     'default' in this.themeConfig.theme.assets.custom.images.og ) {
                     this.#validateResourceExists(this.themeConfig, 
                         ['theme', 'assets', 'custom', 'images', 'og', 'default'], 
-                        path.join(this.themeDirPath, 'assets', 'images'));
+                        themeImagesDirPath);
                 }
             }
         }
@@ -339,20 +436,23 @@ class ConfigValidator {
 
     #validateResourceExists(config, keys, parentPath = null) {
         const resourcePath = getValue(config, keys);
+        const label = keys.join('.');
         if ( Array.isArray(resourcePath) ) {
             for ( const itemPath of resourcePath ) {
                 const resolvedPath = parentPath ? 
-                    path.join(parentPath, itemPath) : itemPath;
+                    resolvePathInsideBase(itemPath, parentPath, label) : 
+                    resolveConfiguredRootPath(itemPath, label);
                 if ( !pathExists(resolvedPath) )
                     throw new Error(`The resource '${resolvedPath}' defined ` + 
-                        `in '${keys.join('.')}' does not exist.`);
+                        `in '${label}' does not exist.`);
             }
         } else {
             const resolvedPath = parentPath ? 
-                path.join(parentPath, resourcePath) : resourcePath;
+                resolvePathInsideBase(resourcePath, parentPath, label) : 
+                resolveConfiguredRootPath(resourcePath, label);
             if ( !pathExists(resolvedPath) )
                 throw new Error(`The resource '${resolvedPath}' defined ` + 
-                    `in '${keys.join('.')}' does not exist.`);
+                    `in '${label}' does not exist.`);
         }
     }
 
@@ -364,14 +464,23 @@ class ConfigValidator {
 
     #validateFileExists(dirPath, fileName) {
         const filePath = path.join(dirPath, fileName);
+        resolvePathInsideBase(
+            fileName,
+            dirPath,
+            `required file '${fileName}'`);
         if ( !pathExists(filePath) )
             throw new Error(`The required file '${fileName}' does not exist ` + 
                 `in the directory '${dirPath}'.`);
+        return filePath;
     }
 
     #validateFilePathExists(filePath) {
-        if ( !pathExists(filePath) )
-            throw new Error(`The required file '${filePath}' does not exist.`);
+        const resolvedPath = resolveConfiguredRootPath(
+            filePath,
+            'required file');
+        if ( !pathExists(resolvedPath) )
+            throw new Error(`The required file '${resolvedPath}' does not exist.`);
+        return resolvedPath;
     }
 
     #validatePages() {

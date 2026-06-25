@@ -10,6 +10,7 @@
 import path from 'path';
 import gulp from 'gulp';
 import mustache from 'gulp-mustache';
+import { resolvePathInsideBase } from '../utils/io-utils.js';
 
 const DIR_LANGUAGES = 'languages';
 const DIR_TEMPLATES = 'templates';
@@ -22,6 +23,11 @@ class TemplateBuilder {
     }
 
     #getLanguageDataFilePath(language) {
+        resolvePathInsideBase(
+            path.join(DIR_LANGUAGES, `${language}.json`),
+            this.config.build.distDirs.build,
+            `template language data file (${language})`
+        );
         return path.join(
             this.config.build.distDirs.build,
             DIR_LANGUAGES,
@@ -30,6 +36,11 @@ class TemplateBuilder {
     }
 
     #getOutputHtmlDirPath(language) {
+        resolvePathInsideBase(
+            path.join(DIR_TEMPLATES, language),
+            this.config.build.distDirs.build,
+            `translated template output directory (${language})`
+        );
         return path.join(
             this.config.build.distDirs.build,
             DIR_TEMPLATES,
@@ -49,6 +60,11 @@ class TemplateBuilder {
                 this.config.system.themes, 
                 this.config.site.theme.name, 
                 DIR_TEMPLATES);
+            resolvePathInsideBase(
+                path.join(this.config.site.theme.name, DIR_TEMPLATES),
+                this.config.system.themes,
+                'theme templates source directory'
+            );
 
             for ( const language of this.config.site.languages.enabled ) {
                 

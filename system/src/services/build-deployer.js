@@ -10,7 +10,7 @@
 import path from 'path';
 import logger from '../middleware/logger.js';
 import hosts from '../enums/hosts.js';
-import { copyDir, copyFile, pathExists, 
+import { copyDir, copyFile, pathExists, resolvePathInsideBase,
     writeJsonToFile } from '../utils/io-utils.js';
 
 const BUILD_CONFIG_FILE = 'config.json';
@@ -43,11 +43,12 @@ class BuildDeployer {
     }
 
     deployBuildConfig() {
-        writeJsonToFile(this.config, path.join(
-            this.config.build.distDirs.build, 
-            DIR_CONFIG, 
-            BUILD_CONFIG_FILE)
+        const buildConfigFilePath = resolvePathInsideBase(
+            path.join(DIR_CONFIG, BUILD_CONFIG_FILE),
+            this.config.build.distDirs.build,
+            BUILD_CONFIG_FILE
         );
+        writeJsonToFile(this.config, buildConfigFilePath);
     }
 
     deployBuildMetadata() {
@@ -59,19 +60,23 @@ class BuildDeployer {
                 version: this.config.site.version
             }
         };
-        writeJsonToFile(buildMetadata, path.join(
-            this.config.build.distDirs.base, 
-            BUILD_METADATA_FILE)
+        const buildMetadataFilePath = resolvePathInsideBase(
+            BUILD_METADATA_FILE,
+            this.config.build.distDirs.base,
+            BUILD_METADATA_FILE
         );
+        writeJsonToFile(buildMetadata, buildMetadataFilePath);
     }
 
     deployLanguages() {
         for ( const language of this.config.site.languages.enabled ) {
+            const languageDataFilePath = resolvePathInsideBase(
+                path.join(DIR_LANGUAGES, `${language}.json`),
+                this.config.build.distDirs.build,
+                `language data file (${language})`
+            );
             writeJsonToFile(this.config.site.languages.data[language], 
-                path.join(
-                    this.config.build.distDirs.build, 
-                    DIR_LANGUAGES, 
-                    `${language}.json`)
+                languageDataFilePath
             );
         }
     }
@@ -83,6 +88,11 @@ class BuildDeployer {
             const defaultLanguageDir = path.join(
                 this.config.build.distDirs.base, 
                 defaultLanguage);
+            resolvePathInsideBase(
+                defaultLanguage,
+                this.config.build.distDirs.base,
+                'default language directory'
+            );
             if ( pathExists(defaultLanguageDir) ) {
                 copyDir(defaultLanguageDir, this.config.build.distDirs.base);
                 return;
@@ -100,14 +110,20 @@ class BuildDeployer {
             if ( webHost in hosts ) {
                 const webConfigFiles = hosts[webHost];
                 for ( const webConfigFile of webConfigFiles ) {
+                    resolvePathInsideBase(
+                        path.join(DIR_HOSTS, webConfigFile),
+                        this.config.system.build.siteDirs.web,
+                        `web host config ${webConfigFile}`
+                    );
                     const sourceFilePath = path.join(
                         this.config.system.build.siteDirs.web,
                         DIR_HOSTS,
                         webConfigFile
                     );
-                    const targetFilePath = path.join(
+                    const targetFilePath = resolvePathInsideBase(
+                        path.basename(webConfigFile),
                         this.config.build.distDirs.base,
-                        path.basename(webConfigFile)
+                        `web host config target ${webConfigFile}`
                     );
                     this.#copyFileIfExists(
                         sourceFilePath, 
@@ -120,16 +136,24 @@ class BuildDeployer {
 
     deployRobots() {
         if ( !this.config.build.opts.ignoreRobots ) {
+            const sourceFilePath = path.join(
+                this.config.system.build.siteDirs.web,
+                DIR_ROBOTS,
+                ROBOTS_FILE
+            );
+            resolvePathInsideBase(
+                path.join(DIR_ROBOTS, ROBOTS_FILE),
+                this.config.system.build.siteDirs.web,
+                ROBOTS_FILE
+            );
+            const targetFilePath = resolvePathInsideBase(
+                ROBOTS_FILE,
+                this.config.build.distDirs.base,
+                `${ROBOTS_FILE} target`
+            );
             this.#copyFileIfExists(
-                path.join(
-                    this.config.system.build.siteDirs.web,
-                    DIR_ROBOTS,
-                    ROBOTS_FILE
-                ),
-                path.join(
-                    this.config.build.distDirs.base,
-                    ROBOTS_FILE
-                ), 
+                sourceFilePath,
+                targetFilePath, 
                 ROBOTS_FILE
             );
         }
@@ -137,16 +161,24 @@ class BuildDeployer {
 
     deploySitemap() {
         if ( !this.config.build.opts.ignoreSitemap ) {
+            const sourceFilePath = path.join(
+                this.config.system.build.siteDirs.web,
+                DIR_SITEMAP,
+                SITEMAP_FILE
+            );
+            resolvePathInsideBase(
+                path.join(DIR_SITEMAP, SITEMAP_FILE),
+                this.config.system.build.siteDirs.web,
+                SITEMAP_FILE
+            );
+            const targetFilePath = resolvePathInsideBase(
+                SITEMAP_FILE,
+                this.config.build.distDirs.base,
+                `${SITEMAP_FILE} target`
+            );
             this.#copyFileIfExists(
-                path.join(
-                    this.config.system.build.siteDirs.web,
-                    DIR_SITEMAP,
-                    SITEMAP_FILE
-                ),
-                path.join(
-                    this.config.build.distDirs.base,
-                    SITEMAP_FILE
-                ), 
+                sourceFilePath,
+                targetFilePath, 
                 SITEMAP_FILE
             );
         }
@@ -154,16 +186,24 @@ class BuildDeployer {
 
     deployBuildErrorPage() {
         if ( pathExists(this.config.build.distDirs.base) ) {
+            const sourceFilePath = path.join(
+                this.config.system.assets.dir,
+                DIR_HTML,
+                BUILD_ERROR_FILE
+            );
+            resolvePathInsideBase(
+                path.join(DIR_HTML, BUILD_ERROR_FILE),
+                this.config.system.assets.dir,
+                BUILD_ERROR_FILE
+            );
+            const targetFilePath = resolvePathInsideBase(
+                INDEX_FILE,
+                this.config.build.distDirs.base,
+                `${BUILD_ERROR_FILE} target`
+            );
             this.#copyFileIfExists(
-                path.join(
-                    this.config.system.assets.dir,
-                    DIR_HTML,
-                    BUILD_ERROR_FILE
-                ),
-                path.join(
-                    this.config.build.distDirs.base,
-                    INDEX_FILE
-                ), 
+                sourceFilePath,
+                targetFilePath, 
                 BUILD_ERROR_FILE
             );
         }

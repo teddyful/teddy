@@ -8,7 +8,7 @@
  */
 
 import path from 'path';
-import { getFiles, hasFileExtension, loadJsonFile } from 
+import { getFiles, hasFileExtension, loadJsonFile, resolvePathInsideBase } from 
     '../utils/io-utils.js';
 
 const EXT_JSON = 'json';
@@ -20,6 +20,11 @@ class LanguageBuilder {
     }
 
     #getLanguageDirPath(language) {
+        resolvePathInsideBase(
+            language,
+            this.config.system.build.siteDirs.languages,
+            `language directory (${language})`
+        );
         return path.join(
             this.config.system.build.siteDirs.languages,
             language
@@ -27,6 +32,11 @@ class LanguageBuilder {
     }
 
     #getLanguageDataFilePath(language, jsonFile) {
+        resolvePathInsideBase(
+            jsonFile,
+            this.#getLanguageDirPath(language),
+            `language data file (${language}/${jsonFile})`
+        );
         return path.join(
             this.#getLanguageDirPath(language),
             jsonFile

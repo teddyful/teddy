@@ -18,7 +18,7 @@ import { minify } from 'minify';
 import logger from '../middleware/logger.js';
 import { createDirectory, copyFile, getFiles, hasFileExtension, 
     hasFileExtensions, loadFile, loadJsonFile, pathExists, 
-    writeStringToFile } from 
+    resolvePathInsideBase, writeStringToFile } from 
         '../utils/io-utils.js';
 import { exists } from '../utils/json-utils.js';
 import { getVarPlaceholders, getNestedKeysFromVarPlaceholder } from 
@@ -47,6 +47,11 @@ class PageBuilder {
         this.languagePages = {};
 
         // Get all markdown files in the pages directory for each language.
+        resolvePathInsideBase(
+            '.',
+            this.config.system.build.siteDirs.pages,
+            'site pages directory'
+        );
         const pageFilePaths = getFiles(
             this.config.system.build.siteDirs.pages);
         for ( const language of this.config.site.languages.enabled ) {
@@ -60,6 +65,11 @@ class PageBuilder {
     }
 
     #getLanguageDataFilePath(language) {
+        resolvePathInsideBase(
+            path.join(DIR_LANGUAGES, `${language}.json`),
+            this.config.build.distDirs.build,
+            `language data file (${language})`
+        );
         return path.join(
             this.config.build.distDirs.build,
             DIR_LANGUAGES,
@@ -68,6 +78,11 @@ class PageBuilder {
     }
 
     #getTranslatedTemplateFilePath(language, templateFileName) {
+        resolvePathInsideBase(
+            path.join(DIR_TEMPLATES, language, templateFileName),
+            this.config.build.distDirs.build,
+            `translated template file (${language}/${templateFileName})`
+        );
         return path.join(
             this.config.build.distDirs.build,
             DIR_TEMPLATES,
@@ -77,6 +92,11 @@ class PageBuilder {
     }
 
     #getPageOutputFilePath(pageDestAbsDirPath) {
+        resolvePathInsideBase(
+            FILE_INDEX_HTML,
+            pageDestAbsDirPath,
+            'page output file'
+        );
         return path.join(
             pageDestAbsDirPath,
             FILE_INDEX_HTML
@@ -84,6 +104,11 @@ class PageBuilder {
     }
 
     #getPageSourceFilePath(pageMdRelFilePath) {
+        resolvePathInsideBase(
+            pageMdRelFilePath,
+            this.config.system.build.siteDirs.pages,
+            'page markdown source file'
+        );
         return path.join(
             this.config.system.build.siteDirs.pages,
             pageMdRelFilePath
@@ -91,6 +116,17 @@ class PageBuilder {
     }
 
     #getPageDestinationFilePath(language, pageMdRelFilePathClean) {
+        resolvePathInsideBase(
+            path.join(
+                language,
+                pageMdRelFilePathClean.replace(
+                    `.${language}.${FILE_EXT_MARKDOWN}`,
+                    `.${FILE_EXT_HTML}`
+                )
+            ),
+            this.config.build.distDirs.base,
+            'page destination file'
+        );
         return path.join(
             this.config.build.distDirs.base,
             language,
@@ -132,6 +168,16 @@ class PageBuilder {
             hasFileExtensions(filename, allowedExtensions));
         for (const assetFile of filteredAssetFiles) {
             const clnAssetFilePath = this.#normalizeResourceFilePath(assetFile);
+            resolvePathInsideBase(
+                assetFile,
+                pageMdAbsDirPath,
+                'page asset source file'
+            );
+            resolvePathInsideBase(
+                clnAssetFilePath,
+                pageDestAbsDirPath,
+                'page asset target file'
+            );
             const assetSourceFilePath = path.join(pageMdAbsDirPath, assetFile);
             const assetTargetFilePath = path.join(
                 pageDestAbsDirPath, clnAssetFilePath);

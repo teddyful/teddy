@@ -11,7 +11,8 @@ import path from 'path';
 import logger from '../middleware/logger.js';
 import LanguageBuilder from './language-builder.js';
 import UrlBuilder from './url-builder.js';
-import { loadJsonFile, toRelativePath } from '../utils/io-utils.js';
+import { loadJsonFile, resolveConfiguredRootPath, resolvePathInsideBase,
+    toRelativePath } from '../utils/io-utils.js';
 
 const SITE_CONFIG_FILE = 'site.json';
 const THEME_CONFIG_FILE = 'theme.json';
@@ -49,6 +50,13 @@ class ConfigBuilder {
         return basePath;
     }
 
+    #normalizeCollectionUrlPath(collectionPagesDir) {
+        if ( collectionPagesDir === '.' ) {
+            return '';
+        }
+        return collectionPagesDir;
+    }
+
     #normalizeCollectionPagesDir(collectionPagesDir) {
         return String(collectionPagesDir ?? '')
             .replace(/\s+/g, '-')
@@ -60,9 +68,27 @@ class ConfigBuilder {
     build(error = false) {
 
         // Load the site configuration.
+        const sitesRootPath = resolveConfiguredRootPath(
+            this.systemConfig.system.sites,
+            'system.sites'
+        );
+        resolveConfiguredRootPath(
+            this.systemConfig.system.assets.dir,
+            'system.assets.dir'
+        );
         const siteDirPath = path.join(
             this.systemConfig.system.sites, this.opts.siteName);
+        const siteDirResolvedPath = resolvePathInsideBase(
+            this.opts.siteName,
+            sitesRootPath,
+            'site directory'
+        );
         const siteConfigFilePath = path.join(siteDirPath , SITE_CONFIG_FILE);
+        resolvePathInsideBase(
+            SITE_CONFIG_FILE,
+            siteDirResolvedPath,
+            'site configuration file'
+        );
         this.siteConfig = loadJsonFile(siteConfigFilePath);
 
         // Generate the base configuration.
@@ -89,13 +115,52 @@ class ConfigBuilder {
             }, 
             siteDistDir: path.join(siteDirPath, DIR_PUBLIC)
         }
+        resolvePathInsideBase(
+            DIR_ASSETS,
+            siteDirResolvedPath,
+            'site assets directory'
+        );
+        const sitePagesDirResolvedPath = resolvePathInsideBase(
+            DIR_PAGES,
+            siteDirResolvedPath,
+            'site pages directory'
+        );
+        const siteDistDirResolvedPath = resolvePathInsideBase(
+            DIR_PUBLIC,
+            siteDirResolvedPath,
+            'site public directory'
+        );
+        resolvePathInsideBase(
+            DIR_LANGUAGES,
+            siteDirResolvedPath,
+            'site languages directory'
+        );
+        resolvePathInsideBase(
+            DIR_WEB,
+            siteDirResolvedPath,
+            'site web directory'
+        );
 
         // Update the site configuration with the theme name.
         const themeName = this.opts.themeName;
+        const themesRootPath = resolveConfiguredRootPath(
+            this.config.system.themes,
+            'system.themes'
+        );
+        const themeDirResolvedPath = resolvePathInsideBase(
+            themeName,
+            themesRootPath,
+            'theme directory'
+        );
         const themeConfigFileAbsPath = path.join(
             this.config.system.themes, 
             themeName, 
             THEME_CONFIG_FILE);
+        resolvePathInsideBase(
+            THEME_CONFIG_FILE,
+            themeDirResolvedPath,
+            'theme configuration file'
+        );
         const themeConfig = loadJsonFile(themeConfigFileAbsPath);
         this.config.site.theme = themeConfig.theme;
 
@@ -114,6 +179,11 @@ class ConfigBuilder {
         const distDirBase = path.join(
             this.config.system.build.siteDistDir, 
             this.config.build.env);
+        const distDirBaseResolvedPath = resolvePathInsideBase(
+            this.config.build.env,
+            siteDistDirResolvedPath,
+            'site environment public directory'
+        );
 
         // Build distribution directory path.
         let buildDirBase = path.join(
@@ -121,10 +191,20 @@ class ConfigBuilder {
             DIR_BUILD, 
             this.config.build.env, 
             this.config.site.version);
+        let buildDirBaseResolvedPath = resolvePathInsideBase(
+            path.join(DIR_BUILD, this.config.build.env, this.config.site.version),
+            siteDirResolvedPath,
+            'site build directory'
+        );
         if ( this.opts.versionBuildDate ) {
             buildDirBase = path.join(
                 buildDirBase, 
                 this.config.build.date);
+            buildDirBaseResolvedPath = resolvePathInsideBase(
+                this.config.build.date,
+                buildDirBaseResolvedPath,
+                'dated site build directory'
+            );
         }
 
         // Assets distribution directory path.
@@ -159,6 +239,21 @@ class ConfigBuilder {
             siteConfig: path.join(distDirBase, 
                 toRelativePath(siteConfigDirBase)) 
         }
+        resolvePathInsideBase(
+            toRelativePath(assetsDirBase),
+            distDirBaseResolvedPath,
+            'assets distribution directory'
+        );
+        resolvePathInsideBase(
+            toRelativePath(collectionDirBase),
+            distDirBaseResolvedPath,
+            'collection distribution directory'
+        );
+        resolvePathInsideBase(
+            toRelativePath(siteConfigDirBase),
+            distDirBaseResolvedPath,
+            'site configuration distribution directory'
+        );
         logger.debug('Config Builder - Build configuration: ');
         logger.debug(JSON.stringify(this.config.build, null, 4));
         if ( error ) {
@@ -175,6 +270,11 @@ class ConfigBuilder {
             if ( collectionPagesDir.length === 0 ) {
                 throw new Error('Collection pages directory cannot be empty.');
             }
+            resolvePathInsideBase(
+                collectionPagesDir,
+                sitePagesDirResolvedPath,
+                'collection pages directory'
+            );
         }
 
         // Language data and localized URLs.
@@ -190,7 +290,7 @@ class ConfigBuilder {
             // Generate localized URLs for user-defined URLs.
             if ( collectionEnabled ) {
                 this.config.site.languages.data[language].urls.collection = 
-                    `/${collectionPagesDir}`;
+                     `/${this.#normalizeCollectionUrlPath(collectionPagesDir)}`;
             }
             UrlBuilder.localizeUrls(language, 
                 defaultLanguage, 
@@ -229,7 +329,8 @@ class ConfigBuilder {
 
         // Collection configuration.
         if ( collectionEnabled ) {
-            this.config.site.urls.collection = `/${collectionPagesDir}`;
+            this.config.site.urls.collection = 
+                `/${this.#normalizeCollectionUrlPath(collectionPagesDir)}`;
             if ( this.config.site.collection.index.content && 
                 !this.config.site.collection.index.documentStore.document.index
                     .includes('content') ) {

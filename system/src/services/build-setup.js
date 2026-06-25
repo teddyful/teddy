@@ -8,7 +8,7 @@
  */
 
 import path from 'path';
-import { createDirectory } from '../utils/io-utils.js';
+import { createDirectory, resolvePathInsideBase } from '../utils/io-utils.js';
 
 const DIR_CONFIG = 'config';
 const DIR_LANGUAGES = 'languages';
@@ -20,7 +20,46 @@ class BuildSetup {
         this.config = config;
     }
 
+    #assertDirectoryPath(dirPath, label) {
+        resolvePathInsideBase(
+            path.basename(dirPath),
+            path.dirname(dirPath),
+            label
+        );
+    }
+
     createDistDirectoryStructure() {
+        this.#assertDirectoryPath(
+            this.config.build.distDirs.base,
+            'base distribution directory'
+        );
+        this.#assertDirectoryPath(
+            this.config.build.distDirs.build,
+            'build distribution directory'
+        );
+        resolvePathInsideBase(
+            DIR_CONFIG,
+            this.config.build.distDirs.build,
+            'build config directory'
+        );
+        resolvePathInsideBase(
+            DIR_LANGUAGES,
+            this.config.build.distDirs.build,
+            'build languages directory'
+        );
+        resolvePathInsideBase(
+            DIR_TEMPLATES,
+            this.config.build.distDirs.build,
+            'build templates directory'
+        );
+        this.#assertDirectoryPath(
+            this.config.build.distDirs.assets,
+            'assets distribution directory'
+        );
+        this.#assertDirectoryPath(
+            this.config.build.distDirs.collection,
+            'collection distribution directory'
+        );
         createDirectory(this.config.build.distDirs.base);
         createDirectory(this.config.build.distDirs.build);
         createDirectory(path.join(this.config.build.distDirs.build, DIR_CONFIG));
@@ -31,6 +70,10 @@ class BuildSetup {
     }
 
     createBaseDistDirectory() {
+        this.#assertDirectoryPath(
+            this.config.build.distDirs.base,
+            'base distribution directory'
+        );
         createDirectory(this.config.build.distDirs.base);
     }
 

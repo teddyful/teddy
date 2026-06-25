@@ -17,7 +17,7 @@ import { stripHtml } from 'string-strip-html';
 import logger from '../middleware/logger.js';
 import Page from '../entities/page.js';
 import { createDirectory, getFiles, hasFileExtension, 
-    loadFile, pathExists } from '../utils/io-utils.js';
+    loadFile, pathExists, resolvePathInsideBase } from '../utils/io-utils.js';
 
 const FILE_EXT_MARKDOWN = 'md';
 const FILE_SITE_PDF = 'site.pdf';
@@ -63,6 +63,11 @@ class PdfBuilder {
         if ( this.#shouldBuildPdf() ) {
 
             // Get all files in the specified pages directory.
+            resolvePathInsideBase(
+                '.',
+                this.config.system.build.siteDirs.pages,
+                'site pages directory'
+            );
             const pageFilePaths = getFiles(
                 this.config.system.build.siteDirs.pages);
 
@@ -86,6 +91,11 @@ class PdfBuilder {
                 for (const pageMdRelFilePath of pageLanguageMdFilePaths) {
 
                     // Identify the absolute path to the page markdown file.
+                    resolvePathInsideBase(
+                        pageMdRelFilePath,
+                        this.config.system.build.siteDirs.pages,
+                        'PDF markdown source file'
+                    );
                     const pageMdAbsFilePath = path.join(
                         this.config.system.build.siteDirs.pages, 
                         pageMdRelFilePath);
@@ -150,12 +160,23 @@ class PdfBuilder {
 
     #resolveFont(language) {
         if ( Object.hasOwn(this.config.site.datasources.fonts, language) ) {
+            const fontPath = this.config.site.datasources.fonts[language];
+            resolvePathInsideBase(
+                path.basename(fontPath),
+                path.dirname(fontPath),
+                `site datasource font (${language})`
+            );
             return {
                 alias: FONT_ALIAS_CUSTOM,
-                path: this.config.site.datasources.fonts[language]
+                path: fontPath
             };
         }
         if ( Object.hasOwn(this.config.system.assets.fonts, language) ) {
+            resolvePathInsideBase(
+                path.join(DIR_FONTS, this.config.system.assets.fonts[language]),
+                this.config.system.assets.dir,
+                `system language font (${language})`
+            );
             return {
                 alias: FONT_ALIAS_CUSTOM,
                 path: path.join(
@@ -165,6 +186,11 @@ class PdfBuilder {
                 )
             };
         }
+        resolvePathInsideBase(
+            path.join(DIR_FONTS, DEFAULT_SYSTEM_FONT_FILE),
+            this.config.system.assets.dir,
+            'default system font'
+        );
         return {
             alias: FONT_ALIAS_DEFAULT,
             path: path.join(
@@ -183,13 +209,22 @@ class PdfBuilder {
         }
 
         // Create a PDF document.
+        resolvePathInsideBase(
+            path.join(DIR_DATASOURCES, DIR_PDF, language),
+            this.config.build.distDirs.build,
+            `PDF output directory (${language})`
+        );
         const pdfDirPath = path.join(
             this.config.build.distDirs.build, 
             DIR_DATASOURCES, 
             DIR_PDF, 
             language);
         createDirectory(pdfDirPath);
-        const pdfPath = path.join(pdfDirPath, FILE_SITE_PDF);
+        const pdfPath = resolvePathInsideBase(
+            FILE_SITE_PDF,
+            pdfDirPath,
+            `PDF output file (${language})`
+        );
         const doc = new PDFDocument({
             size: PDF_SIZE_A4, 
             autoFirstPage: false, 
@@ -213,6 +248,11 @@ class PdfBuilder {
                 DEFAULT_SYSTEM_FONT_FILE
             )
         };
+        resolvePathInsideBase(
+            path.join(DIR_FONTS, DEFAULT_SYSTEM_FONT_FILE),
+            this.config.system.assets.dir,
+            'default system font'
+        );
         this.#assertFontExists(defaultFont);
         doc.registerFont(defaultFont.alias, defaultFont.path);
 

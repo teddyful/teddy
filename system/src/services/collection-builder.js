@@ -16,8 +16,8 @@ import { stripHtml } from "string-strip-html";
 import logger from '../middleware/logger.js';
 import Collection from '../entities/collection.js';
 import Page from '../entities/page.js';
-import { createDirectory, getFiles, hasFileExtension, writeStringToFile } from 
-    '../utils/io-utils.js';
+import { createDirectory, getFiles, hasFileExtension, resolvePathInsideBase,
+    writeStringToFile } from '../utils/io-utils.js';
 import { sort } from '../utils/json-utils.js';
 import { ISO_639_3166_LOOKUP, CJK_ISO_3166, cjkTokenizer } from 
     '../utils/lang-utils.js';
@@ -81,6 +81,11 @@ class CollectionBuilder {
         if ( this.#shouldBuildCollection() ) {
 
             // Get all files in the designated collection directory.
+            resolvePathInsideBase(
+                this.config.site.collection.pagesDir,
+                this.config.system.build.siteDirs.pages,
+                'collection pages directory'
+            );
             const collectionDirPath = path.join(
                 this.config.system.build.siteDirs.pages, 
                 this.config.site.collection.pagesDir);
@@ -113,6 +118,11 @@ class CollectionBuilder {
                 for (const pageMdRelFilePath of collectionLanguageMdFilePaths) {
 
                     // Identify the absolute path to the page MD file.
+                    resolvePathInsideBase(
+                        pageMdRelFilePath,
+                        collectionDirPath,
+                        'collection page markdown source file'
+                    );
                     const pageMdAbsFilePath = path.join(
                         collectionDirPath, 
                         pageMdRelFilePath);
@@ -266,13 +276,23 @@ class CollectionBuilder {
                 await index.export((key, data) => { 
                     const normalizedKey = this.#normalizeIndexKey(key);
                     keys.push(normalizedKey);
+                    resolvePathInsideBase(
+                        language,
+                        indexDirBaseAbsPath,
+                        'collection language index directory'
+                    );
                     const indexDirAbsPath = path.join(
                         indexDirBaseAbsPath, 
                         language);
+                    const indexFilePath = resolvePathInsideBase(
+                        `${normalizedKey}.json`,
+                        indexDirAbsPath,
+                        'collection index export file'
+                    );
                     createDirectory(indexDirAbsPath);
                     writeStringToFile(
                         data !== undefined ? data : '', 
-                        path.join(indexDirAbsPath, `${normalizedKey}.json`));
+                        indexFilePath);
                 });
 
                 // Update the language index keys.

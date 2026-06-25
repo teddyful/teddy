@@ -13,7 +13,7 @@ import { minify } from 'minify';
 
 import logger from '../middleware/logger.js';
 import { copyDir, copyFile, createDirectory, hasFileExtension, pathExists, 
-    writeStringToFile } from '../utils/io-utils.js';
+    resolvePathInsideBase, writeStringToFile } from '../utils/io-utils.js';
 import { exists } from '../utils/json-utils.js';
 
 const SOURCE_SITE = 'site';
@@ -94,6 +94,11 @@ class AssetBuilder {
                 this.config.build.distDirs.assets,
                 assetType
             );
+            resolvePathInsideBase(
+                assetType,
+                this.config.build.distDirs.assets,
+                `${sourceType} ${assetType} asset target directory`
+            );
             this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
         }
     }
@@ -133,9 +138,24 @@ class AssetBuilder {
                 'assets');
         }
         if ( assets && 'custom' in assets && assetType in assets.custom ) {
+            const sourceAssetTypeDirPath = resolvePathInsideBase(
+                assetType,
+                assetBasePath,
+                `${sourceType} ${assetType} asset directory`
+            );
+            const targetAssetTypeDirPath = resolvePathInsideBase(
+                assetType,
+                this.config.build.distDirs.assets,
+                `${sourceType} minified ${assetType} asset output directory`
+            );
             const assetRelPaths = assets.custom[assetType].filter(
                 assetRelPath => hasFileExtension(assetRelPath, assetType));
             for (const relPath of assetRelPaths) {
+                resolvePathInsideBase(
+                    relPath,
+                    sourceAssetTypeDirPath,
+                    `${sourceType} custom ${assetType} asset`
+                );
                 const absPath = path.join(
                     assetBasePath, 
                     assetType, 
@@ -148,6 +168,11 @@ class AssetBuilder {
                 }
                 const outputRelPath = 
                     relPath.replace(`.${assetType}`, `.min.${assetType}`);
+                resolvePathInsideBase(
+                    outputRelPath,
+                    targetAssetTypeDirPath,
+                    `${sourceType} minified ${assetType} asset`
+                );
                 const outputAbsPath = path.join(
                     this.config.build.distDirs.assets, 
                     assetType, 
@@ -196,9 +221,19 @@ class AssetBuilder {
                 if ( exists(this.config, 'site', 'assets', 'custom', 
                         'images', 'favicon', 'deployToRoot') && 
                     this.config.site.assets.custom.images.favicon.deployToRoot ) {
+                    resolvePathInsideBase(
+                        this.config.site.assets.custom.images.favicon.ico,
+                        assetsDirAbsPath,
+                        'site favicon'
+                    );
                     const faviconFileAbsPath = path.join(
                         assetsDirAbsPath, 
                         this.config.site.assets.custom.images.favicon.ico);
+                    resolvePathInsideBase(
+                        path.basename(faviconFileAbsPath),
+                        this.config.build.distDirs.base,
+                        'site favicon target'
+                    );
                     copyFile(faviconFileAbsPath, 
                         this.config.build.distDirs.base, false);
                 }
@@ -206,9 +241,19 @@ class AssetBuilder {
                 if ( exists(this.config, 'site', 'theme', 'assets', 'custom', 
                         'images', 'favicon', 'deployToRoot') && 
                     this.config.site.theme.assets.custom.images.favicon.deployToRoot ) {
+                    resolvePathInsideBase(
+                        this.config.site.theme.assets.custom.images.favicon.ico,
+                        assetsDirAbsPath,
+                        'theme favicon'
+                    );
                     const faviconFileAbsPath = path.join(
                         assetsDirAbsPath, 
                         this.config.site.theme.assets.custom.images.favicon.ico);
+                    resolvePathInsideBase(
+                        path.basename(faviconFileAbsPath),
+                        this.config.build.distDirs.base,
+                        'theme favicon target'
+                    );
                     copyFile(faviconFileAbsPath, 
                         this.config.build.distDirs.base, false);
                 }
@@ -218,10 +263,25 @@ class AssetBuilder {
 
     #ascertainPathToAssets(sourceType, assetType) {
         if ( sourceType === SOURCE_SITE ) {
+            resolvePathInsideBase(
+                assetType,
+                this.config.system.build.siteDirs.assets,
+                `site ${assetType} asset directory`
+            );
             return path.join(
                 this.config.system.build.siteDirs.assets, 
                 assetType);
         } else if ( sourceType === SOURCE_THEME ) {
+            const themeAssetsDirPath = path.join(
+                this.config.system.themes,
+                this.config.site.theme.name,
+                'assets'
+            );
+            resolvePathInsideBase(
+                assetType,
+                themeAssetsDirPath,
+                `theme ${assetType} asset directory`
+            );
             return path.join(
                 this.config.system.themes, 
                 this.config.site.theme.name, 
@@ -236,14 +296,29 @@ class AssetBuilder {
                 !this.config.build.opts.customJsOnly ) {
             
             // Vendor system JavaScript asset subdirectories are already versioned.
+            const systemJsDirPath = resolvePathInsideBase(
+                DIR_JS,
+                this.config.system.assets.dir,
+                'system JavaScript assets directory'
+            );
             const vendorAssetsDirAbsPath = path.join(
                 this.config.system.assets.dir, 
                 DIR_JS, 
                 DIR_VENDORS);
+            resolvePathInsideBase(
+                DIR_VENDORS,
+                systemJsDirPath,
+                'system vendor JavaScript assets directory'
+            );
             const vendorTargetDirAbsPath = path.join(
                 this.config.build.distDirs.assets, 
                 DIR_JS, 
                 DIR_VENDORS);
+            resolvePathInsideBase(
+                path.join(DIR_JS, DIR_VENDORS),
+                this.config.build.distDirs.assets,
+                'system vendor JavaScript target directory'
+            );
             this.#deployAssets(vendorAssetsDirAbsPath, vendorTargetDirAbsPath);
 
             // Create a versioned subdirectory for Teddy system JavaScript assets.
@@ -251,12 +326,23 @@ class AssetBuilder {
                 this.config.system.assets.dir, 
                 DIR_JS, 
                 DIR_TEDDY);
+            resolvePathInsideBase(
+                DIR_TEDDY,
+                systemJsDirPath,
+                'Teddy runtime JavaScript assets directory'
+            );
             const targetDirAbsPath = path.join(
                 this.config.build.distDirs.assets, 
                 DIR_JS, 
                 DIR_VENDORS, 
                 DIR_TEDDY, 
                 this.config.package.version);
+            resolvePathInsideBase(
+                path.join(DIR_JS, DIR_VENDORS, DIR_TEDDY,
+                    this.config.package.version),
+                this.config.build.distDirs.assets,
+                'Teddy runtime JavaScript target directory'
+            );
             this.#deployAssets(assetsDirAbsPath, targetDirAbsPath);
 
         }
@@ -295,6 +381,11 @@ class AssetBuilder {
 
     generateBuildConfigJs(languageIndexKeys) {
         const targetDirAbsPath = this.config.build.distDirs.siteConfig;
+        const configJsFilePath = resolvePathInsideBase(
+            CONFIG_JS_FILE,
+            targetDirAbsPath,
+            CONFIG_JS_FILE
+        );
         createDirectory(targetDirAbsPath);
         const configData = this.#generateBuildConfigData(languageIndexKeys);
         const js = Object.entries(configData)
@@ -302,7 +393,7 @@ class AssetBuilder {
                 return `const ${key} = ${JSON.stringify(value)};`;
             })
             .join('\n');
-        writeStringToFile(js, path.join(targetDirAbsPath, CONFIG_JS_FILE));
+        writeStringToFile(js, configJsFilePath);
     }
 
     #stripHeavyRuntimeContent(content) {
@@ -322,9 +413,14 @@ class AssetBuilder {
         }
         content = this.#stripHeavyRuntimeContent(content);
         const targetDirAbsPath = this.config.build.distDirs.siteConfig;
+        const siteJsFilePath = resolvePathInsideBase(
+            SITE_JS_FILE,
+            targetDirAbsPath,
+            SITE_JS_FILE
+        );
         createDirectory(targetDirAbsPath);
         const js = `const site = ${JSON.stringify(content)};`;
-        writeStringToFile(js, path.join(targetDirAbsPath, SITE_JS_FILE));
+        writeStringToFile(js, siteJsFilePath);
     }
 
 }

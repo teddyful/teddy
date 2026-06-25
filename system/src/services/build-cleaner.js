@@ -8,8 +8,9 @@
  */
 
 import { deleteSync } from 'del';
+import path from 'path';
 import { allDescendantsGlob, negatedGlob, assertSafeDeleteDir, 
-    pathExists } from '../utils/io-utils.js';
+    pathExists, resolvePathInsideBase } from '../utils/io-utils.js';
 
 const DELETE_OPTIONS = {
     dot: true,
@@ -35,8 +36,18 @@ class BuildCleaner {
             this.config.build.opts.ignoreVideos;
     }
 
-    #deleteDirectoryContents(dirPath, label) {
+    #resolveSafeDeleteDir(dirPath, label) {
         const safeDirPath = assertSafeDeleteDir(dirPath, label);
+        resolvePathInsideBase(
+            path.basename(safeDirPath),
+            path.dirname(safeDirPath),
+            label
+        );
+        return safeDirPath;
+    }
+
+    #deleteDirectoryContents(dirPath, label) {
+        const safeDirPath = this.#resolveSafeDeleteDir(dirPath, label);
         if ( pathExists(safeDirPath) ) {
             return deleteSync([
                 allDescendantsGlob(safeDirPath)
@@ -47,12 +58,17 @@ class BuildCleaner {
 
     cleanDistDirectories() {
 
-        const buildDir = assertSafeDeleteDir(
+        const buildDir = this.#resolveSafeDeleteDir(
             this.config.build.distDirs.build, 'Build directory');
-        const baseDir = assertSafeDeleteDir(
+        const baseDir = this.#resolveSafeDeleteDir(
             this.config.build.distDirs.base, 'Base directory');
-        const assetsDir = assertSafeDeleteDir(
+        const assetsDir = this.#resolveSafeDeleteDir(
             this.config.build.distDirs.assets, 'Assets directory');
+        resolvePathInsideBase(
+            path.relative(baseDir, assetsDir),
+            baseDir,
+            'Assets directory'
+        );
 
         if ( this.#shouldPreserveAssets() ) {
     
@@ -77,7 +93,7 @@ class BuildCleaner {
     }
 
     postBuildCleanup() {
-        const buildDir = assertSafeDeleteDir(
+        const buildDir = this.#resolveSafeDeleteDir(
             this.config.build.distDirs.build, 'Build directory');
         if ( !this.config.build.opts.skipPostBuildCleanup && 
                 !this.config.build.opts.generateDsPdf ) {
