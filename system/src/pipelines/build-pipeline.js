@@ -158,7 +158,7 @@ class BuildPipeline {
         this.buildSetup.createDistDirectoryStructure();
     }
 
-    async #deployArtifacts() {
+    #deployArtifacts() {
         this.buildDeployer = new BuildDeployer(this.config);
         this.buildDeployer.deployBuildConfig();
         this.buildDeployer.deployBuildMetadata();
