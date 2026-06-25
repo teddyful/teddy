@@ -16,6 +16,19 @@ const TEDDY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)), 
     '../../..');
 
+// Test whether a given path exists.
+function pathExists(sourcePath) {
+    return fs.existsSync(sourcePath);
+}
+
+// Test whether a given path pointed to by a symlink exists.
+function realpathIfExists(sourcePath) {
+    if (!pathExists(sourcePath)) {
+        return path.resolve(sourcePath);
+    }
+    return fs.realpathSync.native(sourcePath);
+}
+
 // Test whether a given path is within a given base directory.
 function isPathInsideBase(baseDirPath, targetPath) {
     const relativePath = path.relative(
@@ -27,6 +40,33 @@ function isPathInsideBase(baseDirPath, targetPath) {
             !relativePath.startsWith('..') &&
             !path.isAbsolute(relativePath)
         );
+}
+
+// Resolve the nearest existing path.
+function resolveNearestExistingPath(sourcePath) {
+    let currentPath = path.resolve(sourcePath);
+    while (!pathExists(currentPath)) {
+        const parentPath = path.dirname(currentPath);
+        if (parentPath === currentPath) {
+            return currentPath;
+        }
+        currentPath = parentPath;
+    }
+    return currentPath;
+}
+
+// Resolve a path pointed to by a symlink.
+function resolveRealPathForBoundaryCheck(sourcePath) {
+    const resolvedPath = path.resolve(sourcePath);
+    if (pathExists(resolvedPath)) {
+        return fs.realpathSync.native(resolvedPath);
+    }
+    const nearestExistingPath = resolveNearestExistingPath(resolvedPath);
+    const realNearestExistingPath = realpathIfExists(nearestExistingPath);
+    const unresolvedSuffix = path.relative(nearestExistingPath, resolvedPath);
+    return unresolvedSuffix ?
+        path.resolve(realNearestExistingPath, unresolvedSuffix) :
+        realNearestExistingPath;
 }
 
 // Normalise and resolve whether a given resource is within a given base path.
@@ -44,6 +84,15 @@ function resolvePathInsideBase(resourcePath, baseDirPath, label = 'resource') {
         throw new Error(
             `Invalid ${label}: path '${resolvedResourcePath}' is outside ` +
             `allowed base directory '${resolvedBasePath}'.`
+        );
+    }
+    const realBasePath = resolveRealPathForBoundaryCheck(resolvedBasePath);
+    const realResourcePath =
+        resolveRealPathForBoundaryCheck(resolvedResourcePath);
+    if (!isPathInsideBase(realBasePath, realResourcePath)) {
+        throw new Error(
+            `Invalid ${label}: real path '${realResourcePath}' is outside ` +
+            `allowed base directory '${realBasePath}'.`
         );
     }
     return resolvedResourcePath;
@@ -176,11 +225,6 @@ function loadJsonFile(sourceFilePath) {
             { cause: error }
         );
     }
-}
-
-// Test whether a given path exists.
-function pathExists(sourcePath) {
-    return fs.existsSync(sourcePath);
 }
 
 // Convert a string to a relative path.
