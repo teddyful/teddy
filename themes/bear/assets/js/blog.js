@@ -8,29 +8,105 @@
  */
 
 /* -----------------------------------------------------------------------------
- * BLOG LISTING
+ * ELEMENTS
  * ---------------------------------------------------------------------------*/
 
-// Blog listing page elements.
 const elements = {
     blog: {
         listing: {
-            container: document.getElementById('blog-listing'), 
-            firstPost: document.getElementsByClassName('blog-post')[0], 
+            container: document.getElementById('blog-listing'),
             loadMore: document.getElementById('blog-listing-load-more')
-        }, 
+        },
         filters: {
-            message: document.getElementById('blog-filters-message'), 
+            message: document.getElementById('blog-filters-message'),
             search: {
                 form: document.getElementById('blog-search-form')
-            }, 
+            },
             categories: {
-                container: document.getElementById('blog-categories'), 
-                items: document.getElementsByClassName('blog-category')
-            }, 
+                container: document.getElementById('blog-categories')
+            },
             reset: document.getElementById('blog-filters-reset')
         }
     }
+};
+
+function hasBlogListingElements() {
+    return Boolean(
+        elements.blog.listing.container &&
+        elements.blog.listing.loadMore &&
+        elements.blog.filters.message &&
+        elements.blog.filters.search.form &&
+        elements.blog.filters.categories.container &&
+        elements.blog.filters.reset
+    );
+}
+
+/* -----------------------------------------------------------------------------
+ * HELPER FUNCTIONS
+ * ---------------------------------------------------------------------------*/
+
+const PAGE_SIZE = Math.max(
+    1, Math.floor(Number(COLLECTION_PAGINATION_SIZE) || 1)
+);
+
+function hasUnsafePathSegments(value) {
+    return String(value ?? '')
+        .split('/')
+        .some(segment => segment === '..');
+}
+
+function hasUrlProtocol(value) {
+    return /^[a-z][a-z0-9+.-]*:/i.test(String(value ?? '').trim());
+}
+
+function isUnsafeUrl(value) {
+    const url = String(value ?? '').trim().toLowerCase();
+    return url.length === 0 ||
+        url.startsWith('javascript:') ||
+        url.startsWith('data:') ||
+        url.startsWith('vbscript:') ||
+        url.startsWith('//');
+}
+
+function normalizeLocalUrl(value, fallback = '#') {
+    const url = String(value ?? '').trim();
+    if (isUnsafeUrl(url) || hasUrlProtocol(url) ||
+        hasUnsafePathSegments(url)) {
+        return fallback;
+    }
+    return url;
+}
+
+function normalizeAuthorUrl(value) {
+    const url = String(value ?? '').trim();
+    if (isUnsafeUrl(url) || hasUnsafePathSegments(url)) {
+        return '#';
+    }
+    try {
+        const parsedUrl = new URL(url, window.location.origin);
+        if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+            return '#';
+        }
+    } catch (error) {
+        return '#';
+    }
+    return url;
+}
+
+function buildPostUrl(doc) {
+    return normalizeLocalUrl(doc.relUrl);
+}
+
+function buildCoverUrl(doc) {
+    if (!doc.cover) {
+        return '';
+    }
+    const relUrl = normalizeLocalUrl(doc.relUrl, '');
+    const cover = normalizeLocalUrl(doc.cover, '');
+    if (!relUrl || !cover) {
+        return '';
+    }
+    return `${relUrl}/${cover}`;
 }
 
 /* -----------------------------------------------------------------------------
@@ -38,229 +114,270 @@ const elements = {
  * ---------------------------------------------------------------------------*/
 
 async function doSearch(loadMore = false) {
-
-    searchResultsDelta = [];
-    if ( !loadMore ) {
-        searchResults = [];
-    }
-
-    // No search query and no category filter.
-    if ( !searchQuery && !categoryFilter ) {
-        searchResultsDelta = !loadMore ? headDocs : 
-            await search.getDocuments(searchResults.length, 
-                COLLECTION_PAGINATION_SIZE);
-    }
-
-    // Search query with no category filter.
-    else if ( searchQuery && !categoryFilter ) {
-        searchResultsDelta = await search.query(searchQuery, {
-            offset: searchResults.length,
-            limit: COLLECTION_PAGINATION_SIZE,
+    const requestId = ++searchRequestId;
+    const nextSearchResults = loadMore ? searchResults.slice() : [];
+    const offset = nextSearchResults.length;
+    let nextSearchResultsDelta = [];
+    if (!searchQuery && !categoryFilterId) {
+        nextSearchResultsDelta = !loadMore ?
+            headDocs :
+            await search.getDocuments(offset, PAGE_SIZE);
+    } else if (searchQuery && !categoryFilterId) {
+        nextSearchResultsDelta = await search.query(searchQuery, {
+            offset,
+            limit: PAGE_SIZE,
             minSearchQueryLength: MIN_SEARCH_QUERY_LENGTH
         });
+    } else if (searchQuery && categoryFilterId) {
+        nextSearchResultsDelta = await search.queryAndFilterByTags(
+            searchQuery,
+            [categoryFilterId],
+            {
+                offset,
+                limit: PAGE_SIZE,
+                minSearchQueryLength: MIN_SEARCH_QUERY_LENGTH
+            }
+        );
+    } else if (!searchQuery && categoryFilterId) {
+        nextSearchResultsDelta = await search.getDocumentsByTags(
+            [categoryFilterId],
+            offset,
+            PAGE_SIZE
+        );
     }
-
-    // Search query with category filter.
-    else if ( searchQuery && categoryFilter ) {
-        searchResultsDelta = await search.queryAndFilterByTags(
-            searchQuery, categoryFilter, {
-            offset: searchResults.length,
-            limit: COLLECTION_PAGINATION_SIZE,
-            minSearchQueryLength: MIN_SEARCH_QUERY_LENGTH
-        });
+    if (requestId !== searchRequestId) {
+        return;
     }
-
-    // Category filter with no search query.
-    else if ( !searchQuery && categoryFilter ) {
-        searchResultsDelta = await search.getDocumentsByTags(categoryFilter, 
-            searchResults.length, COLLECTION_PAGINATION_SIZE);
-    }
-
-    searchResults = searchResults.concat(searchResultsDelta);
-
+    searchResultsDelta = nextSearchResultsDelta;
+    searchResults = nextSearchResults.concat(searchResultsDelta);
 }
 
 /* -----------------------------------------------------------------------------
  * COMPONENTS
  * ---------------------------------------------------------------------------*/
 
+function getCategoryName(categoryId) {
+    return site[PAGE_LANGUAGE].taxonomy.categories[categoryId] ?? categoryId;
+}
+
 function updateMessageTemplate(template) {
-    let message = template.replace('${searchResults.length} ', 
-        searchResults.length < COLLECTION_PAGINATION_SIZE ? 
-            `${searchResults.length} ` : '');
-    if ( searchQuery )
+    let message = template.replace(
+        '${searchResults.length} ',
+        searchResults.length < PAGE_SIZE ? `${searchResults.length} ` : ''
+    );
+    if (searchQuery) {
         message = message.replace('${searchQuery}', searchQuery);
-    if ( categoryFilter ) 
-        message = message.replace('${category.name}', 
-            site[PAGE_LANGUAGE].taxonomy.categories[categoryFilter]);
+    }
+    if (categoryFilterId) {
+        message = message.replace(
+            '${category.name}',
+            getCategoryName(categoryFilterId)
+        );
+    }
     return message;
 }
 
 function generateFilteringMessage() {
-
-    // Search query with category filter.
-    if ( searchQuery && categoryFilter ) {
-        return searchQuery.length >= MIN_SEARCH_QUERY_LENGTH ? 
+    if (searchQuery && categoryFilterId) {
+        return searchQuery.length >= MIN_SEARCH_QUERY_LENGTH ?
             updateMessageTemplate(site[PAGE_LANGUAGE]
-                .content.messages.filters.combined.results) : 
+                .content.messages.filters.combined.results) :
             site[PAGE_LANGUAGE].content.messages.filters.search.invalid;
     }
-
-    // Search query with no category filter.
-    else if ( searchQuery ) {
-        return searchQuery.length >= MIN_SEARCH_QUERY_LENGTH ? 
+    if (searchQuery) {
+        return searchQuery.length >= MIN_SEARCH_QUERY_LENGTH ?
             updateMessageTemplate(site[PAGE_LANGUAGE]
-                .content.messages.filters.search.results) : 
+                .content.messages.filters.search.results) :
             site[PAGE_LANGUAGE].content.messages.filters.search.invalid;
-    } 
-    
-    // Category filter with no search query.
-    else if ( categoryFilter ) {
+    }
+    if (categoryFilterId) {
         return updateMessageTemplate(site[PAGE_LANGUAGE]
             .content.messages.filters.categories.results);
     }
-    
+    return null;
 }
 
 const FilteringMessage = {
     view: () => {
-        return searchQuery || categoryFilter ? 
-            m('p', generateFilteringMessage()) : null;
+        return searchQuery || categoryFilterId ?
+            m('p', generateFilteringMessage()) :
+            null;
     }
+};
+
+function renderCategoryNames(doc) {
+    return (doc.categoryLanguages ?? [])
+        .map(category => category.name)
+        .filter(Boolean)
+        .join('\u00a0');
 }
 
-function generateBlogListingPost(doc) {
-    let post = elements.blog.listing.firstPost.cloneNode(true);
-    let postImage = post.getElementsByClassName('blog-post-img')[0];
-    postImage.setAttribute('src', `${doc.relUrl}/${doc.cover}`);
-    postImage.setAttribute('alt', doc.name);
-    let postTitle = post.getElementsByClassName('blog-post-title')[0];
-    postTitle.setAttribute('href', doc.relUrl);
-    postTitle.textContent = doc.name;
-    let postAuthor = post.getElementsByClassName('blog-post-author')[0];
-    postAuthor.setAttribute('href', doc.authorUrl);
-    postAuthor.textContent = doc.author;
-    let postDate = post.getElementsByClassName('blog-post-date')[0];
-    postDate.textContent = doc.displayDate;
-    let postDescription = post.getElementsByClassName(
-        'blog-post-description')[0];
-    postDescription.textContent = doc.description;
-    let postReadMore = post.getElementsByClassName(
-        'blog-post-read-more')[0];
-    postReadMore.setAttribute('href', doc.relUrl);
-    let categories = '';
-    for ( const category of doc.categoryLanguages ) {
-        categories += category.name
+const BlogPost = {
+    view: function(vnode) {
+        const doc = vnode.attrs.doc;
+        const postUrl = buildPostUrl(doc);
+        const coverUrl = buildCoverUrl(doc);
+        return m('article', {
+            class: 'blog-post row mb-5'
+        }, [
+            m('div', {
+                class: 'col-12'
+            }, [
+                m('div', {
+                    class: 'post-slider'
+                }, [
+                    coverUrl ?
+                        m('img', {
+                            class: 'img-fluid blog-post-img',
+                            loading: 'lazy',
+                            src: coverUrl,
+                            alt: doc.name ?? ''
+                        }) :
+                        null
+                ])
+            ]),
+            m('div', {
+                class: 'col-12 mx-auto'
+            }, [
+                m('h3', [
+                    m('a', {
+                        class: 'post-title blog-post-title',
+                        href: postUrl
+                    }, doc.name ?? '')
+                ]),
+                m('ul', {
+                    class: 'list-inline post-meta mb-4'
+                }, [
+                    m('li', {
+                        class: 'list-inline-item'
+                    }, [
+                        m('i', { class: 'fas fa-user me-2' }),
+                        m('a', {
+                            class: 'blog-post-author',
+                            href: normalizeAuthorUrl(doc.authorUrl)
+                        }, doc.author ?? '')
+                    ]),
+                    m('li', {
+                        class: 'list-inline-item'
+                    }, [
+                        m('i', { class: 'fas fa-calendar me-2' }),
+                        m('span', {
+                            class: 'blog-post-date'
+                        }, doc.displayDate ?? '')
+                    ]),
+                    m('li', {
+                        class: 'list-inline-item'
+                    }, [
+                        m('i', { class: 'fas fa-earth-americas me-2' }),
+                        m('span', {
+                            class: 'blog-post-categories'
+                        }, renderCategoryNames(doc))
+                    ])
+                ]),
+                m('p', {
+                    class: 'blog-post-description'
+                }, doc.description ?? ''),
+                m('a', {
+                    class: 'btn btn-outline-primary blog-post-read-more',
+                    href: postUrl
+                }, site[PAGE_LANGUAGE].content.labels.continueReading)
+            ])
+        ]);
     }
-    let postCategories = post.getElementsByClassName(
-        'blog-post-categories')[0];
-    postCategories.textContent = categories;
-    return post.outerHTML;
-}
+};
 
 const BlogListing = {
     view: () => {
-        return [].concat(
-            searchResults.map(doc => m.trust(generateBlogListingPost(doc)))
-        );
+        return searchResults.map(doc => m(BlogPost, { key: doc.id, doc }));
     }
-}
+};
 
 const LoadMore = {
     view: () => {
-        return searchResultsDelta.length < COLLECTION_PAGINATION_SIZE ? null : 
+        return searchResultsDelta.length < PAGE_SIZE ? null :
             m('button', {
-                type: 'button', 
-                class: 'btn btn-primary', 
-                onclick: async function(e) {
+                type: 'button',
+                class: 'btn btn-primary',
+                onclick: async function() {
                     await doSearch(true);
                     m.redraw();
                 }
             }, site[PAGE_LANGUAGE].content.labels.loadMore);
     }
-}
+};
 
 const SearchForm = {
     view: function() {
-        return m('form', { 
-            class: 'widget-search', 
-            onsubmit: async function (e) {
+        return m('form', {
+            class: 'widget-search',
+            onsubmit: async function(e) {
                 e.preventDefault();
-                searchQuery = rawQuery;
+                searchQuery = Search.sanitizeQuery(rawQuery);
                 await doSearch();
                 m.redraw();
             }
         }, [
             m('input', {
-                id: 'blog-search-input', 
-                type: 'search', 
+                id: 'blog-search-input',
+                type: 'search',
                 placeholder: site[PAGE_LANGUAGE]
                     .content.labels.searchPlaceholder,
-                onchange: function(e) {
-                    rawQuery = Search.sanitizeQuery(
-                        e.currentTarget.value);
-                }, 
+                value: rawQuery ?? '',
                 oninput: async function(e) {
+                    rawQuery = Search.sanitizeQuery(e.currentTarget.value);
 
-                    // Search query input is cleared.
-                    if ( !e.currentTarget.value ) {
+                    if (!rawQuery) {
                         searchQuery = null;
                         await doSearch();
                         m.redraw();
                     }
-
                 }
-            }), 
-            m('button', { type: 'submit'}, [
+            }),
+            m('button', { type: 'submit' }, [
                 m('i', { class: 'fas fa-magnifying-glass' })
             ])
-        ])
+        ]);
     }
-}
-
-function generateCategoryFilterName(category) {
-    return `${category.name}<small class="ms-auto">(${category.count})</small>`;
-}
-
-function deactivateCategories() {
-    Array.from(elements.blog.filters.categories.items).forEach(
-        function(elem) {
-            elem.classList.remove('active');
-        }
-    );
-}
+};
 
 const Categories = {
     view: function() {
-        return m('ul', { class: 'list-unstyled widget-list' }, [].concat(
-            site[PAGE_LANGUAGE].collection.metadata.categories.map(category => 
+        return m('ul', { class: 'list-unstyled widget-list' },
+            site[PAGE_LANGUAGE].collection.metadata.categories.map(category =>
                 m('li', [
                     m('a', {
-                        href: '#', 
-                        class: 'd-flex blog-category', 
+                        href: '#',
+                        class: categoryFilterId === category.id ?
+                            'd-flex blog-category active' :
+                            'd-flex blog-category',
                         onclick: async function(e) {
                             e.preventDefault();
-                            if (e.currentTarget.classList.contains('active')) {
-                                categoryFilter = null;
-                                deactivateCategories();
-                            } else {
-                                categoryFilter = [category.id];
-                                deactivateCategories();
-                                e.currentTarget.classList.add('active');
-                            }
+
+                            categoryFilterId = categoryFilterId === category.id ?
+                                null :
+                                category.id;
+
                             await doSearch();
                             m.redraw();
                         }
-                    }, m.trust(generateCategoryFilterName(category)))
+                    }, [
+                        m('span', category.name),
+                        m('small', {
+                            class: 'ms-auto'
+                        }, `(${category.count})`)
+                    ])
                 ])
             )
-        ));
+        );
     }
-}
+};
 
 function clearSearchForm() {
-    Array.from(elements.blog.filters.search.form
-        .querySelectorAll('input[type=search]')).forEach(
+    const searchForm = elements.blog.filters.search.form;
+    if (!searchForm) {
+        return;
+    }
+    Array.from(searchForm.querySelectorAll('input[type=search]')).forEach(
         function(elem) {
             elem.value = '';
         }
@@ -270,36 +387,43 @@ function clearSearchForm() {
 const Reset = {
     view: function() {
         return m('button', {
-            type: 'button', 
-            class: 'btn btn-primary btn-sm', 
-            onclick: async function(e) {
+            type: 'button',
+            class: 'btn btn-primary btn-sm',
+            onclick: async function() {
                 clearSearchForm();
-                deactivateCategories();
+                rawQuery = null;
                 searchQuery = null;
-                categoryFilter = null;
+                categoryFilterId = null;
                 await doSearch();
                 m.redraw();
             }
-        }, site[PAGE_LANGUAGE].content.labels.reset)
+        }, site[PAGE_LANGUAGE].content.labels.reset);
     }
-}
+};
 
-// Initialise the search service and mount the components.
+/* -----------------------------------------------------------------------------
+ * INITIALISATION
+ * ---------------------------------------------------------------------------*/
+
 const search = new Search();
+let searchRequestId = 0;
 let searchQuery = null;
 let rawQuery = null;
-let categoryFilter = null;
+let categoryFilterId = null;
 let searchResults = [];
 let searchResultsDelta = [];
 let headDocs = [];
-(async function() {
-    await search.loadIndex();
-    headDocs = await search.getDocuments(0, COLLECTION_PAGINATION_SIZE);
-    await doSearch();
-    m.mount(elements.blog.listing.container, BlogListing);
-    m.mount(elements.blog.listing.loadMore, LoadMore);
-    m.mount(elements.blog.filters.search.form, SearchForm);
-    m.mount(elements.blog.filters.message, FilteringMessage);
-    m.mount(elements.blog.filters.categories.container, Categories);
-    m.mount(elements.blog.filters.reset, Reset);
-}());
+
+if (hasBlogListingElements()) {
+    (async function() {
+        await search.loadIndex();
+        headDocs = await search.getDocuments(0, PAGE_SIZE);
+        await doSearch();
+        m.mount(elements.blog.listing.container, BlogListing);
+        m.mount(elements.blog.listing.loadMore, LoadMore);
+        m.mount(elements.blog.filters.search.form, SearchForm);
+        m.mount(elements.blog.filters.message, FilteringMessage);
+        m.mount(elements.blog.filters.categories.container, Categories);
+        m.mount(elements.blog.filters.reset, Reset);
+    }());
+}
