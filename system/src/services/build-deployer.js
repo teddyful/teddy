@@ -1,5 +1,5 @@
 /**
- * Deployment service of static build resources and assets.
+ * Static resources deployment service.
  *
  * @author jillurquddus
  * @copyright Copyright (C) 2025 Jillur Quddus
