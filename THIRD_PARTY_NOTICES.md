@@ -12,7 +12,7 @@ These libraries are included directly in the repository under `system/assets/js/
 
 | Package | Version(s) | Used For | Copyright / Author | License | Project |
 |---|---:|---|---|---|---|
-| FlexSearch | 0.7.43, 0.8.212 | Client-side full-text search | Thomas Wilkerling / Nextapps GmbH | Apache-2.0 | [github.com/nextapps-de/flexsearch](https://github.com/nextapps-de/flexsearch) |
+| FlexSearch | 0.8.212 | Client-side full-text search | Thomas Wilkerling / Nextapps GmbH | Apache-2.0 | [github.com/nextapps-de/flexsearch](https://github.com/nextapps-de/flexsearch) |
 | Bootstrap | 5.3.3, 5.3.8 | Theme UI JavaScript | Copyright 2011-2026 The Bootstrap Authors | MIT | [getbootstrap.com](https://getbootstrap.com/) |
 | Mithril | 2.3.8 | Client-side rendering in the Bear theme | Copyright 2017 Leo Horie | MIT | [mithril.js.org](https://mithril.js.org/) |
 
