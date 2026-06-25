@@ -9,6 +9,54 @@
 
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Root of the Teddy repository from system/src/utils/io-utils.js.
+const TEDDY_ROOT = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)), 
+    '../../..');
+
+// Test whether a given path is within a given base directory.
+function isPathInsideBase(baseDirPath, targetPath) {
+    const relativePath = path.relative(
+        path.resolve(baseDirPath),
+        path.resolve(targetPath)
+    );
+    return relativePath === '' ||
+        (
+            !relativePath.startsWith('..') &&
+            !path.isAbsolute(relativePath)
+        );
+}
+
+// Normalise and resolve whether a given resource is within a given base path.
+function resolvePathInsideBase(resourcePath, baseDirPath, label = 'resource') {
+    const normalizedResourcePath = String(resourcePath ?? '').trim();
+    if (normalizedResourcePath.length === 0) {
+        throw new Error(`Invalid ${label}: path is empty.`);
+    }
+    const resolvedBasePath = path.resolve(baseDirPath);
+    const resolvedResourcePath = path.resolve(
+        resolvedBasePath,
+        normalizedResourcePath
+    );
+    if (!isPathInsideBase(resolvedBasePath, resolvedResourcePath)) {
+        throw new Error(
+            `Invalid ${label}: path '${resolvedResourcePath}' is outside ` +
+            `allowed base directory '${resolvedBasePath}'.`
+        );
+    }
+    return resolvedResourcePath;
+}
+
+// Normalise and resolve a given root path.
+function resolveConfiguredRootPath(rootPath, label = 'configured root') {
+    const normalizedRootPath = String(rootPath ?? '').trim();
+    if (normalizedRootPath.length === 0) {
+        throw new Error(`Invalid ${label}: path is empty.`);
+    }
+    return path.resolve(TEDDY_ROOT, normalizedRootPath);
+}
 
 // GLOB pattern - all files in a given directory path.
 function allDescendantsGlob(dirPath) {
@@ -152,7 +200,24 @@ function writeStringToFile(str, targetFilePath) {
     fs.writeFileSync(targetFilePath, str, {encoding: 'utf8'});
 }
 
-export { allDescendantsGlob, negatedGlob, copyDir, copyFile, copyFileIfExists, 
-    createDirectory, assertSafeDeleteDir, getFiles, hasFileExtension, 
-    hasFileExtensions, keepFilesThatExist, loadFile, loadJsonFile, pathExists, 
-    toRelativePath, writeJsonToFile, writeStringToFile };
+export { 
+    allDescendantsGlob, 
+    assertSafeDeleteDir, 
+    copyDir, 
+    copyFile, 
+    copyFileIfExists, 
+    createDirectory, 
+    getFiles, 
+    hasFileExtension, 
+    hasFileExtensions, 
+    keepFilesThatExist, 
+    loadFile, 
+    loadJsonFile, 
+    negatedGlob, 
+    pathExists, 
+    resolveConfiguredRootPath, 
+    resolvePathInsideBase, 
+    toRelativePath, 
+    writeJsonToFile, 
+    writeStringToFile 
+};
