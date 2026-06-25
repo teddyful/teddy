@@ -147,7 +147,7 @@ function createDirectory(dirPath, recursive = true) {
     }
 }
 
-// Assert that the given directory is safe to delete.
+// Assert that a given directory is safe to delete.
 function assertSafeDeleteDir(dirPath, label) {
     if ( typeof dirPath !== 'string' || dirPath.trim().length === 0 ) {
         throw new Error(`Cannot delete ${label}: directory path is empty.`);
@@ -166,6 +166,17 @@ function assertSafeDeleteDir(dirPath, label) {
         );
     }
     return normalizedPath;
+}
+
+// Assert that a given directory exists in a given base and is safe to delete.
+function assertSafeDeleteDirInsideBase(dirPath, baseDirPath, label) {
+    const safeDirPath = assertSafeDeleteDir(dirPath, label);
+    resolvePathInsideBase(
+        path.relative(baseDirPath, safeDirPath),
+        baseDirPath,
+        label
+    );
+    return safeDirPath;
 }
 
 // Get a list of all files in a given directory.
@@ -247,6 +258,7 @@ function writeStringToFile(str, targetFilePath) {
 export { 
     allDescendantsGlob, 
     assertSafeDeleteDir, 
+    assertSafeDeleteDirInsideBase, 
     copyDir, 
     copyFile, 
     copyFileIfExists, 

@@ -9,8 +9,8 @@
 
 import { deleteSync } from 'del';
 import path from 'path';
-import { allDescendantsGlob, negatedGlob, assertSafeDeleteDir, 
-    pathExists, resolvePathInsideBase } from '../utils/io-utils.js';
+import { allDescendantsGlob, negatedGlob, assertSafeDeleteDirInsideBase, 
+    pathExists } from '../utils/io-utils.js';
 
 const DELETE_OPTIONS = {
     dot: true,
@@ -36,18 +36,13 @@ class BuildCleaner {
             this.config.build.opts.ignoreVideos;
     }
 
-    #resolveSafeDeleteDir(dirPath, label) {
-        const safeDirPath = assertSafeDeleteDir(dirPath, label);
-        resolvePathInsideBase(
-            path.basename(safeDirPath),
-            path.dirname(safeDirPath),
-            label
-        );
-        return safeDirPath;
+    #resolveSafeDeleteDir(dirPath, baseDirPath, label) {
+        return assertSafeDeleteDirInsideBase(dirPath, baseDirPath, label);
     }
 
-    #deleteDirectoryContents(dirPath, label) {
-        const safeDirPath = this.#resolveSafeDeleteDir(dirPath, label);
+    #deleteDirectoryContents(dirPath, baseDirPath, label) {
+        const safeDirPath = this.#resolveSafeDeleteDir(
+            dirPath, baseDirPath, label);
         if ( pathExists(safeDirPath) ) {
             return deleteSync([
                 allDescendantsGlob(safeDirPath)
@@ -58,17 +53,14 @@ class BuildCleaner {
 
     cleanDistDirectories() {
 
+        const buildRoot = path.dirname(this.config.build.distDirs.build);
+        const baseRoot = path.dirname(this.config.build.distDirs.base);
         const buildDir = this.#resolveSafeDeleteDir(
-            this.config.build.distDirs.build, 'Build directory');
+            this.config.build.distDirs.build, buildRoot, 'Build directory');
         const baseDir = this.#resolveSafeDeleteDir(
-            this.config.build.distDirs.base, 'Base directory');
+            this.config.build.distDirs.base, baseRoot, 'Base directory');
         const assetsDir = this.#resolveSafeDeleteDir(
-            this.config.build.distDirs.assets, 'Assets directory');
-        resolvePathInsideBase(
-            path.relative(baseDir, assetsDir),
-            baseDir,
-            'Assets directory'
-        );
+            this.config.build.distDirs.assets, baseDir, 'Assets directory');
 
         if ( this.#shouldPreserveAssets() ) {
     
@@ -93,8 +85,9 @@ class BuildCleaner {
     }
 
     postBuildCleanup() {
+        const buildRoot = path.dirname(this.config.build.distDirs.build);
         const buildDir = this.#resolveSafeDeleteDir(
-            this.config.build.distDirs.build, 'Build directory');
+            this.config.build.distDirs.build, buildRoot, 'Build directory');
         if ( !this.config.build.opts.skipPostBuildCleanup && 
                 !this.config.build.opts.generateDsPdf ) {
             return deleteSync([
@@ -105,9 +98,13 @@ class BuildCleaner {
 
     postErrorBuildCleanup() {
         this.#deleteDirectoryContents(
-            this.config.build.distDirs.build, 'Build directory');
+            this.config.build.distDirs.build,
+            path.dirname(this.config.build.distDirs.build),
+            'Build directory');
         this.#deleteDirectoryContents(
-            this.config.build.distDirs.base, 'Base directory');
+            this.config.build.distDirs.base,
+            path.dirname(this.config.build.distDirs.base),
+            'Base directory');
     }
 
 }
