@@ -1,36 +1,73 @@
 /*
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'none'; upgrade-insecure-requests
+  Cross-Origin-Opener-Policy: same-origin
+  Permissions-Policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), usb=(), web-share=(), xr-spatial-tracking=()
   Referrer-Policy: no-referrer
-  X-XSS-Protection: 1; mode=block
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  X-Permitted-Cross-Domain-Policies: none
 
 /assets/*
   X-Robots-Tag: nosnippet
-  Access-Control-Allow-Origin: *
 
 /assets/collection/*
   Cache-Control: public, max-age=86400, must-revalidate
+  Cross-Origin-Resource-Policy: same-origin
 
 /assets/css/style.min.css
   Cache-Control: public, max-age=86400, must-revalidate
+  Cross-Origin-Resource-Policy: same-origin
 
 /assets/css/vendors/*
   Cache-Control: public, max-age=2592000, must-revalidate
+  Cross-Origin-Resource-Policy: same-origin
 
 /assets/fonts/vendors/*
   Cache-Control: public, max-age=2592000, must-revalidate
+  Cross-Origin-Resource-Policy: same-origin
 
 /assets/images/*
+  Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=604800, must-revalidate
+  Cross-Origin-Resource-Policy: cross-origin
 
 /assets/js/blog.min.js
   Cache-Control: public, max-age=86400, must-revalidate
+  Cross-Origin-Resource-Policy: same-origin
 
 /assets/js/site/*
   Cache-Control: public, max-age=86400, must-revalidate
+  Cross-Origin-Resource-Policy: same-origin
 
 /assets/js/vendors/*
   Cache-Control: public, max-age=2592000, must-revalidate
+  Cross-Origin-Resource-Policy: same-origin
+
+/blog/:category/:post/assets/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400, must-revalidate
+  Cross-Origin-Resource-Policy: cross-origin
+
+/:language/blog/:category/:post/assets/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400, must-revalidate
+  Cross-Origin-Resource-Policy: cross-origin
+
+/build.json
+  Cache-Control: public, max-age=86400, must-revalidate
+  Cross-Origin-Resource-Policy: same-origin
+
+/favicon.ico
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=604800, must-revalidate
+  Cross-Origin-Resource-Policy: cross-origin
+
+/robots.txt
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/sitemap.xml
+  Cache-Control: public, max-age=86400, must-revalidate
 
 https://:version.:subdomain.workers.dev/*
   X-Robots-Tag: noindex
