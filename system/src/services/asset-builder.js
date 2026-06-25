@@ -1,5 +1,5 @@
 /**
- * System assets builder service.
+ * Assets builder service.
  *
  * @author jillurquddus
  * @copyright Copyright (C) 2025 Jillur Quddus
