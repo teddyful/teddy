@@ -21,6 +21,7 @@ import { getValue } from '../utils/json-utils.js';
 
 // Semantic versioning 2.0.0 regex - see https://semver.org
 const SEMANTIC_VERSIONING_REGEX = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+const FILE_EXT_MARKDOWN = 'md';
 
 class ConfigValidator {
 
@@ -359,9 +360,20 @@ class ConfigValidator {
         const pageFiles = getFiles(
             this.systemConfig.system.build.siteDirs.pages);
         const pageMdFiles = pageFiles.filter(
-            filename => hasFileExtension(filename, 'md'));
+            filename => hasFileExtension(filename, FILE_EXT_MARKDOWN));
         if ( pageMdFiles.length === 0 ) {
             throw new Error('No markdown files found in' + 
+                `'${this.systemConfig.system.build.siteDirs.pages}'.`);
+        }
+
+        // Validate that the default language has at least one page.
+        const defaultLanguage = this.siteConfig.site.languages.enabled[0];
+        const defaultLanguagePages = pageMdFiles.filter(filename => 
+            filename.toLowerCase().endsWith(
+                `.${defaultLanguage}.${FILE_EXT_MARKDOWN}`));
+        if ( defaultLanguagePages.length === 0 ) {
+            throw new Error('No markdown files found for the default ' + 
+                `language '${defaultLanguage}' in ` + 
                 `'${this.systemConfig.system.build.siteDirs.pages}'.`);
         }
 
