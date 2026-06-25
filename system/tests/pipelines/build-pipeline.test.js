@@ -2,7 +2,9 @@
  * Build pipeline tests.
  *
  * @author jillurquddus
- * @since  0.0.1
+ * @copyright Copyright (C) 2025 Jillur Quddus
+ * @license GPL-3.0
+ * @since 0.0.1
  */
 
 import fs from 'fs';
@@ -10,7 +12,6 @@ import FlexSearch from 'flexsearch';
 import { beforeAll, describe, expect, test } from 'vitest';
 
 import BuildPipeline from '../../src/pipelines/build-pipeline.js';
-
 
 const opts = {
     env: 'local',

@@ -2,7 +2,9 @@
  * Regex utility functions.
  *
  * @author jillurquddus
- * @since  0.0.1
+ * @copyright Copyright (C) 2025 Jillur Quddus
+ * @license GPL-3.0
+ * @since 0.0.1
  */
 
 // Escape a string value before using it in a regular expression.

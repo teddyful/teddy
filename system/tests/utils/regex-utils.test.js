@@ -2,13 +2,14 @@
  * Regex utility function tests.
  *
  * @author jillurquddus
- * @since  0.0.1
+ * @copyright Copyright (C) 2025 Jillur Quddus
+ * @license GPL-3.0
+ * @since 0.0.1
  */
 
 import { expect, test } from 'vitest';
 import { getVarPlaceholders, getNestedKeysFromVarPlaceholder } 
     from '../../src/utils/regex-utils.js';
-
 
 test('variable placeholders are extracted correctly', () => {
     const text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' + 
