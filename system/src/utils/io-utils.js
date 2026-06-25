@@ -143,15 +143,26 @@ function isExcludedCopyPath(sourcePath,
     return patterns.some(pattern => pattern.test(normalizedPath));
 }
 
-// Generate a copy filter function considering copy file pattern exclusions.
+// Generate a copy filter function considering copy file pattern exclusions
+// and symlinks with valid real targets.
 function getCopyFilter(sourceRootPath, 
     excludedPatterns = DEFAULT_EXCLUDED_COPY_PATTERNS) {
+    const resolvedSourceRootPath = path.resolve(sourceRootPath);
+    const realSourceRootPath = fs.realpathSync.native(resolvedSourceRootPath);
     return function(sourcePath) {
-        const relativePath = path.relative(sourceRootPath, sourcePath);
+        const relativePath = path.relative(resolvedSourceRootPath, sourcePath);
         if (relativePath === '') {
             return true;
         }
-        return !isExcludedCopyPath(relativePath, excludedPatterns);
+        if (isExcludedCopyPath(relativePath, excludedPatterns)) {
+            return false;
+        }
+        const stats = fs.lstatSync(sourcePath);
+        if (!stats.isSymbolicLink()) {
+            return true;
+        }
+        const realSourcePath = fs.realpathSync.native(sourcePath);
+        return isPathInsideBase(realSourceRootPath, realSourcePath);
     };
 }
 
