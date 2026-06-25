@@ -63,12 +63,15 @@ class TemplateBuilder {
                 // Inject the language data into the templates and generate
                 // the output HTML.
                 await new Promise((resolve, reject) => {
-                    gulp.src([this.#htmlTemplatesGlob(templatesDirAbsPath)])
-                        .pipe(mustache(languageDataFileAbsPath, {}, {}))
-                        .pipe(mustache(languageDataFileAbsPath, {}, {}))
-                        .pipe(gulp.dest(outputHtmlDirAbsPath))
-                        .on('end', resolve)
-                        .on('error', reject);
+                    const source = gulp.src([this.#htmlTemplatesGlob(templatesDirAbsPath)]);
+                    const firstPass = source.pipe(mustache(languageDataFileAbsPath, {}, {}));
+                    const secondPass = firstPass.pipe(mustache(languageDataFileAbsPath, {}, {}));
+                    const destination = secondPass.pipe(gulp.dest(outputHtmlDirAbsPath));
+                    source.on('error', reject);
+                    firstPass.on('error', reject);
+                    secondPass.on('error', reject);
+                    destination.on('error', reject);
+                    destination.on('end', resolve);
                 });
     
             }
