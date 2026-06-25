@@ -488,16 +488,19 @@ test('system assets are not injected when disabled', async () => {
         .not.toContain('/assets/js/');
 });
 
-test('page language script is always injected', async () => {
+test('page language is rendered without inline script injection', async () => {
     writeLanguageData('en');
-    writeTemplate('en', 'post.html');
+    writeTemplate('en', 'post.html',
+        '<!DOCTYPE html><html lang="${page.metadata.language}">' +
+        '<head></head><body>${page.content}</body></html>');
     writeMarkdown('blog/post.en.md', {
         enabled: 'true',
         name: 'Post'
     }, 'Body');
     await translate();
-    expect(readOutput('en', 'blog', 'index.html'))
-        .toContain("<script>const PAGE_LANGUAGE = 'en';</script>");
+    const html = readOutput('en', 'blog', 'index.html');
+    expect(html).toContain('<html lang="en">');
+    expect(html).not.toContain('PAGE_LANGUAGE');
 });
 
 test('metadata tags are injected and escaped when enabled', async () => {

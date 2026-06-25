@@ -389,13 +389,14 @@ describe('static site', () => {
             .toBe(readFile(`${publicDirectory}/en/blog/index.html`));
     });
 
-    test('generated page HTML includes metadata and page language injection', () => {
+    test('generated page HTML includes metadata and page language attribute', () => {
         const html = readFile(
             `${publicDirectory}/en/blog/europe/norway/index.html`);
         expect(html).toContain('<meta name="description"');
         expect(html).toContain('<meta property="og:title"');
         expect(html).toContain('<meta property="og:type" content="article"/>');
-        expect(html).toContain("<script>const PAGE_LANGUAGE = 'en';</script>");
+        expect(html).toContain('<html lang="en">');
+        expect(html).not.toContain('PAGE_LANGUAGE');
     });
 
     test('deployed language JSON contains collection metadata', () => {
@@ -563,11 +564,11 @@ describe('static site', () => {
 
     test('multilingual page output contains localized language markers', () => {
         expect(readFile(getPublicPath('en/blog/europe/norway/index.html')))
-            .toContain("<script>const PAGE_LANGUAGE = 'en';</script>");
+            .toContain('<html lang="en">');
         expect(readFile(getPublicPath('ja/blog/europe/norway/index.html')))
-            .toContain("<script>const PAGE_LANGUAGE = 'ja';</script>");
+            .toContain('<html lang="ja">');
         expect(readFile(getPublicPath('zh-tw/blog/europe/norway/index.html')))
-            .toContain("<script>const PAGE_LANGUAGE = 'zh-tw';</script>");
+            .toContain('<html lang="zh-tw">');
     });
 
     test('all expected search index files contain valid JSON', () => {

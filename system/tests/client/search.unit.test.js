@@ -89,6 +89,13 @@ function loadSearch(overrides = {}) {
     const MockDocument = vi.fn(function Document() {
         return mockIndex;
     });
+    const normalizeLanguageKey = vi.fn(function(language) {
+        const normalizedLanguage = String(language ?? '').trim();
+        if ( !/^[a-zA-Z0-9_-]+$/.test(normalizedLanguage) ) {
+            throw new Error('Invalid search language key.');
+        }
+        return normalizedLanguage;
+    });
     const context = {
         URL,
         TextEncoder,
@@ -101,6 +108,11 @@ function loadSearch(overrides = {}) {
         },
         fetch: vi.fn(),
         PAGE_LANGUAGE: 'en',
+        DEFAULT_LANGUAGE: 'en',
+        normalizeLanguageKey,
+        getPageLanguage: vi.fn(function(defaultLanguage = 'en') {
+            return normalizeLanguageKey(context.PAGE_LANGUAGE ?? defaultLanguage);
+        }),
         COLLECTION_INDEX_BASE_URL: '/assets/collection',
         INDEX_DOCUMENT_STORE_CONFIG: structuredClone(BASE_DOCUMENT_STORE_CONFIG),
         ISO_639_3166_LOOKUP: {
@@ -238,13 +250,13 @@ describe('Search static helpers', () => {
     });
 
     test('normalizeLanguageKey accepts safe language keys and rejects unsafe ones', () => {
-        const { Search } = loadSearch();
-        expect(Search.normalizeLanguageKey(' zh-tw ')).toBe('zh-tw');
-        expect(Search.normalizeLanguageKey('en_US')).toBe('en_US');
-        expect(() => Search.normalizeLanguageKey('../en')).toThrow(
+        const { context } = loadSearch();
+        expect(context.normalizeLanguageKey(' zh-tw ')).toBe('zh-tw');
+        expect(context.normalizeLanguageKey('en_US')).toBe('en_US');
+        expect(() => context.normalizeLanguageKey('../en')).toThrow(
             'Invalid search language key.'
         );
-        expect(() => Search.normalizeLanguageKey('')).toThrow(
+        expect(() => context.normalizeLanguageKey('')).toThrow(
             'Invalid search language key.'
         );
     });

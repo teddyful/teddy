@@ -232,7 +232,8 @@ function createBaseFixture({
     writeFile(path.join(SITE_DIR, 'pages', 'blog', 'post.ja.md'), '# Japanese');
     fs.mkdirSync(path.join(SITE_DIR, 'web'), { recursive: true });
     writeJson(path.join(THEME_DIR, 'theme.json'), themeConfig);
-    writeFile(path.join(THEME_DIR, 'templates', 'page.html'), '<html></html>');
+    writeFile(path.join(THEME_DIR, 'templates', 'page.html'),
+        '<html lang="${page.metadata.language}"></html>');
     writeFile(path.join(THEME_DIR, 'assets', 'css', 'theme.css'), 'css');
     writeFile(path.join(THEME_DIR, 'assets', 'js', 'theme.js'), 'js');
     writeFile(path.join(THEME_DIR, 'assets', 'images', 'theme.ico'), 'ico');

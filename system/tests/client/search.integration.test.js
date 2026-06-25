@@ -76,6 +76,13 @@ function createResponse({
 
 function loadSearch(overrides = {}) {
     const source = fs.readFileSync(SEARCH_SOURCE_FILE, 'utf8');
+    const normalizeLanguageKey = function(language) {
+        const normalizedLanguage = String(language ?? '').trim();
+        if ( !/^[a-zA-Z0-9_-]+$/.test(normalizedLanguage) ) {
+            throw new Error('Invalid search language key.');
+        }
+        return normalizedLanguage;
+    };
     const context = {
         URL,
         TextEncoder,
@@ -88,6 +95,11 @@ function loadSearch(overrides = {}) {
         },
         fetch: vi.fn(),
         PAGE_LANGUAGE: 'en',
+        DEFAULT_LANGUAGE: 'en',
+        normalizeLanguageKey,
+        getPageLanguage: function(defaultLanguage = 'en') {
+            return normalizeLanguageKey(context.PAGE_LANGUAGE ?? defaultLanguage);
+        },
         COLLECTION_INDEX_BASE_URL: '/assets/collection',
         INDEX_DOCUMENT_STORE_CONFIG: structuredClone(BASE_DOCUMENT_STORE_CONFIG),
         ISO_639_3166_LOOKUP: {
