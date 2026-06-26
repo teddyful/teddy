@@ -85,4 +85,5 @@ Documentation:
     })
     .showHelpAfterError()
     .showSuggestionAfterError();
+
 await program.parseAsync();
