@@ -23,6 +23,9 @@ The project is an ES module Node.js application (`"type": "module"`).
 - `npm run build` runs `node build.js`.
 - `npm run build:demo` builds the TravelBook demo site with the Bear theme.
 - `npm test` runs Vitest with `system/tests/vitest.config.js`.
+- `npm run test:upgrade` runs the separate offline upgrade test suite with
+  `system/tests/upgrade/vitest.config.js`.
+- `npm run upgrade` runs `node upgrade.js`.
 - Main build dependencies include `commander`, `ajv`, `gulp`,
   `gulp-mustache`, `showdown`, `flexsearch`, `minify`, `pdfkit`,
   `string-strip-html`, `try-to-catch`, and `winston`.
@@ -47,10 +50,23 @@ Common optional flags include:
   site version/build metadata.
 - `--skip-post-build-cleanup`: retain intermediate build artifacts.
 
+The upgrade CLI supports:
+
+- `--delete-backup`: delete the pre-upgrade backup after a successful worker
+  upgrade.
+- `--yes`: auto-confirm the upgrade prompt.
+- `--skip-install`: skip the final `npm install` step after resources are
+  copied.
+- `--dry-run`: validate and simulate worker mode without deleting, copying,
+  backing up, or installing dependencies.
+- `--upgrade-worker --target <path>`: internal worker mode used by the extracted
+  release to upgrade the target Teddy installation.
+
 ## Repository Map
 
 ```text
 build.js                         CLI entry point.
+upgrade.js                       Native upgrade bootstrapper and worker CLI.
 package.json                     Package metadata, scripts, dependencies.
 LICENSE                          GPL-3.0 license text.
 COPYRIGHT                        Teddy copyright notice.
@@ -58,14 +74,17 @@ AUTHORS                          Optional curated author/contributor notice.
 THIRD_PARTY_NOTICES.md           Third-party dependency and bundled asset notices.
 SECURITY.md                      Security reporting policy, if present.
 docs/specs/                      Architecture and source code specifications.
+config/upgrade.json              Native upgrader resource and release settings.
 config/system.json               Global system paths/assets/fonts/runtime JS.
 system/src/pipelines/            Build orchestration.
 system/src/services/             Build services for config, pages, assets, etc.
+system/src/services/upgrade/     Native upgrade service.
 system/src/entities/             Runtime/build data models.
 system/src/schema/               AJV JSON schemas for config files.
 system/src/utils/                Filesystem, JSON, regex, language helpers.
 system/assets/                   Shared system runtime assets and fonts.
 system/tests/                    Vitest unit and integration tests.
+system/tests/upgrade/            Separate offline upgrader tests.
 sites/<site>/                    Site config, language JSON, Markdown, assets.
 themes/<theme>/                  Theme config, templates, assets.
 ```
@@ -423,6 +442,59 @@ Supported host mappings are in `system/src/enums/hosts.js`:
 - `cloudflare-pages`: `_headers`, `404.html`
 - `cloudflare-workers`: `_headers`, `404.html`
 
+## Native Upgrade Process
+
+Teddy includes a native upgrader with entry point `upgrade.js`, service logic in
+`system/src/services/upgrade/upgrader.js`, and resource/release settings in
+`config/upgrade.json`.
+
+The upgrader uses a two-stage design:
+
+1. Bootstrap mode runs from the currently installed Teddy tree.
+2. Bootstrap validates the current Teddy instance, reads the current version,
+   fetches latest release metadata, compares versions, asks for confirmation
+   unless `--yes` is used, downloads the release archive and checksum file,
+   verifies the SHA-256 checksum, extracts the archive, validates the extracted
+   Teddy release, and spawns the extracted `upgrade.js` in worker mode.
+3. Worker mode runs from the extracted release tree, with `--upgrade-worker` and
+   `--target <path>` pointing at the installed Teddy tree to upgrade.
+4. Worker mode validates both release and target trees, creates a backup under
+   `working/upgrade/backups/<timestamp>`, deletes only configured replaceable
+   resources and generated TravelBook build/public output, copies configured
+   resources from the release tree, validates the upgraded target, optionally
+   runs `npm install`, and deletes the backup only when `--delete-backup` is
+   passed after a successful upgrade.
+
+`config/upgrade.json` controls:
+
+- backup and download roots under `./working/upgrade`;
+- GitHub latest-release, release-notes, tag, archive, and checksum URL
+  templates;
+- replaceable Teddy directories and files.
+
+The configured resources intentionally determine what is replaced. User-created
+root files, custom sites, and custom themes are preserved unless explicitly
+listed in `config/upgrade.json`.
+
+Failure behavior:
+
+- GitHub metadata/download failures, bad HTTP responses, checksum mismatch,
+  unsafe archive paths, invalid extraction, invalid target/release trees, copy
+  failures, verification failures, and `npm install` failures are caught and
+  logged.
+- Failed preparation cleans up the prepared download directory where possible.
+- Failed worker upgrades preserve the backup even when `--delete-backup` was
+  requested.
+- There is no automatic rollback after a partial worker failure; the backup path
+  is logged so the user can restore manually.
+
+Simulation and safety options:
+
+- `--dry-run` validates worker inputs and versions without changing files.
+- `--skip-install` avoids dependency installation, useful for tests and manual
+  staged verification.
+- `--yes` avoids interactive prompts in automation.
+
 ## PDF Data Sources
 
 `PdfBuilder` runs only when `--generate-ds-pdf` is set. It:
@@ -454,9 +526,16 @@ generation workflows.
 
 ## Tests
 
-Tests are run by Vitest with `system/tests/vitest.config.js`. The config uses a
-Node test environment, setup file `system/tests/setup.js`, mock reset/restore
-defaults, and excludes generated/build/vendor directories.
+The normal test suite is run by Vitest with `system/tests/vitest.config.js`. The
+config uses a Node test environment, setup file `system/tests/setup.js`, mock
+reset/restore defaults, and excludes generated/build/vendor directories. It also
+excludes `system/tests/upgrade/**`, because upgrade tests are intentionally run
+with a separate command.
+
+Upgrade tests are run with `npm run test:upgrade`, using
+`system/tests/upgrade/vitest.config.js`. They have their own setup file and
+execute from a working test cwd so logger side effects and generated fixtures
+remain under `./working/tests/upgrade`.
 
 The test tree keeps the source-oriented folder structure:
 
@@ -467,6 +546,7 @@ system/tests/enums/             Unit tests for enum contracts.
 system/tests/services/          Unit tests for build services.
 system/tests/pipelines/         Build pipeline unit and integration tests.
 system/tests/client/            Browser-runtime client asset tests.
+system/tests/upgrade/           Separate offline upgrade unit/integration tests.
 ```
 
 Unit-style tests cover:
@@ -489,6 +569,10 @@ Unit-style tests cover:
 - `BuildPipeline` orchestration with mocked service dependencies.
 - `system/assets/js/teddy/search.js` using VM-loaded browser globals and mocked
   `FlexSearch.Document`.
+- `upgrade.js` CLI option exposure and worker argument forwarding.
+- `system/src/services/upgrade/upgrader.js` preparation and worker behavior,
+  including no-update responses, download/extract/cleanup preparation, checksum
+  failure cleanup, and dry-run validation.
 
 Integration-style tests cover:
 
@@ -502,6 +586,21 @@ Integration-style tests cover:
   FlexSearch indexes in memory, serves them through mocked browser `fetch()`,
   and verifies the client search runtime's import, document lookup, query,
   tag-filter, combined query+tag, pagination, deduplication, and CJK behavior.
+- `system/tests/upgrade/upgrader.integration.test.js`, which runs the real
+  upgrade worker CLI in a child Node process against generated Teddy target and
+  release fixtures. It verifies configured resource replacement, backup
+  creation/deletion, preservation of user-created root/site/theme files,
+  `--skip-install`, and `--dry-run`.
+
+Upgrade tests are fully offline:
+
+- Fixtures are generated dynamically under `./working/tests/upgrade`.
+- Release archives are generated in pure JavaScript for the tests.
+- Release metadata, archive, and checksum downloads are served from a local
+  `127.0.0.1` HTTP server.
+- Tests do not contact GitHub and do not write outside `./working`.
+- Expected logger output for intentional failure-path tests is suppressed in the
+  test, while assertions still verify the caught failure behavior.
 
 Test fixtures should be generated at runtime under `./working` when file system
 fixtures are needed. Tests should not depend on committed generated output under
@@ -537,6 +636,12 @@ Important boundaries:
 - `PdfBuilder` resolves configured font paths and checks font existence before
   generating PDF data sources.
 - `BuildCleaner` uses safety guards before deleting generated directories.
+- The upgrader validates release downloads with SHA-256 checksums, blocks unsafe
+  archive extraction paths, keeps backups on caught worker failures, and avoids
+  replacing files not listed in `config/upgrade.json`.
+- The upgrader does not automatically roll back after a partial worker failure;
+  production use should retain backups until the upgraded instance and
+  dependencies are verified.
 
 When extending Teddy for untrusted authors or multi-tenant content, add explicit
 HTML sanitization, URL scheme validation, and escaping for metadata attributes.
