@@ -133,11 +133,16 @@ dist
 # VS Code extensions.
 .vscode/
 
-# Teddy site output directories
-logs/
-sites/*/build
-sites/*/public
-undefined/
+# Cloudflare / Wrangler local state
+.wrangler/
 
-# Teddy system update and tests temporary directories
-working/
+# OS files
+.DS_Store
+Thumbs.db
+
+# Teddy generated/runtime output
+/logs/
+/working/
+/sites/*/build/
+/sites/*/public/
+undefined/
