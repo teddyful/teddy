@@ -1,0 +1,35 @@
+# Default text handling
+* text=auto eol=lf
+
+# Source and config files
+*.js text eol=lf
+*.json text eol=lf
+*.jsonc text eol=lf
+*.md text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.xml text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Shell and other script files
+*.sh text eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+*.zip binary
+
+# npm lockfile should be treated as text
+package-lock.json text eol=lf
