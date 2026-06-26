@@ -1,5 +1,5 @@
 /**
- * One-time test environment setup.
+ * Test environment setup.
  *
  * @author jillurquddus
  * @copyright Copyright (C) 2025 Jillur Quddus

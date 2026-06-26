@@ -15,7 +15,7 @@ import { fileURLToPath } from 'url';
 import packageConfig from './package.json' with { type: 'json' };
 import upgradeConfig from './config/upgrade.json' with { type: 'json' };
 import logger from './system/src/middleware/logger.js';
-import Upgrader from './system/src/services/upgrader.js';
+import Upgrader from './system/src/services/upgrade/upgrader.js';
 
 /* -----------------------------------------------------------------------------
  * BOOTSTRAP WORKER
@@ -32,6 +32,8 @@ function runUpgradeWorker(workerScriptPath, args) {
                 '--upgrade-worker',
                 '--target',
                 args.target,
+                ...(args.skipInstall ? ['--skip-install'] : []),
+                ...(args.dryRun ? ['--dry-run'] : []),
                 ...(args.deleteBackup ? ['--delete-backup'] : [])
             ],
             {
@@ -57,7 +59,9 @@ async function runBootstrap(opts) {
         preparedUpgrade.workerScriptPath,
         {
             target: CURRENT_TEDDY_ROOT,
-            deleteBackup: opts.deleteBackup
+            deleteBackup: opts.deleteBackup,
+            dryRun: opts.dryRun,
+            skipInstall: opts.skipInstall
         }
     );
     if (workerStatusCode === 0) {
@@ -102,6 +106,21 @@ program
         '--delete-backup', 
         'Delete the backup of the pre-upgraded instance of Teddy after a successful upgrade', 
         false)
+    .option(
+        '--yes',
+        'Automatically confirm the upgrade prompt',
+        false
+    )
+    .option(
+        '--skip-install',
+        'Skip npm install after the upgrade has been copied',
+        false
+    )
+    .option(
+        '--dry-run',
+        'Validate and simulate the upgrade without deleting, copying, backing up, or installing dependencies',
+        false
+    )
     .option(
         '--upgrade-worker',
         'Run as the extracted release upgrade worker',

@@ -224,12 +224,19 @@ function assertSafeDeleteDir(dirPath, label) {
 // Assert that a given directory exists in a given base and is safe to delete.
 function assertSafeDeleteDirInsideBase(dirPath, baseDirPath, label) {
     const safeDirPath = assertSafeDeleteDir(dirPath, label);
+    const resolvedBaseDirPath = path.resolve(baseDirPath);
+    const resolvedCwdDirPath = path.resolve(safeDirPath);
+    const resolvedDirPath = path.isAbsolute(safeDirPath) ||
+        resolvedCwdDirPath === resolvedBaseDirPath ||
+        isPathInsideBase(resolvedBaseDirPath, resolvedCwdDirPath) ?
+        resolvedCwdDirPath :
+        path.resolve(resolvedBaseDirPath, safeDirPath);
     resolvePathInsideBase(
-        path.relative(baseDirPath, safeDirPath),
-        baseDirPath,
+        path.relative(resolvedBaseDirPath, resolvedDirPath),
+        resolvedBaseDirPath,
         label
     );
-    return safeDirPath;
+    return resolvedDirPath;
 }
 
 // Get a list of all files in a given directory.

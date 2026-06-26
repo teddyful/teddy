@@ -1,5 +1,5 @@
 /**
- * Teddy upgrader service.
+ * Upgrader service.
  * 
  * 1. Downloads, verifies, and extracts the release.
  * 2. The extracted release runs as the worker & upgrades the target Teddy tree.
@@ -22,7 +22,7 @@ import { deleteSync } from 'del';
 import { finished, pipeline } from 'stream/promises';
 import { Readable } from 'stream';
 
-import logger from '../middleware/logger.js';
+import logger from '../../middleware/logger.js';
 import {
     assertSafeDeleteDirInsideBase,
     createDirectory,
@@ -33,10 +33,9 @@ import {
     loadJsonFile,
     pathExists,
     resolvePathInsideBase
-} from '../utils/io-utils.js';
+} from '../../utils/io-utils.js';
 
 const NODE_MODULES_DIR = 'node_modules';
-const WORKING_UPGRADE_DIR = path.join('working', 'upgrade');
 
 class Upgrader {
 
@@ -203,6 +202,11 @@ class Upgrader {
     }
 
     #promptUser() {
+        if ( this.opts.yes ) {
+            this.upgradeConfirmed = true;
+            logger.info('Upgrade auto-confirmed by command-line option.');
+            return;
+        }
         console.log('');
         console.log('A new version of Teddy is available!');
         console.log(`Current version: ${this.currentVersion}`);
@@ -353,30 +357,36 @@ class Upgrader {
     #backupCurrentVersion() {
         const resolvedNodeModulesPath = path.join(
             this.pathToTeddy, NODE_MODULES_DIR);
-        const resolvedWorkingUpgradePath = path.join(
-            this.pathToTeddy, WORKING_UPGRADE_DIR);
-        fs.cpSync(this.pathToTeddy, this.backupDir, {
-            filter: sourcePath => {
-                const resolvedSourcePath = path.resolve(sourcePath);
-                if ( resolvedSourcePath === this.backupDir ||
-                    isPathInsideBase(this.backupDir, resolvedSourcePath) ) {
-                    return false;
-                }
-                if ( resolvedSourcePath === resolvedNodeModulesPath ||
-                    isPathInsideBase(resolvedNodeModulesPath, 
-                        resolvedSourcePath) ) {
-                    return false;
-                }
-                if ( resolvedSourcePath === resolvedWorkingUpgradePath ||
-                    isPathInsideBase(resolvedWorkingUpgradePath, 
-                        resolvedSourcePath) ) {
-                    return false;
-                }
-                return true;
-            },
-            preserveTimestamps: true,
-            recursive: true
-        });
+        const resolvedWorkingPath = path.join(this.pathToTeddy, 'working');
+        const shouldBackupPath = sourcePath => {
+            const resolvedSourcePath = path.resolve(sourcePath);
+            if ( resolvedSourcePath === this.backupDir ||
+                isPathInsideBase(this.backupDir, resolvedSourcePath) ) {
+                return false;
+            }
+            if ( resolvedSourcePath === resolvedNodeModulesPath ||
+                isPathInsideBase(resolvedNodeModulesPath, 
+                    resolvedSourcePath) ) {
+                return false;
+            }
+            if ( resolvedSourcePath === resolvedWorkingPath ||
+                isPathInsideBase(resolvedWorkingPath, 
+                    resolvedSourcePath) ) {
+                return false;
+            }
+            return true;
+        };
+        for ( const entry of fs.readdirSync(this.pathToTeddy) ) {
+            const sourcePath = path.join(this.pathToTeddy, entry);
+            if ( !shouldBackupPath(sourcePath) ) {
+                continue;
+            }
+            fs.cpSync(sourcePath, path.join(this.backupDir, entry), {
+                filter: shouldBackupPath,
+                preserveTimestamps: true,
+                recursive: true
+            });
+        }
     }
 
     #getConfiguredTargetDirectories() {
@@ -647,6 +657,14 @@ class Upgrader {
                 'Worker stage 2 - Validating the target Teddy instance...');
             this.#validateInstance(this.pathToTeddy);
             this.#getCurrentVersion();
+            if ( this.opts.dryRun ) {
+                this.statusCode = 0;
+                logger.info('Dry run complete. No files were changed.');
+                logger.info(`Teddy location: ${this.pathToTeddy}`);
+                logger.info(`Current version: ${this.currentVersion}`);
+                logger.info(`Available version: ${this.latestVersion}`);
+                return;
+            }
             logger.info('Worker stage 3 - Creating the backup directory...');
             this.#createBackupDirectory();
             logger.info(
@@ -659,8 +677,13 @@ class Upgrader {
             this.#copyUpgradedResources();
             logger.info('Worker stage 7 - Verifying the upgraded target...');
             this.#verifyUpgrade();
-            logger.info('Worker stage 8 - Installing upgraded dependencies...');
-            await this.#installUpgradedDependencies();
+            if ( this.opts.skipInstall ) {
+                logger.info('Skipping dependency installation.');
+            } else {
+                logger.info(
+                    'Worker stage 8 - Installing upgraded dependencies...');
+                await this.#installUpgradedDependencies();
+            }
             this.statusCode = 0;
             logger.info('Successfully finished upgrading Teddy!');
             logger.info(`Teddy location: ${this.pathToTeddy}`);

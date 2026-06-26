@@ -27,6 +27,7 @@ export default defineConfig({
             './dist/**',
             './build/**',
             './working/**',
+            './system/tests/upgrade/**',
             './sites/**/assets/js/vendors/**',
             './system/assets/js/vendors/**',
             './themes/**/assets/js/vendors/**'

@@ -12,6 +12,7 @@
         "build": "node build.js",
         "build:demo": "node build.js --site-name travelbook --theme-name bear",
         "test": "vitest run --config ./system/tests/vitest.config.js", 
+        "test:upgrade": "vitest run --config ./system/tests/upgrade/vitest.config.js",
         "test:watch": "vitest --config ./system/tests/vitest.config.js", 
         "upgrade": "node upgrade.js"
     },
