@@ -296,6 +296,11 @@ function toRelativePath(sourcePath) {
     return String(sourcePath ?? '').replace(/^\/+/, '');
 }
 
+// Create a write stream.
+function createWriteStream(targetFilePath) {
+    return fs.createWriteStream(targetFilePath);
+}
+
 // Write a JSON object to file.
 function writeJsonToFile(json, targetFilePath) {
     createDirectory(path.dirname(targetFilePath));
@@ -308,10 +313,23 @@ function writeStringToFile(str, targetFilePath) {
     fs.writeFileSync(targetFilePath, str, {encoding: 'utf8'});
 }
 
+// Get the absolute path to the project root directory.
+function getProjectRoot(startDir) {
+    let currentDir = startDir;
+    while (currentDir !== path.parse(currentDir).root) {
+        if (fs.existsSync(path.join(currentDir, 'package.json'))) {
+            return currentDir;
+        }
+        currentDir = path.dirname(currentDir);
+    }
+    throw new Error('Project root not found.');
+}
+
 export { 
     allDescendantsGlob, 
     assertSafeDeleteDir, 
     assertSafeDeleteDirInsideBase, 
+    createWriteStream, 
     copyDir, 
     copyFile, 
     copyFileIfExists, 
@@ -319,9 +337,11 @@ export {
     DEFAULT_EXCLUDED_COPY_PATTERNS, 
     getCopyFilter, 
     getFiles, 
+    getProjectRoot, 
     hasFileExtension, 
     hasFileExtensions, 
     isExcludedCopyPath, 
+    isPathInsideBase, 
     keepFilesThatExist, 
     loadFile, 
     loadJsonFile, 

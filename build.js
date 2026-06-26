@@ -63,7 +63,7 @@ program.name(packageConfig.name)
     .option('--version-collection-site-number', 'Version the collection directory with the site version number', false)
     .option('--version-site-config-build-id', 'Version the site JavaScript assets directory with the build ID', false)
     .option('--version-site-config-site-number', 'Version the site JavaScript assets directory with the site version number', false)
-    program.addHelpText('after', `
+    .addHelpText('after', `
 Examples:
   $ npm run build --site-name travelbook --theme-name bear
   $ npm run build --site-name travelbook --theme-name bear --env production

@@ -12,7 +12,8 @@
         "build": "node build.js",
         "build:demo": "node build.js --site-name travelbook --theme-name bear",
         "test": "vitest run --config ./system/tests/vitest.config.js", 
-        "test:watch": "vitest --config ./system/tests/vitest.config.js"
+        "test:watch": "vitest --config ./system/tests/vitest.config.js", 
+        "upgrade": "node upgrade.js"
     },
     "repository": {
         "type": "git",
@@ -32,10 +33,14 @@
         "gulp": "5.0.1",
         "gulp-mustache": "5.0.0",
         "minify": "15.3.1",
-        "pdfkit": "0.19.1", 
+        "pdfkit": "0.19.1",
+        "prompt-sync": "4.2.0",
+        "semver": "7.8.5",
+        "sha256-file": "1.0.0",
         "showdown": "2.1.0",
         "string-strip-html": "13.5.3",
         "try-to-catch": "4.0.5",
+        "unzipper": "0.12.5", 
         "vite": "7.3.5",
         "vitest": "4.1.9",
         "winston": "3.19.0",
