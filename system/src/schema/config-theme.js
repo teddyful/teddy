@@ -40,7 +40,7 @@ const themeConfigSchema = {
                                             type: 'object', 
                                             properties: {
                                                 default: { type: 'string' }, 
-                                                userCover: { type: 'boolean' }
+                                                useCover: { type: 'boolean' }
                                             }
                                         }
                                     } 
