@@ -13,7 +13,7 @@ import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 import packageConfig from './package.json' with { type: 'json' };
-import upgradeConfig from './config/upgrade.json' with { type: 'json' };
+import upgradeConfig from './config/release.json' with { type: 'json' };
 import logger from './system/src/middleware/logger.js';
 import Upgrader from './system/src/services/upgrade/upgrader.js';
 

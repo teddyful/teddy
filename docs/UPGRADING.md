@@ -18,7 +18,7 @@ Before running an upgrade:
 - Make sure npm can install dependencies if you do not use `--skip-install`.
 
 The upgrader is designed to preserve user-created files that are not listed in
-`config/upgrade.json`, but a separate manual backup is still recommended for
+`config/release.json`, but a separate manual backup is still recommended for
 production installations.
 
 ## Basic Upgrade
@@ -116,7 +116,7 @@ npm run upgrade -- --yes --delete-backup
 
 ## What Gets Replaced
 
-The upgrade resource list is defined in `config/upgrade.json`.
+The upgrade resource list is defined in `config/release.json`.
 
 Configured directories currently include:
 
@@ -131,6 +131,7 @@ Configured directories currently include:
 
 Configured files currently include:
 
+- `.gitattributes`
 - `.gitignore`
 - `AUTHORS`
 - `build.js`
@@ -146,7 +147,7 @@ Configured files currently include:
 
 Only configured resources are replaced. User-created root files, custom sites,
 and custom themes are preserved unless they are explicitly added to
-`config/upgrade.json`.
+`config/release.json`.
 
 Generated TravelBook build/public output may also be removed during upgrade:
 

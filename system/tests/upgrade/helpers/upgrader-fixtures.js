@@ -28,6 +28,7 @@ const RESOURCE_DIRECTORIES = [
 ];
 
 const RESOURCE_FILES = [
+    '.gitattributes',
     '.gitignore',
     'AUTHORS',
     'build.js',
@@ -116,7 +117,7 @@ function createMinimalTeddy(rootPath, {
             }
         }
     });
-    writeJson(path.join(rootPath, 'config', 'upgrade.json'), upgradeConfig);
+    writeJson(path.join(rootPath, 'config', 'release.json'), upgradeConfig);
     writeJson(path.join(rootPath, 'sites', 'travelbook', 'site.json'), {
         site: {
             name: 'travelbook',

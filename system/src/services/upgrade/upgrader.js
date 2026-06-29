@@ -44,7 +44,7 @@ class Upgrader {
         // CLI options.
         this.opts = opts;
 
-        // Config from teddy/config/upgrade.json.
+        // Config from teddy/config/release.json.
         this.config = config;
         this.statusCode = 1;
 

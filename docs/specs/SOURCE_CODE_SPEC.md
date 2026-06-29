@@ -74,7 +74,7 @@ AUTHORS                          Optional curated author/contributor notice.
 THIRD_PARTY_NOTICES.md           Third-party dependency and bundled asset notices.
 SECURITY.md                      Security reporting policy, if present.
 docs/specs/                      Architecture and source code specifications.
-config/upgrade.json              Native upgrader resource and release settings.
+config/release.json              Native upgrader resource and release settings.
 config/system.json               Global system paths/assets/fonts/runtime JS.
 system/src/pipelines/            Build orchestration.
 system/src/services/             Build services for config, pages, assets, etc.
@@ -446,7 +446,7 @@ Supported host mappings are in `system/src/enums/hosts.js`:
 
 Teddy includes a native upgrader with entry point `upgrade.js`, service logic in
 `system/src/services/upgrade/upgrader.js`, and resource/release settings in
-`config/upgrade.json`.
+`config/release.json`.
 
 The upgrader uses a two-stage design:
 
@@ -465,7 +465,7 @@ The upgrader uses a two-stage design:
    runs `npm install`, and deletes the backup only when `--delete-backup` is
    passed after a successful upgrade.
 
-`config/upgrade.json` controls:
+`config/release.json` controls:
 
 - backup and download roots under `./working/upgrade`;
 - GitHub latest-release, release-notes, tag, archive, and checksum URL
@@ -474,7 +474,7 @@ The upgrader uses a two-stage design:
 
 The configured resources intentionally determine what is replaced. User-created
 root files, custom sites, and custom themes are preserved unless explicitly
-listed in `config/upgrade.json`.
+listed in `config/release.json`.
 
 Failure behavior:
 
@@ -638,7 +638,7 @@ Important boundaries:
 - `BuildCleaner` uses safety guards before deleting generated directories.
 - The upgrader validates release downloads with SHA-256 checksums, blocks unsafe
   archive extraction paths, keeps backups on caught worker failures, and avoids
-  replacing files not listed in `config/upgrade.json`.
+  replacing files not listed in `config/release.json`.
 - The upgrader does not automatically roll back after a partial worker failure;
   production use should retain backups until the upgraded instance and
   dependencies are verified.

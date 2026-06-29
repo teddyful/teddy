@@ -26,6 +26,7 @@
                 "themes/bear"
             ], 
             "files": [
+                ".gitattributes", 
                 ".gitignore", 
                 "AUTHORS", 
                 "build.js", 
