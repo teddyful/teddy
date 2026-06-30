@@ -1,0 +1,56 @@
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+      - skip-changelog
+    authors:
+      - dependabot[bot]
+  categories:
+    - title: Security
+      labels:
+        - security
+    - title: Features
+      labels:
+        - feature
+        - enhancement
+        - feat
+    - title: Bug Fixes
+      labels:
+        - bug
+        - fix
+    - title: Build Pipeline
+      labels:
+        - build
+        - pipeline
+        - static-site-generation
+    - title: Upgrader and Releases
+      labels:
+        - upgrade
+        - upgrader
+        - release
+        - releaser
+    - title: Themes and Client Runtime
+      labels:
+        - theme
+        - client
+        - search
+        - assets
+    - title: Documentation
+      labels:
+        - documentation
+        - docs
+    - title: Tests
+      labels:
+        - test
+        - tests
+    - title: Dependencies
+      labels:
+        - dependencies
+    - title: Maintenance
+      labels:
+        - maintenance
+        - chore
+        - refactor
+    - title: Other Changes
+      labels:
+        - "*"
