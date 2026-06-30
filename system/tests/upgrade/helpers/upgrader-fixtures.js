@@ -32,6 +32,7 @@ const RESOURCE_FILES = [
     '.gitignore',
     'AUTHORS',
     'build.js',
+    'CHANGELOG.md',
     'COPYRIGHT',
     'LICENSE',
     'package.json',

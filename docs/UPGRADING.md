@@ -135,6 +135,7 @@ Configured files currently include:
 - `.gitignore`
 - `AUTHORS`
 - `build.js`
+- `CHANGELOG.md`
 - `COPYRIGHT`
 - `LICENSE`
 - `package.json`

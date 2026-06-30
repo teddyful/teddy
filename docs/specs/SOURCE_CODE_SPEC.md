@@ -73,6 +73,7 @@ COPYRIGHT                        Teddy copyright notice.
 AUTHORS                          Optional curated author/contributor notice.
 THIRD_PARTY_NOTICES.md           Third-party dependency and bundled asset notices.
 SECURITY.md                      Security reporting policy, if present.
+CHANGELOG.md                     Link to release notes.
 docs/specs/                      Architecture and source code specifications.
 config/release.json              Native upgrader resource and release settings.
 config/system.json               Global system paths/assets/fonts/runtime JS.
