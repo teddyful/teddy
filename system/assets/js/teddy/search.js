@@ -284,12 +284,25 @@ class Search {
         if ( sanitizedSearchQuery.length < minQueryLength ) {
             return [];
         }
-        return this.#deduplicateHits(await this.index.searchAsync(
-            sanitizedSearchQuery, {
-                offset: paginationOffset,
-                limit: paginationLimit,
+        
+        // Paginate unique documents after dedupe, not FlexSearch hit offsets.
+        const scanLimit = Math.min(
+            Math.max(this.collectionSize, 0),
+            Search.MAX_SEARCH_LIMIT
+        );
+        const allResults = this.#deduplicateHits(
+            await this.index.searchAsync(sanitizedSearchQuery, {
+                offset: 0,
+                limit: scanLimit,
                 enrich: normalizedEnrich
-            }), paginationLimit);
+            }),
+            scanLimit
+        );
+        return allResults.slice(
+            paginationOffset,
+            paginationOffset + paginationLimit
+        );
+        
     }
 
     async queryAndFilterByTags(searchQuery, tags, options = {}) {
@@ -312,16 +325,31 @@ class Search {
             normalizedTags.length === 0 ) {
             return [];
         }
-        return this.#deduplicateHits(await this.index.searchAsync(
-            sanitizedSearchQuery, {
-                tag: {
-                    field: "tags",
-                    tag: normalizedTags
-                },
-                offset: paginationOffset,
-                limit: paginationLimit,
+
+        // FlexSearch can return no hits for combined text + tag queries when
+        // the same term matches one document through a secondary field 
+        // (e.g. content) while other documents match the term in primary 
+        // fields. Intersect query results with tag-filtered documents instead.
+        const scanLimit = Math.min(
+            Math.max(this.collectionSize, 0),
+            Search.MAX_SEARCH_LIMIT
+        );
+        const queryResults = this.#deduplicateHits(
+            await this.index.searchAsync(sanitizedSearchQuery, {
+                offset: 0,
+                limit: scanLimit,
                 enrich: normalizedEnrich
-            }), paginationLimit);
+            }),
+            scanLimit
+        );
+        const tagResults = await this.getDocumentsByTags(
+            normalizedTags, 0, scanLimit, normalizedEnrich);
+        const tagIds = new Set(tagResults.map((doc) => doc.id));
+        const intersected = queryResults.filter((doc) => tagIds.has(doc.id));
+        return intersected.slice(
+            paginationOffset,
+            paginationOffset + paginationLimit
+        );
     }
 
     #deduplicateHits(hits, limit = Infinity) {

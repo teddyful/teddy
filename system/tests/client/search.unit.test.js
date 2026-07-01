@@ -525,6 +525,7 @@ describe('Search load and query unit behavior', () => {
         const search = new Search();
         search.loaded = true;
         search.index = mockIndex;
+        search.collectionSize = 3;
         mockIndex.searchAsync.mockResolvedValue([
             {
                 field: 'name',
@@ -546,10 +547,66 @@ describe('Search load and query unit behavior', () => {
             limit: 2,
             enrich: true,
             minSearchQueryLength: 1
-        })).resolves.toEqual([DOCUMENTS[0], DOCUMENTS[2]]);
+        })).resolves.toEqual([DOCUMENTS[2], DOCUMENTS[1]]);
         expect(mockIndex.searchAsync).toHaveBeenCalledWith('bear', {
-            offset: 1,
+            offset: 0,
+            limit: 3,
+            enrich: true
+        });
+    });
+
+    test('query paginates deduplicated results across load-more pages', async () => {
+        const mockIndex = createMockIndex();
+        const { Search } = loadSearch({ mockIndex });
+        const search = new Search();
+        search.loaded = true;
+        search.index = mockIndex;
+        search.collectionSize = 3;
+        const flexSearchHits = [
+            {
+                field: 'name',
+                result: [
+                    { id: 0, doc: DOCUMENTS[0] },
+                    { id: 2, doc: DOCUMENTS[2] }
+                ]
+            },
+            {
+                field: 'description',
+                result: [
+                    { id: 2, doc: DOCUMENTS[2] },
+                    { id: 1, doc: DOCUMENTS[1] }
+                ]
+            }
+        ];
+        mockIndex.searchAsync.mockResolvedValue(flexSearchHits);
+        const firstPage = await search.query('bear', {
+            offset: 0,
             limit: 2,
+            enrich: true,
+            minSearchQueryLength: 1
+        });
+        const secondPage = await search.query('bear', {
+            offset: 2,
+            limit: 2,
+            enrich: true,
+            minSearchQueryLength: 1
+        });
+        expect(firstPage).toEqual([DOCUMENTS[0], DOCUMENTS[2]]);
+        expect(secondPage).toEqual([DOCUMENTS[1]]);
+        expect(firstPage.concat(secondPage)).toEqual([
+            DOCUMENTS[0],
+            DOCUMENTS[2],
+            DOCUMENTS[1]
+        ]);
+        expect(mockIndex.searchAsync).toHaveBeenCalledTimes(2);
+        expect(mockIndex.searchAsync).toHaveBeenNthCalledWith(1, 'bear', {
+            offset: 0,
+            limit: 3,
+            enrich: true
+        });
+        expect(mockIndex.searchAsync).toHaveBeenNthCalledWith(2, 'bear', {
+            offset: 0,
+            limit: 3,
             enrich: true
         });
     });
@@ -569,34 +626,49 @@ describe('Search load and query unit behavior', () => {
         expect(mockIndex.searchAsync).not.toHaveBeenCalled();
     });
 
-    test('queryAndFilterByTags passes query and tag filters to FlexSearch', async () => {
+    test('queryAndFilterByTags intersects query and tag results', async () => {
         const mockIndex = createMockIndex();
         const { Search } = loadSearch({ mockIndex });
         const search = new Search();
         search.loaded = true;
         search.index = mockIndex;
-        mockIndex.searchAsync.mockResolvedValue([
-            {
-                field: 'name',
-                result: [
-                    { id: 0, doc: DOCUMENTS[0] },
-                    { id: 2, doc: DOCUMENTS[2] }
-                ]
-            }
-        ]);
+        search.collectionSize = 3;
+        mockIndex.searchAsync
+            .mockResolvedValueOnce([
+                {
+                    field: 'name',
+                    result: [
+                        { id: 0, doc: DOCUMENTS[0] },
+                        { id: 1, doc: DOCUMENTS[1] }
+                    ]
+                }
+            ])
+            .mockResolvedValueOnce([
+                {
+                    field: 'tags',
+                    result: [
+                        { id: 0, doc: DOCUMENTS[0] }
+                    ]
+                }
+            ]);
         await expect(search.queryAndFilterByTags(' bear!!! ', ['toy', null], {
             offset: 0,
             limit: 10,
             enrich: true,
             minSearchQueryLength: 1
-        })).resolves.toEqual([DOCUMENTS[0], DOCUMENTS[2]]);
-        expect(mockIndex.searchAsync).toHaveBeenCalledWith('bear', {
+        })).resolves.toEqual([DOCUMENTS[0]]);
+        expect(mockIndex.searchAsync).toHaveBeenNthCalledWith(1, 'bear', {
+            offset: 0,
+            limit: 3,
+            enrich: true
+        });
+        expect(mockIndex.searchAsync).toHaveBeenNthCalledWith(2, {
             tag: {
                 field: 'tags',
                 tag: ['toy']
             },
             offset: 0,
-            limit: 10,
+            limit: 3,
             enrich: true
         });
     });

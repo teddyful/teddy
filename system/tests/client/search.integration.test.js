@@ -257,6 +257,48 @@ describe('Search integration with real FlexSearch export/import data', () => {
         })).resolves.toEqual([DOCUMENTS[1]]);
     });
 
+    test('queryAndFilterByTags finds content matches in a tagged category', async () => {
+        const MAIC_DOCUMENTS = [
+            {
+                id: 0,
+                name: 'Cutebot Getting Started',
+                description: 'Tour of the Smart Cutebot.',
+                content: 'cutebot makecode microbit',
+                tags: ['robotics', 'cutebot', 'makecode', 'python']
+            },
+            {
+                id: 1,
+                name: 'Mechanics - Motion and Speed',
+                description: 'Calculate the speed of an object moving in a straight line.',
+                content: 'equations of motion cutebot smart cutebot experiment',
+                tags: ['mathematics', 'cutebot', 'distance', 'motion', 'python']
+            }
+        ];
+        const exportedIndex = await exportFlexSearchIndex(
+            BASE_DOCUMENT_STORE_CONFIG,
+            MAIC_DOCUMENTS
+        );
+        const { Search, context } = loadSearch({
+            LANGUAGE_INDEX_KEYS: {
+                en: Object.keys(exportedIndex)
+            },
+            COLLECTION_SIZES: {
+                en: MAIC_DOCUMENTS.length
+            }
+        });
+        installIndexFetch(context, exportedIndex);
+        const search = new Search();
+        await search.loadIndex();
+        await expect(search.query('cutebot', {
+            minSearchQueryLength: 1,
+            limit: 10
+        })).resolves.toEqual([MAIC_DOCUMENTS[0], MAIC_DOCUMENTS[1]]);
+        await expect(search.queryAndFilterByTags('cutebot', ['mathematics'], {
+            minSearchQueryLength: 1,
+            limit: 10
+        })).resolves.toEqual([MAIC_DOCUMENTS[1]]);
+    });
+
     test('deduplicates real FlexSearch results across multiple indexed fields', async () => {
         const exportedIndex = await exportFlexSearchIndex(
             BASE_DOCUMENT_STORE_CONFIG,
@@ -304,6 +346,56 @@ describe('Search integration with real FlexSearch export/import data', () => {
         });
         expect(results).toHaveLength(1);
         expect([DOCUMENTS[0], DOCUMENTS[2]]).toContainEqual(results[0]);
+    });
+
+    test('caps query scans when collectionSize exceeds MAX_SEARCH_LIMIT (100)', async () => {
+        const MAX_SEARCH_LIMIT = 100;
+        const LARGE_COLLECTION_SIZE = MAX_SEARCH_LIMIT + 10;
+        const largeDocuments = Array.from(
+            { length: LARGE_COLLECTION_SIZE },
+            (_, id) => ({
+                id,
+                name: `Document ${id} shared searchterm`,
+                description: `Description for document ${id}.`,
+                content: `Content for document ${id}.`,
+                tags: ['shared']
+            })
+        );
+        const exportedIndex = await exportFlexSearchIndex(
+            BASE_DOCUMENT_STORE_CONFIG,
+            largeDocuments
+        );
+        const { Search, context } = loadSearch({
+            LANGUAGE_INDEX_KEYS: {
+                en: Object.keys(exportedIndex)
+            },
+            COLLECTION_SIZES: {
+                en: LARGE_COLLECTION_SIZE
+            }
+        });
+        installIndexFetch(context, exportedIndex);
+        const search = new Search();
+        await search.loadIndex();
+        expect(search.collectionSize).toBe(LARGE_COLLECTION_SIZE);
+        const firstPage = await search.query('searchterm', {
+            minSearchQueryLength: 1,
+            offset: 0,
+            limit: MAX_SEARCH_LIMIT
+        });
+        const secondPage = await search.query('searchterm', {
+            minSearchQueryLength: 1,
+            offset: MAX_SEARCH_LIMIT,
+            limit: 10
+        });
+        expect(firstPage).toHaveLength(MAX_SEARCH_LIMIT);
+        expect(secondPage).toEqual([]);
+        const returnedIds = new Set(firstPage.map((document) => document.id));
+        expect(returnedIds.size).toBe(MAX_SEARCH_LIMIT);
+        expect(returnedIds.size).toBeLessThan(LARGE_COLLECTION_SIZE);
+        const unreachableCount = largeDocuments.filter(
+            (document) => !returnedIds.has(document.id)
+        ).length;
+        expect(unreachableCount).toBe(LARGE_COLLECTION_SIZE - MAX_SEARCH_LIMIT);
     });
 
     test('loads a CJK language index with the custom tokenizer configured', async () => {
