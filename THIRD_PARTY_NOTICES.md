@@ -42,7 +42,7 @@ These packages are declared directly in [`package.json`](./package.json).
 | showdown | 2.1.0 | Markdown to HTML conversion | Estevão Santos and contributors | MIT | [showdownjs.com](http://showdownjs.com/) |
 | string-strip-html | 13.5.3 | HTML stripping / text extraction | Roy Revelt / Codsen | MIT | [codsen.com/os/string-strip-html](https://codsen.com/os/string-strip-html) |
 | try-to-catch | 4.0.5 | Promise error handling helper | coderaiser | MIT | [github.com/coderaiser/try-to-catch](https://github.com/coderaiser/try-to-catch) |
-| vite | 7.3.5 | Test/build tooling dependency used by Vitest | Evan You and contributors | MIT | [vite.dev](https://vite.dev/) |
+| vite | 8.1.3 | Test/build tooling dependency used by Vitest | Evan You and contributors | MIT | [vite.dev](https://vite.dev/) |
 | vitest | 4.1.9 | Test runner | Anthony Fu and contributors | MIT | [vitest.dev](https://vitest.dev/) |
 | winston | 3.19.0 | Logging | Charlie Robbins | MIT | [github.com/winstonjs/winston](https://github.com/winstonjs/winston) |
 | winston-daily-rotate-file | 5.0.0 | Rotating file transport for Winston | Charlie Robbins | MIT | [github.com/winstonjs/winston-daily-rotate-file](https://github.com/winstonjs/winston-daily-rotate-file) |
