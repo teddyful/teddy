@@ -1,7 +1,7 @@
 <a name="readme-top"></a>
 <div align="center">
 <h1>Teddy</h1>
-<p>Opinionated open-source content management system (CMS) and static site generator (SSG) that focuses on simplicity and easy content management.</p>
+<p>Opinionated open-source content management system (CMS) and static site generator (SSG) focused on simplicity and ease of use.</p>
 <p><a href="https://teddyful.com" target="_blank">Docs</a> | <a href="https://teddyful.com/docs/latest/installation/" target="_blank">Installation</a> | <a href="https://teddyful.com/docs/latest/configuration/" target="_blank">Configuration</a> | <a href="https://teddyful.com/docs/latest/build/" target="_blank">Build</a> | <a href="https://github.com/teddyful/teddy/releases" target="_blank">Releases</a> | <a href="https://teddyful.com/docs/latest/credits/" target="_blank">Credits</a></p>
 </div>
 
@@ -9,21 +9,24 @@
 [1. Introduction](#introduction)<br/>
 [2. Documentation](#documentation)<br/>
 [3. Developer Guide](#developer)<br/>
-[4. Credits](#credits)<br/>
+[4. License](#license)<br/>
 <br/>
 
 ## <a name="introduction"></a>1. Introduction
 
-Teddy is an opinionated open-source content management system (CMS) and static site generator (SSG) that focuses on simplicity and easy content management.
+Teddy is an opinionated open-source content management system (CMS) and static site generator (SSG) focused on simplicity and ease of use.
 
-* Collaboratively manage content using version-controlled [markdown](https://www.markdownguide.org/) files.
-* Host your static websites for free by automatically deploying to JAMstack platforms such as [Cloudflare Workers (Static Assets)](https://developers.cloudflare.com/workers/static-assets/).
-* Edit and build your websites entirely within [VS Code](https://code.visualstudio.com/) using the custom Teddy markdown editor and website builder VS Code extension.
-* Easily generate a PDF version of your site to enhance Large Language Models (LLMs) through [Retrieval-Augmented Generation (RAG)](https://research.ibm.com/blog/retrieval-augmented-generation-RAG).
-* Free, open-source, easily extensible and feature-rich, including custom themes and multilingual websites.
-* Small code footprint, quick and efficient - no databases required.
+### Features
 
-Teddy is written in JavaScript and requires the [Node.js](https://nodejs.org/) JavaScript runtime environment to build static websites. Teddy was created by [Jillur Quddus](https://hyperlearning.ai/team/jillurquddus/), a computational mathematician at HyperLearning AI, and is released under the [GNU GPLv3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) open-source software license.
+* **Markdown-first**: Collaboratively manage content with version control.
+* **Free JAMstack Hosting**: Automated deployment to platforms like Cloudflare.
+* **Open and Extensible**: Free and open-source, featuring custom themes and multilingual support.
+* **Zero Databases**: Lightweight, fast, and minimal code footprint.
+* **No-code Content Editing**: Effortless content management and one-click deployment via Teddy Studio.
+
+### Why not Hugo or Astro?
+
+Both [Hugo](https://gohugo.io/) and [Astro](https://astro.build/) are incredible tools for building static websites. Hugo is the world's fastest static site generator, and Astro provides a modern framework for embedding interactive components. If you are a developer seeking power and flexibility, you cannot go wrong with either. Teddy is not trying to compete with these tools. Instead of focusing on developers, Teddy is designed to be the easiest way for a non-technical person to build and deploy a static site. It achieves this through opinionated simplicity, Markdown-first content management, minimal moving parts, low operational complexity, built-in search, and a path to no-code content editing and one-click build and deployment via Teddy Studio.
 
 <p align="right"><a href="#readme-top">Back to Top &#9650;</a></p>
 
@@ -35,21 +38,12 @@ The official Teddy website, <a href="https://teddyful.com" target="_blank">teddy
 
 ## <a name="developer"></a>3. Developer Guide
 
-For a detailed overview of Teddy’s source code architecture, build pipeline, services, entities, utilities, client-side runtime, tests, and extension points, see the [Teddy Source Code Specification](docs/specs/SOURCE_CODE_SPEC.md).
+For a detailed overview of Teddy's source code architecture, build pipeline, services, entities, utilities, client-side runtime, tests, and extension points, please see the [Teddy Source Code Specification](docs/specs/SOURCE_CODE_SPEC.md).
 
 <p align="right"><a href="#readme-top">Back to Top &#9650;</a></p>
 
-## <a name="credits"></a>4. Credits
+## <a name="license"></a>4. License
 
-### Team Teddy
-
-Teddy was originally designed and built by [Jillur Quddus](https://hyperlearning.ai/team/jillurquddus/), a computational mathematician at [HyperLearning AI](https://hyperlearning.ai/). Teddy started life as an applied learning project in the autumn of 2024 as Jillur studied how to apply JavaScript to serverside programming using the Node.js runtime environment. Jillur decided to open source the project in March 2025 under the [GNU GPLv3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) open-source software license. It is now actively maintained by the following core development team.
-
-* [Jillur Quddus](https://hyperlearning.ai/team/jillurquddus/) - Project Owner and Lead Developer
-* [Jane Yang](https://hyperlearning.ai/team/janeyang/) - Principal Developer
-
-### Open Source Libraries
-
-Teddy is powered by a collection of amazing open-source software libraries. Check them out on our <a href="https://teddyful.com/docs/latest/credits/" target="_blank">credits</a> page and, if you are able to, consider donating to your favourite ones to help support the awesome open-source community.
+Teddy is released under the [GNU GPLv3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) open-source software license. For a list of third-party software that is directly declared, bundled, or distributed with Teddy, please see the [Third-Party Notices](THIRD_PARTY_NOTICES.md).
 
 <p align="right"><a href="#readme-top">Back to Top &#9650;</a></p>
